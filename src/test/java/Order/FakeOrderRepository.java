@@ -60,4 +60,18 @@ public class FakeOrderRepository implements OrderRepository{
         return savedData;
 	}
 
+	@Override
+	public List<OrderData> findAllByUserIds(List<Integer> userIds) {
+		List<OrderData> results = new ArrayList<>();
+        // (Đây là cách đơn giản để convert List -> Set để tra cứu nhanh O(1))
+        Set<Integer> idSet = new HashSet<>(userIds);
+        
+        for (OrderData data : orderDatabase.values()) {
+            if (idSet.contains(data.userId)) {
+                results.add(data);
+            }
+        }
+        return results;
+	}
+
 }

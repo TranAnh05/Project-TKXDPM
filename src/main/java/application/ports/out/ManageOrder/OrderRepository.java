@@ -12,4 +12,6 @@ public interface OrderRepository {
     List<OrderData> findAll();
     OrderData update(OrderData orderData);
     OrderData save(OrderData orderData);
+    
+    List<OrderData> findAllByUserIds(List<Integer> userIds);
 }
