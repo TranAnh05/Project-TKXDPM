@@ -63,15 +63,16 @@ public class User {
     	if(roleName == null || roleName.trim().isEmpty()) {
     		throw new IllegalArgumentException("Vai trò không được rỗng.");
     	}
-    	
-    	boolean hasRole = false;
-    	for(Role role : Role.values()) {
-    		if(role.name().equalsIgnoreCase(roleName.toUpperCase()))
-    			hasRole = true;
-    	}
-    	
-    	if(!hasRole) {
-    		throw new IllegalArgumentException("Vai trò không hợp lệ.");
+    	else {
+    		boolean hasRole = false;
+    		for(Role role : Role.values()) {
+    			if(roleName.equalsIgnoreCase(role.name()))
+    				hasRole = true;
+    		}
+    		
+    		if(!hasRole) {
+    			throw new IllegalArgumentException("Vai trò không hợp lệ.");
+    		}
     	}
     }
 
