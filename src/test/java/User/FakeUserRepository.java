@@ -3,6 +3,7 @@ package User;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import application.dtos.ManageUser.UserData;
@@ -52,5 +53,22 @@ public class FakeUserRepository implements UserRepository{
             return updatedData;
         }
         return null;
+	}
+
+	@Override
+	public List<UserData> searchByEmail(String emailKeyword) {
+		List<UserData> results = new ArrayList<>();
+        if (emailKeyword == null || emailKeyword.trim().isEmpty()) {
+            return results; // Trả về list rỗng nếu không tìm gì
+        }
+        String lowerKeyword = emailKeyword.toLowerCase(Locale.ROOT);
+        
+        for (UserData data : database.values()) {
+            if (data.email.toLowerCase(Locale.ROOT).contains(lowerKeyword)) {
+                results.add(data);
+            }
+        }
+        
+        return results; // Luôn trả về List, không trả về null
 	}
 }

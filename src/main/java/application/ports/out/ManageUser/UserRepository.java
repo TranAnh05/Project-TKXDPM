@@ -11,4 +11,6 @@ public interface UserRepository {
     UserData save(UserData userData);
     UserData update(UserData userData);
     // (Không có delete, chúng ta dùng update isBlocked)
+    
+    List<UserData> searchByEmail(String emailKeyword);
 }
