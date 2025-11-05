@@ -27,8 +27,7 @@ public class FakeOrderRepository implements OrderRepository{
 
 	@Override
 	public OrderData findById(int id) {
-		// TODO Auto-generated method stub
-		return null;
+		return orderDatabase.get(id);
 	}
 
 	@Override
@@ -38,8 +37,16 @@ public class FakeOrderRepository implements OrderRepository{
 
 	@Override
 	public OrderData update(OrderData orderData) {
-		// TODO Auto-generated method stub
-		return null;
+		if (orderDatabase.containsKey(orderData.id)) {
+			OrderData updatedData = new OrderData(
+					orderData.id, orderData.userId, orderData.orderDate,
+					orderData.totalAmount, orderData.status
+            );
+			
+            orderDatabase.put(orderData.id, updatedData);
+            return updatedData;
+        }
+        return null;
 	}
 
 	@Override
