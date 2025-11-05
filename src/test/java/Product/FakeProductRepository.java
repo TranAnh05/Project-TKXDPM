@@ -3,6 +3,7 @@ package Product;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import application.dtos.ManageProduct.ProductData;
@@ -94,6 +95,25 @@ public class FakeProductRepository implements ProductRepository{
 	public int countByCategoryId(int categoryId) {
 		// TODO Auto-generated method stub
 		return 0;
+	}
+
+	@Override
+	public List<ProductData> searchByName(String keyword) {
+		List<ProductData> results = new ArrayList<>();
+		if (keyword == null || keyword.trim().isEmpty()) {
+	        return results; // Không tìm được gì thì trả về danh sách rỗng
+	    }
+
+	    String lowerKeyword = keyword.toLowerCase(Locale.ROOT);
+
+	    for (ProductData data : database.values()) {
+	        if (data.name != null 
+	            && data.name.toLowerCase(Locale.ROOT).contains(lowerKeyword)) {
+	            results.add(data);
+	        }
+	    }
+
+	    return results; 
 	}
 
 }

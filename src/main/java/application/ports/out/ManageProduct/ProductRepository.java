@@ -17,4 +17,6 @@ public interface ProductRepository {
     
     void deleteById(int id);
     int countByCategoryId(int categoryId);
+    
+    List<ProductData> searchByName(String keyword);
 }
