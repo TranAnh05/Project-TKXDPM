@@ -118,7 +118,7 @@ public class UpdateProductUsecase implements UpdateProductInputBoundary{
 	private ProductData mapEntityToData(Product product) {
 		ProductData data = new ProductData();
         // 1. Gán thuộc tính chung
-        data.id = product.getId();
+        data.id = product.getId(); 
         data.name = product.getName();
         data.description = product.getDescription();
         data.price = product.getPrice();

@@ -86,7 +86,7 @@ public class FakeProductRepository implements ProductRepository{
 
 	@Override
 	public void deleteById(int id) {
-		// TODO Auto-generated method stub
+		database.remove(id);
 		
 	}
 

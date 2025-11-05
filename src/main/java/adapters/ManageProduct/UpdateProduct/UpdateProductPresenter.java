@@ -19,6 +19,7 @@ public class UpdateProductPresenter implements UpdateProductOutputBoundary{
         if (output.updatedProduct != null) {
             viewDTO = mapToViewDTO(output.updatedProduct);
         }
+        
         viewModel.success = String.valueOf(output.success);
         viewModel.message = output.message;
         viewModel.updatedProduct = viewDTO;
