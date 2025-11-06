@@ -9,16 +9,20 @@ import adapters.ManageCategory.AddNewCategory.AddNewCategoryPresenter;
 import adapters.ManageCategory.AddNewCategory.AddNewCategoryViewModel;
 import adapters.ManageCategory.DeleteCategory.DeleteCategoryPresenter;
 import adapters.ManageCategory.DeleteCategory.DeleteCategoryViewModel;
+import adapters.ManageCategory.GetCategoryTemplate.GetCategoryTemplatePresenter;
+import adapters.ManageCategory.GetCategoryTemplate.GetCategoryTemplateViewModel;
 import adapters.ManageCategory.UpdateCategory.UpdateCategoryPresenter;
 import adapters.ManageCategory.UpdateCategory.UpdateCategoryViewModel;
 import adapters.ManageCategory.ViewAllCategories.ViewAllCategoriesPresenter;
 import adapters.ManageCategory.ViewAllCategories.ViewAllCategoriesViewModel;
 import application.dtos.ManageCategory.AddNewCategory.AddNewCategoryInputData;
 import application.dtos.ManageCategory.DeleteCategory.DeleteCategoryInputData;
+import application.dtos.ManageCategory.GetCategoryTemplate.GetCategoryTemplateInputData;
 import application.dtos.ManageCategory.UpdateCategory.UpdateCategoryInputData;
 import application.ports.out.ManageCategory.CategoryRepository;
 import application.usecases.ManageCategory.AddNewCategory.AddNewCategoryUsecase;
 import application.usecases.ManageCategory.DeleteCategory.DeleteCategoryUsecase;
+import application.usecases.ManageCategory.GetCategoryTemplate.GetCategoryTemplateUsecase;
 import application.usecases.ManageCategory.UpdateCategory.UpdateCategoryUsecase;
 import application.usecases.ManageCategory.ViewAllCategories.ViewAllCategoryUsecase;
 import infrastructure.database.CategoryRepositoryImpl;
@@ -118,51 +122,100 @@ public class CategoryRestfulWS extends HttpServlet{
     }
     
     /**
-     * HÀM MỚI: Xử lý HTTP GET (Xem tất cả)
+     * HÀM DO_GET (ĐƯỢC CẬP NHẬT)
+     * Xử lý cả hai:
+     * 1. GET /api/admin/categories (Xem tất cả)
+     * 2. GET /api/admin/categories/{id} (Xem chi tiết/template)
      */
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         
-        // Cấu hình Response là JSON
         req.setCharacterEncoding("UTF-8");
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
 
-        ViewAllCategoriesViewModel responseModel; // (ViewModel T2 "toàn string")
+        // Lấy ID từ URL (dùng lại hàm helper)
+        int categoryId = getResourceId(req);
 
+        if (categoryId == -1) {
+            // Không có ID -> Admin muốn "Xem tất cả" (Lát cắt 2)
+            handleViewAllCategories(req, resp);
+        } else {
+            // Có ID -> Admin muốn "Lấy Template" (Lát cắt 5)
+            handleGetCategoryTemplate(req, resp, categoryId);
+        }
+    }
+    
+    /**
+     * HÀM HELPER MỚI (Tách ra từ doGet cũ)
+     * Xử lý logic cho "Xem tất cả" (Lát cắt 2)
+     */
+    private void handleViewAllCategories(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        ViewAllCategoriesViewModel responseModel;
         try {
-            // 1. *** NƠI LẮP RÁP (COMPOSITION ROOT) ***
-            
-            // Lắp ráp "Thật" Tầng 1 (Database)
-            CategoryRepository categoryRepo = new CategoryRepositoryImpl(); // (Tên T1 Impl của bạn)
-            
-            // Lắp ráp Tầng 2 (ViewModel "Toàn String" + Presenter)
+            // --- Lắp ráp ---
+            CategoryRepository categoryRepo = new CategoryRepositoryImpl();
             ViewAllCategoriesViewModel viewModel = new ViewAllCategoriesViewModel();
             ViewAllCategoriesPresenter presenter = new ViewAllCategoriesPresenter(viewModel);
-            
-            // Lắp ráp Tầng 3 (Interactor)
-            ViewAllCategoryUsecase useCase = new ViewAllCategoryUsecase(categoryRepo, presenter); // (Tên T3 Usecase của bạn)
+            ViewAllCategoryUsecase useCase = new ViewAllCategoryUsecase(categoryRepo, presenter);
 
-            // 2. GỌI LÕI NGHIỆP VỤ (TẦNG 3)
+            // --- Gọi Tầng 3 ---
             useCase.execute();
 
-            // 3. Lấy ViewModel (T2) đã được Presenter cập nhật
+            // --- Trả về Response ---
             responseModel = presenter.getModel();
-            
-            // 4. Trả về Response
             if ("false".equals(responseModel.success)) {
-                // Nếu UseCase báo lỗi (VD: Lỗi CSDL)
                 resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR); // 500
             } else {
-                // Thành công
+                resp.setStatus(HttpServletResponse.SC_OK); // 200 OK
+            }
+            
+            resp.getWriter().write(gson.toJson(responseModel));
+        } catch (Exception e) {
+        	e.printStackTrace(); 
+            responseModel = new ViewAllCategoriesViewModel();
+            responseModel.success = "false";
+            responseModel.message = "Lỗi hệ thống không xác định: " + e.getMessage();
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR); 
+            resp.getWriter().write(gson.toJson(responseModel));
+        }
+    }
+
+    /**
+     * HÀM HELPER MỚI
+     * Xử lý logic cho "Lấy Template" (Lát cắt 5)
+     */
+    private void handleGetCategoryTemplate(HttpServletRequest req, HttpServletResponse resp, int categoryId) throws IOException {
+        GetCategoryTemplateViewModel responseModel;
+        try {
+            // 1. *** NƠI LẮP RÁP (COMPOSITION ROOT) ***
+            CategoryRepository categoryRepo = new CategoryRepositoryImpl();
+            GetCategoryTemplateViewModel viewModel = new GetCategoryTemplateViewModel();
+            GetCategoryTemplatePresenter presenter = new GetCategoryTemplatePresenter(viewModel);
+            GetCategoryTemplateUsecase useCase = new GetCategoryTemplateUsecase(categoryRepo, presenter);
+            
+            // 2. Chuẩn bị DTO (T3)
+            GetCategoryTemplateInputData input = new GetCategoryTemplateInputData(categoryId);
+
+            // 3. GỌI LÕI NGHIỆP VỤ (TẦNG 3)
+            useCase.execute(input);
+
+            // 4. Lấy ViewModel (T2)
+            responseModel = presenter.getViewModel();
+            
+            // 5. Trả về Response
+            if ("false".equals(responseModel.success)) {
+                // Nếu UseCase báo lỗi (VD: Không tìm thấy ID)
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST); // 400
+            } else {
                 resp.setStatus(HttpServletResponse.SC_OK); // 200 OK
             }
             resp.getWriter().write(gson.toJson(responseModel));
 
         } catch (Exception e) {
-            // Xử lý các lỗi hệ thống khác (ví dụ: lỗi lắp ráp)
-            e.printStackTrace(); // In lỗi ra console Tomcat
-            responseModel = new ViewAllCategoriesViewModel();
+            // ... (Xử lý lỗi hệ thống)
+            e.printStackTrace();
+            responseModel = new GetCategoryTemplateViewModel();
             responseModel.success = "false";
             responseModel.message = "Lỗi hệ thống không xác định: " + e.getMessage();
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR); // 500
