@@ -14,6 +14,11 @@ public class AddNewProductPresenter implements AddNewProductOutputBoundary{
     public AddNewProductPresenter(AddNewProductViewModel viewModel) { 
     	this.viewModel = viewModel; 
     }
+    
+    public AddNewProductViewModel getViewModel() {
+    	return viewModel;
+    }
+    
 	@Override
 	public void present(AddNewProductOutputData output) {
 		ProductViewDTO viewDTO = null;
