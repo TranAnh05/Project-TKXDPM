@@ -45,7 +45,6 @@ public class AddNewCategoryUsecase implements AddNewCategoryInputBoundary{
             CategoryData dataToSave = mapEntityToData(categoryEntity);
             
             CategoryData savedData = categoryRepository.save(dataToSave);
-            
             outputData.success = true;
             outputData.message = "Thêm mới thành công!";
             outputData.newCategory = mapDataToOutput(savedData);
