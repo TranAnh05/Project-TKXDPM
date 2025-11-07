@@ -32,6 +32,7 @@ import infrastructure.database.CategoryRepositoryImpl;
 import infrastructure.database.OrderRepositoryImpl;
 import infrastructure.database.ProductRepositoryImpl;
 import infrastructure.web.requests.AddProductRequest.AddProductRequest;
+import infrastructure.web.requests.UpdateProduct.UpdateProductRequest;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -66,7 +67,7 @@ public class ProductRestfulWS extends HttpServlet{
         resp.setCharacterEncoding("UTF-8");
 
         AddNewProductViewModel responseModel; // (ViewModel T2 "toàn string")
-
+        
         try {
             // 1. Đọc JSON Request
             AddProductRequest requestBody = gson.fromJson(req.getReader(), AddProductRequest.class);
@@ -131,42 +132,198 @@ public class ProductRestfulWS extends HttpServlet{
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         
+    	req.setCharacterEncoding("UTF-8");
+        resp.setContentType("application/json");
+        resp.setCharacterEncoding("UTF-8");
+
+        // Lấy query parameter "?search=..."
+        String keyword = req.getParameter("search"); 
+
+        if (keyword == null || keyword.isEmpty()) {
+            // Không có param 'search' -> Admin muốn "Xem tất cả" (Lát cắt 7)
+            handleViewAllProducts(resp);
+        } else {
+            // Có param 'search' -> Admin muốn "Tìm kiếm" (Lát cắt 16)
+            handleSearchProducts(resp, keyword);
+        }
+    }
+    
+    private void handleSearchProducts(HttpServletResponse resp, String keyword) throws IOException {
+    	SearchProductsViewModel responseModel; // (ViewModel T2 của Search)
+        try {
+            // --- Lắp ráp T2, T3 ---
+            SearchProductsViewModel viewModel = new SearchProductsViewModel();
+            SearchProductsPresenter presenter = new SearchProductsPresenter(viewModel);
+            SearchProductsUsecase useCase = new SearchProductsUsecase( // (Tên Usecase T3 của bạn)
+                this.productRepo, this.categoryRepo, presenter, this.productFactory
+            );
+            
+            // --- Chuẩn bị & Gọi Tầng 3 ---
+            SearchProductsInputData input = new SearchProductsInputData(keyword);
+            useCase.execute(input);
+            
+            responseModel = presenter.getViewModel(); // --- Lấy Response ---
+            resp.setStatus(HttpServletResponse.SC_OK); // 200
+            resp.getWriter().write(gson.toJson(responseModel));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            responseModel = new SearchProductsViewModel();
+            responseModel.success = "false";
+            responseModel.message = "Lỗi hệ thống không xác định: " + e.getMessage();
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR); // 500
+            resp.getWriter().write(gson.toJson(responseModel));
+        }
+	}
+
+	private void handleViewAllProducts(HttpServletResponse resp) throws IOException {
+		ViewAllProductsViewModel responseModel;
+        try {
+            // Lắp ráp T2, T3
+            ViewAllProductsViewModel viewModel = new ViewAllProductsViewModel();
+            ViewAllProductsPresenter presenter = new ViewAllProductsPresenter(viewModel);
+            ViewAllProductsUsecase useCase = new ViewAllProductsUsecase( // (Tên Usecase T3 của bạn)
+                this.productRepo, this.categoryRepo, presenter, this.productFactory
+            );
+            
+            useCase.execute(); // Gọi Tầng 3
+            
+            responseModel = presenter.getViewModel(); 
+            resp.setStatus(HttpServletResponse.SC_OK); // 200
+            resp.getWriter().write(gson.toJson(responseModel));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            responseModel = new ViewAllProductsViewModel();
+            responseModel.success = "false";
+            responseModel.message = "Lỗi hệ thống không xác định: " + e.getMessage();
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR); // 500
+            resp.getWriter().write(gson.toJson(responseModel));
+        }
+	}
+
+	/**
+     * HÀM MỚI: Xử lý HTTP PUT (Sửa) - /api/admin/products/{id}
+     * (Lát cắt 8)
+     */
+    @Override
+    protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         req.setCharacterEncoding("UTF-8");
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
 
-        ViewAllProductsViewModel responseModel; // (ViewModel T2 "toàn string")
-
+        UpdateProductViewModel responseModel; // (ViewModel T2 "toàn string")
         try {
-            // 1. *** NƠI LẮP RÁP (COMPOSITION ROOT) ***
-            
-            // Lắp ráp Tầng 2 (ViewModel "Toàn String" + Presenter)
-            ViewAllProductsViewModel viewModel = new ViewAllProductsViewModel();
-            ViewAllProductsPresenter presenter = new ViewAllProductsPresenter(viewModel);
-            
-            // Lắp ráp Tầng 3 (Interactor)
-            ViewAllProductsUsecase useCase = new ViewAllProductsUsecase( 
+            // 1. Lấy ID từ URL
+            int productId = getResourceId(req);
+            if (productId == -1) {
+                responseModel = new UpdateProductViewModel();
+                responseModel.success = "false";
+                responseModel.message = "URL không hợp lệ. Phải có ID (ví dụ: /api/admin/products/1)";
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST); // 400
+                resp.getWriter().write(gson.toJson(responseModel));
+                return;
+            }
+
+            // 2. Đọc JSON Request
+            UpdateProductRequest requestBody = gson.fromJson(req.getReader(), UpdateProductRequest.class);
+            if (requestBody == null) {
+                responseModel = new UpdateProductViewModel();
+                responseModel.success = "false";
+                responseModel.message = "Request body (JSON) bị rỗng.";
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST); // 400
+                resp.getWriter().write(gson.toJson(responseModel));
+                return;
+            }
+
+            // 3. Lắp ráp T2, T3
+            UpdateProductViewModel viewModel = new UpdateProductViewModel();
+            UpdateProductPresenter presenter = new UpdateProductPresenter(viewModel);
+            UpdateProductUsecase useCase = new UpdateProductUsecase( // (Tên Usecase T3 của bạn)
                 this.productRepo, this.categoryRepo, presenter, this.productFactory
-            ); 
+            );
 
-            // 2. GỌI LÕI NGHIỆP VỤ (TẦNG 3)
-            useCase.execute();
+            // 4. Chuẩn bị & Gọi Tầng 3
+            UpdateProductInputData input = new UpdateProductInputData(
+                productId, // <-- ID từ URL
+                requestBody.name, requestBody.description, requestBody.price, 
+                requestBody.stockQuantity, requestBody.imageUrl, requestBody.categoryId,
+                requestBody.attributes
+            );
+            useCase.execute(input);
 
-            // 3. Lấy ViewModel (T2) đã được Presenter cập nhật
+            // 5. Trả về Response
             responseModel = presenter.getViewModel();
-            
-            // 4. Trả về Response
             if ("false".equals(responseModel.success)) {
-                resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR); // 500
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST); // 400 (Lỗi validation/nghiệp vụ)
             } else {
-                resp.setStatus(HttpServletResponse.SC_OK); // 200 OK
+                resp.setStatus(HttpServletResponse.SC_OK); // 200
             }
             resp.getWriter().write(gson.toJson(responseModel));
 
+        } catch (JsonSyntaxException e) {
+            responseModel = new UpdateProductViewModel();
+            responseModel.success = "false";
+            responseModel.message = "JSON request không hợp lệ hoặc sai cú pháp.";
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST); 
+            resp.getWriter().write(gson.toJson(responseModel));
         } catch (Exception e) {
-            // Xử lý các lỗi hệ thống khác
-            e.printStackTrace(); // In lỗi ra console Tomcat
-            responseModel = new ViewAllProductsViewModel();
+            e.printStackTrace();
+            responseModel = new UpdateProductViewModel();
+            responseModel.success = "false";
+            responseModel.message = "Lỗi hệ thống không xác định: " + e.getMessage();
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR); 
+            resp.getWriter().write(gson.toJson(responseModel));
+        }
+    }
+    
+    /**
+     * HÀM MỚI: Xử lý HTTP DELETE (Xóa) - /api/admin/products/{id}
+     * (Lát cắt 9)
+     */
+    @Override
+    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        req.setCharacterEncoding("UTF-8");
+        resp.setContentType("application/json");
+        resp.setCharacterEncoding("UTF-8");
+
+        DeleteProductViewModel responseModel; // (ViewModel T2 "toàn string")
+        try {
+            // 1. Lấy ID từ URL
+            int productId = getResourceId(req);
+            if (productId == -1) {
+                responseModel = new DeleteProductViewModel();
+                responseModel.success = "false";
+                responseModel.message = "URL không hợp lệ. Phải có ID (ví dụ: /api/admin/products/1)";
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                resp.getWriter().write(gson.toJson(responseModel));
+                return;
+            }
+
+            // 2. Lắp ráp T2, T3
+            DeleteProductViewModel viewModel = new DeleteProductViewModel();
+            DeleteProductPresenter presenter = new DeleteProductPresenter(viewModel);
+            DeleteProductUsecase useCase = new DeleteProductUsecase( // (Tên Usecase T3 của bạn)
+                this.productRepo, this.orderRepo, presenter
+            );
+
+            // 3. Chuẩn bị & Gọi Tầng 3
+            DeleteProductInputData input = new DeleteProductInputData(productId);
+            useCase.execute(input);
+
+            // 4. Trả về Response
+            responseModel = presenter.getViewModel();
+            if ("false".equals(responseModel.success)) {
+                // (Lỗi nghiệp vụ: Không tìm thấy, Còn đơn hàng)
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST); // 400
+            } else {
+                resp.setStatus(HttpServletResponse.SC_OK); // 200
+            }
+            resp.getWriter().write(gson.toJson(responseModel));
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            responseModel = new DeleteProductViewModel();
             responseModel.success = "false";
             responseModel.message = "Lỗi hệ thống không xác định: " + e.getMessage();
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR); // 500
@@ -174,220 +331,17 @@ public class ProductRestfulWS extends HttpServlet{
         }
     }
     
-    /**
-     * Xử lý HTTP GET (Xem tất cả HOẶC Tìm kiếm)
-     * 1. GET /api/admin/products (Xem tất cả)
-     * 2. GET /api/admin/products?search=dell (Tìm kiếm)
-     */
-//    @Override
-//    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-//        req.setCharacterEncoding("UTF-8");
-//        resp.setContentType("application/json");
-//        resp.setCharacterEncoding("UTF-8");
-//
-//        String keyword = req.getParameter("search"); // Lấy ?search=...
-//
-//        if (keyword == null || keyword.isEmpty()) {
-//            handleViewAllProducts(resp); // (Lát cắt 7)
-//        } else {
-//            handleSearchProducts(resp, keyword); // (Lát cắt 16)
-//        }
-//    }
-//    
-//    /**
-//     * HÀM HELPER 1 (cho doGet)
-//     * Xử lý logic cho "Xem tất cả"
-//     */
-//    private void handleViewAllProducts(HttpServletResponse resp) throws IOException {
-//        ViewAllProductsViewModel responseModel;
-//        try {
-//            // Lắp ráp T2, T3
-//            ViewAllProductsViewModel viewModel = new ViewAllProductsViewModel();
-//            ViewAllProductsPresenter presenter = new ViewAllProductsPresenter(viewModel);
-//            ViewAllProductsUsecase useCase = new ViewAllProductsUsecase(
-//                this.productRepo, this.categoryRepo, presenter, this.productFactory
-//            );
-//            
-//            useCase.execute(); // Gọi Tầng 3
-//            
-//            responseModel = presenter.getViewModel(); 
-//            resp.setStatus(HttpServletResponse.SC_OK); // 200
-//            resp.getWriter().write(gson.toJson(responseModel));
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            responseModel = new ViewAllProductsViewModel();
-//            responseModel.success = "false";
-//            responseModel.message = "Lỗi hệ thống không xác định: " + e.getMessage();
-//            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR); // 500
-//            resp.getWriter().write(gson.toJson(responseModel));
-//        }
-//    }
-//
-//    /**
-//     * HÀM HELPER 2 (cho doGet)
-//     * Xử lý logic cho "Tìm kiếm"
-//     */
-//    private void handleSearchProducts(HttpServletResponse resp, String keyword) throws IOException {
-//        SearchProductsViewModel responseModel;
-//        try {
-//            // Lắp ráp T2, T3
-//            SearchProductsViewModel viewModel = new SearchProductsViewModel();
-//            SearchProductsPresenter presenter = new SearchProductsPresenter(viewModel);
-//            SearchProductsUsecase useCase = new SearchProductsUsecase(
-//                this.productRepo, this.categoryRepo, presenter, this.productFactory
-//            );
-//            
-//            // Chuẩn bị & Gọi Tầng 3
-//            SearchProductsInputData input = new SearchProductsInputData(keyword);
-//            useCase.execute(input);
-//            
-//            responseModel = presenter.getViewModel(); 
-//            resp.setStatus(HttpServletResponse.SC_OK); // 200
-//            resp.getWriter().write(gson.toJson(responseModel));
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            responseModel = new SearchProductsViewModel();
-//            responseModel.success = "false";
-//            responseModel.message = "Lỗi hệ thống không xác định: " + e.getMessage();
-//            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR); // 500
-//            resp.getWriter().write(gson.toJson(responseModel));
-//        }
-//    }
-    
-//    /**
-//     * Xử lý HTTP PUT (Sửa) - /api/admin/products/{id}
-//     */
-//    @Override
-//    protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-//        req.setCharacterEncoding("UTF-8");
-//        resp.setContentType("application/json");
-//        resp.setCharacterEncoding("UTF-8");
-//
-//        UpdateProductViewModel responseModel;
-//        try {
-//            int productId = getResourceId(req);
-//            if (productId == -1) {
-//                responseModel = new UpdateProductViewModel();
-//                responseModel.success = "false";
-//                responseModel.message = "URL không hợp lệ. Phải có ID (ví dụ: /api/admin/products/1)";
-//                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-//                resp.getWriter().write(gson.toJson(responseModel));
-//                return;
-//            }
-//
-//            UpdateProductRequest requestBody = gson.fromJson(req.getReader(), UpdateProductRequest.class);
-//            if (requestBody == null) {
-//                responseModel = new UpdateProductViewModel();
-//                responseModel.success = "false";
-//                responseModel.message = "Request body (JSON) bị rỗng.";
-//                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-//                resp.getWriter().write(gson.toJson(responseModel));
-//                return;
-//            }
-//
-//            // Lắp ráp T2, T3
-//            UpdateProductViewModel viewModel = new UpdateProductViewModel();
-//            UpdateProductPresenter presenter = new UpdateProductPresenter(viewModel);
-//            UpdateProductUsecase useCase = new UpdateProductUsecase(
-//                this.productRepo, this.categoryRepo, presenter, this.productFactory
-//            );
-//
-//            // Chuẩn bị & Gọi Tầng 3
-//            UpdateProductInputData input = new UpdateProductInputData(
-//                productId, requestBody.name, requestBody.description, requestBody.price, 
-//                requestBody.stockQuantity, requestBody.imageUrl, requestBody.categoryId,
-//                requestBody.attributes
-//            );
-//            useCase.execute(input);
-//
-//            // Trả về Response
-//            responseModel = presenter.getViewModel();
-//            if ("false".equals(responseModel.success)) {
-//                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST); // 400 (Lỗi validation/nghiệp vụ)
-//            } else {
-//                resp.setStatus(HttpServletResponse.SC_OK); // 200
-//            }
-//            resp.getWriter().write(gson.toJson(responseModel));
-//
-//        } catch (JsonSyntaxException e) {
-//            responseModel = new UpdateProductViewModel();
-//            responseModel.success = "false";
-//            responseModel.message = "JSON request không hợp lệ hoặc sai cú pháp.";
-//            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST); 
-//            resp.getWriter().write(gson.toJson(responseModel));
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            responseModel = new UpdateProductViewModel();
-//            responseModel.success = "false";
-//            responseModel.message = "Lỗi hệ thống không xác định: " + e.getMessage();
-//            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR); 
-//            resp.getWriter().write(gson.toJson(responseModel));
-//        }
-//    }
-
-//	private int getResourceId(HttpServletRequest req) {
-//		try {
-//            String pathInfo = req.getPathInfo(); // Lấy phần "/1"
-//            if (pathInfo != null && !pathInfo.equals("/")) {
-//                String[] pathParts = pathInfo.split("/");
-//                if (pathParts.length > 1) {
-//                    return Integer.parseInt(pathParts[1]);
-//                }
-//            }
-//        } catch (NumberFormatException e) { /* (URL không phải là số) */ }
-//        return -1; // Không tìm thấy ID
-//	}
-	
-//	/**
-//     * Xử lý HTTP DELETE (Xóa) - /api/admin/products/{id}
-//     */
-//    @Override
-//    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-//        req.setCharacterEncoding("UTF-8");
-//        resp.setContentType("application/json");
-//        resp.setCharacterEncoding("UTF-8");
-//
-//        DeleteProductViewModel responseModel;
-//        try {
-//            int productId = getResourceId(req);
-//            if (productId == -1) {
-//                responseModel = new DeleteProductViewModel();
-//                responseModel.success = "false";
-//                responseModel.message = "URL không hợp lệ. Phải có ID (ví dụ: /api/admin/products/1)";
-//                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-//                resp.getWriter().write(gson.toJson(responseModel));
-//                return;
-//            }
-//
-//            // Lắp ráp T2, T3
-//            DeleteProductViewModel viewModel = new DeleteProductViewModel();
-//            DeleteProductPresenter presenter = new DeleteProductPresenter(viewModel);
-//            DeleteProductUsecase useCase = new DeleteProductUsecase(
-//                this.productRepo, this.orderRepo, presenter
-//            );
-//
-//            // Chuẩn bị & Gọi Tầng 3
-//            DeleteProductInputData input = new DeleteProductInputData(productId);
-//            useCase.execute(input);
-//
-//            // Trả về Response
-//            responseModel = presenter.getViewModel();
-//            if ("false".equals(responseModel.success)) {
-//                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST); // 400 (Lỗi nghiệp vụ)
-//            } else {
-//                resp.setStatus(HttpServletResponse.SC_OK); // 200
-//            }
-//            resp.getWriter().write(gson.toJson(responseModel));
-//            
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            responseModel = new DeleteProductViewModel();
-//            responseModel.success = "false";
-//            responseModel.message = "Lỗi hệ thống không xác định: " + e.getMessage();
-//            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR); // 500
-//            resp.getWriter().write(gson.toJson(responseModel));
-//        }
-//    }
+   
+	private int getResourceId(HttpServletRequest req) {
+		try {
+            String pathInfo = req.getPathInfo(); // Lấy phần "/1"
+            if (pathInfo != null && !pathInfo.equals("/")) {
+                String[] pathParts = pathInfo.split("/");
+                if (pathParts.length > 1) {
+                    return Integer.parseInt(pathParts[1]);
+                }
+            }
+        } catch (NumberFormatException e) { /* (URL không phải là số) */ }
+        return -1; // Không tìm thấy ID
+	}
 }

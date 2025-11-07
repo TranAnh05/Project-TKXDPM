@@ -54,7 +54,7 @@ public class SearchProductsUsecase implements SearchProductsInputBoundary{
                 outputData.success = true;
                 outputData.message = "Không tìm thấy sản phẩm nào khớp với '" + input.keyword + "'.";
                 outputData.products = new ArrayList<>();
-//                productPresenter.present(outputData);
+                productPresenter.present(outputData);
                 return;
             }
             
@@ -78,7 +78,7 @@ public class SearchProductsUsecase implements SearchProductsInputBoundary{
             outputData.products = new ArrayList<>();
 		}
 		
-//		productPresenter.present(outputData);
+		productPresenter.present(outputData);
 	}
 
 	private List<ProductOutputData> mapEntitiesToOutputData(List<Product> entities,
