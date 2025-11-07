@@ -36,10 +36,10 @@ public class ViewAllUsersUsecase implements ViewAllUsersInputBoundary{
             
             if (userDataList.isEmpty()) {
                 // 2. Xử lý kịch bản rỗng
-                this.outputData.success = true;
-                this.outputData.message = "Không tìm thấy người dùng nào.";
-                this.outputData.users = new ArrayList<>();
-                userPresenter.present(this.outputData);
+                outputData.success = true;
+                outputData.message = "Không tìm thấy người dùng nào.";
+                outputData.users = new ArrayList<>();
+                userPresenter.present(outputData);
                 return;
             }
             

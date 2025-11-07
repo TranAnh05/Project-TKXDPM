@@ -41,7 +41,7 @@ public class SearchUsersUsecase implements SearchUsersInputBoundary{
                 outputData.success = true;
                 outputData.message = "Không tìm thấy người dùng nào khớp với '" + input.emailKeyword + "'.";
                 outputData.users = new ArrayList<>();
-//                userPresenter.present(outputData);
+                userPresenter.present(outputData);
                 return;
             }
             
@@ -62,7 +62,7 @@ public class SearchUsersUsecase implements SearchUsersInputBoundary{
             outputData.users = new ArrayList<>();
 		}
 		
-//		userPresenter.present(outputData);
+		userPresenter.present(outputData);
 	}
 
 	private List<UserOutputData> mapEntitiesToOutputData(List<User> entities) {
