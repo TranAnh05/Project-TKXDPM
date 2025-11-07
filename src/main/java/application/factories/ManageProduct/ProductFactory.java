@@ -4,6 +4,7 @@ import java.util.Map;
 
 import application.dtos.ManageCategory.CategoryData;
 import application.dtos.ManageProduct.ProductData;
+import domain.entities.GenericProduct;
 import domain.entities.Keyboard;
 import domain.entities.Laptop;
 import domain.entities.Mouse;
@@ -31,7 +32,7 @@ public class ProductFactory {
 		  return createKeyboard(name, description, price, stock, img, category.id, attributes);
 		  
 		default:
-		  throw new IllegalArgumentException("Loại sản phẩm không được hỗ trợ: " + category.name);
+            return new GenericProduct(name, description, price, stock, img, category.id);
 		}
 	}
 	
@@ -118,7 +119,8 @@ public class ProductFactory {
                 // Nếu là loại SP không (còn) hỗ trợ kế thừa, có thể tạo 1 Product "chung"
                 // (Điều này đòi hỏi T4 phải có 1 lớp con Product "chung")
                 // Hoặc ném lỗi
-                throw new IllegalArgumentException("Không thể tải loại sản phẩm: " + category.name);
+            	return new GenericProduct(data.id, data.name, data.description, data.price,
+                        data.stockQuantity, data.imageUrl, data.categoryId);
         }
 	}   
 }

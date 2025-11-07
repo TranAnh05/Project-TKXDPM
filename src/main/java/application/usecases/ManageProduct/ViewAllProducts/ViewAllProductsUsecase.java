@@ -56,7 +56,7 @@ public class ViewAllProductsUsecase implements ViewAllProductsInputBoundary{
 	            outputData.success = true;
 	            outputData.message = "Chưa có sản phẩm nào.";
 	            outputData.products = new ArrayList<>();
-	            outBoundary.present(this.outputData);
+	            outBoundary.present(outputData);
 	            return;
 	        }
 	        
@@ -70,10 +70,13 @@ public class ViewAllProductsUsecase implements ViewAllProductsInputBoundary{
             outputData.products = safeOutputList;
 		} catch (Exception e) {
 			// 7. Bắt lỗi hệ thống
+			 e.printStackTrace();
             outputData.success = false;
             outputData.message = "Đã xảy ra lỗi hệ thống khi tải sản phẩm.";
             outputData.products = new ArrayList<>();
 		}
+		
+		outBoundary.present(outputData);
 	}
 
 	private List<ProductOutputData> mapEntitiesToOutputData(List<Product> entities, Map<Integer, CategoryData> categoryDataMap) {

@@ -30,29 +30,6 @@ public class ProductRepositoryImpl implements ProductRepository{
         }
         return null;
     }
-	
-	private ProductData mapResultSetToProductData(ResultSet rs) throws SQLException {
-		ProductData data = new ProductData();
-		
-        data.id = rs.getInt("id");
-        data.categoryId = rs.getInt("category_id");
-        data.name = rs.getString("name");
-        data.description = rs.getString("description");
-        data.price = rs.getDouble("price");
-        data.stockQuantity = rs.getInt("stock_quantity");
-        data.imageUrl = rs.getString("image_url");
-        
-        // Thuộc tính riêng (sẽ là NULL/0 nếu không khớp)
-        data.cpu = rs.getString("cpu");
-        data.ram = rs.getInt("ram");
-        data.screenSize = rs.getString("screen_size");
-        data.connectionType = rs.getString("connection_type");
-        data.dpi = rs.getInt("dpi");
-        data.switchType = rs.getString("switch_type");
-        data.layout = rs.getString("layout");
-        
-        return data;
-	}
 
 	@Override
 	public ProductData findById(int id) {
@@ -76,12 +53,14 @@ public class ProductRepositoryImpl implements ProductRepository{
 	@Override
 	public List<ProductData> findAll() {
 		String sql = "SELECT * FROM product";
-        List<ProductData> products = new ArrayList<>();
+        List<ProductData> products = new ArrayList<>(); // Khởi tạo list
+        
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql);
              ResultSet rs = pstmt.executeQuery()) {
             
             while (rs.next()) {
+                // Map (ánh xạ) mỗi hàng sang DTO Tầng 3
                 products.add(mapResultSetToProductData(rs));
             }
         } catch (SQLException e) {
@@ -225,5 +204,28 @@ public class ProductRepositoryImpl implements ProductRepository{
             throw new RuntimeException("Lỗi CSDL khi tìm kiếm product.", e);
         }
         return products;
+	}
+	
+	private ProductData mapResultSetToProductData(ResultSet rs) throws SQLException {
+		ProductData data = new ProductData();
+		
+        data.id = rs.getInt("id");
+        data.categoryId = rs.getInt("category_id");
+        data.name = rs.getString("name");
+        data.description = rs.getString("description");
+        data.price = rs.getDouble("price");
+        data.stockQuantity = rs.getInt("stock_quantity");
+        data.imageUrl = rs.getString("image_url");
+        
+        // Thuộc tính riêng (sẽ là NULL/0 nếu không khớp)
+        data.cpu = rs.getString("cpu");
+        data.ram = rs.getInt("ram");
+        data.screenSize = rs.getString("screen_size");
+        data.connectionType = rs.getString("connection_type");
+        data.dpi = rs.getInt("dpi");
+        data.switchType = rs.getString("switch_type");
+        data.layout = rs.getString("layout");
+        
+        return data;
 	}
 }
