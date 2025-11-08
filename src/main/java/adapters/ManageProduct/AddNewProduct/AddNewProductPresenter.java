@@ -1,5 +1,7 @@
 package adapters.ManageProduct.AddNewProduct;
 
+import java.text.DecimalFormat;
+
 import application.dtos.ManageProduct.ProductOutputData;
 import application.dtos.ManageProduct.AddNewProduct.AddNewProductOutputData;
 import application.ports.out.ManageProduct.AddNewProduct.AddNewProductOutputBoundary;
@@ -33,10 +35,13 @@ public class AddNewProductPresenter implements AddNewProductOutputBoundary{
 
 	private ProductViewDTO mapToViewDTO(ProductOutputData data) {
 		ProductViewDTO dto = new ProductViewDTO();
+		DecimalFormat numberFormatter = new DecimalFormat("#");
+		numberFormatter.setGroupingUsed(false);
+		
         dto.id = String.valueOf(data.id);
         dto.name = data.name;
         dto.description = data.description;
-        dto.price = String.valueOf(data.price);
+        dto.price = numberFormatter.format(data.price);
         dto.stockQuantity = String.valueOf(data.stockQuantity);
         dto.imageUrl = data.imageUrl;
         dto.categoryId = String.valueOf(data.categoryId);

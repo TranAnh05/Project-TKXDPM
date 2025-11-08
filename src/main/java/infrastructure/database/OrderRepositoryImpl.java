@@ -14,8 +14,30 @@ import domain.entities.OrderStatus;
 public class OrderRepositoryImpl implements OrderRepository{
 
 	/**
-     * Hiện thực hóa hàm isProductInAnyOrder (cần cho Lát cắt 9)
-     * (Kiểm tra xem 'product_id' có tồn tại trong 'order_detail' không)
+     * Hiện thực hóa hàm findAll (Lát cắt 14)
+     */
+    @Override
+    public List<OrderData> findAll() {
+        // (Chúng ta dùng 'customer_order' vì 'order' là từ khóa SQL)
+        String sql = "SELECT * FROM customer_order ORDER BY order_date DESC";
+        List<OrderData> orders = new ArrayList<>();
+        
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+            
+            while (rs.next()) {
+                orders.add(mapResultSetToOrderData(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Lỗi CSDL khi tải danh sách order.", e);
+        }
+        return orders;
+    }
+
+    /**
+     * Hiện thực hóa hàm isProductInAnyOrder (Dùng cho Lát cắt 9)
      */
     @Override
     public boolean isProductInAnyOrder(int productId) {
@@ -39,29 +61,7 @@ public class OrderRepositoryImpl implements OrderRepository{
     }
 
     /**
-     * Hiện thực hóa hàm findAll (cần cho Lát cắt 14)
-     */
-    @Override
-    public List<OrderData> findAll() {
-        String sql = "SELECT * FROM customer_order ORDER BY order_date DESC";
-        List<OrderData> orders = new ArrayList<>();
-        
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql);
-             ResultSet rs = pstmt.executeQuery()) {
-            
-            while (rs.next()) {
-                orders.add(mapResultSetToOrderData(rs));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw new RuntimeException("Lỗi CSDL khi tải danh sách order.", e);
-        }
-        return orders;
-    }
-
-    /**
-     * Hiện thực hóa hàm findById (cần cho Lát cắt 15)
+     * Hiện thực hóa hàm findById (Lát cắt 15)
      */
     @Override
     public OrderData findById(int id) {
@@ -83,7 +83,7 @@ public class OrderRepositoryImpl implements OrderRepository{
     }
 
     /**
-     * Hiện thực hóa hàm update (cần cho Lát cắt 15)
+     * Hiện thực hóa hàm update (Lát cắt 15)
      */
     @Override
     public OrderData update(OrderData orderData) {
@@ -109,7 +109,7 @@ public class OrderRepositoryImpl implements OrderRepository{
     }
     
     /**
-     * Hiện thực hóa hàm findAllByUserIds (cần cho Lát cắt 18)
+     * Hiện thực hóa hàm findAllByUserIds (Lát cắt 18)
      */
     @Override
     public List<OrderData> findAllByUserIds(List<Integer> userIds) {
@@ -131,7 +131,6 @@ public class OrderRepositoryImpl implements OrderRepository{
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sqlBuilder.toString())) {
             
-            // Gán các ID vào câu query
             for (int i = 0; i < userIds.size(); i++) {
                 pstmt.setInt(i + 1, userIds.get(i));
             }
@@ -148,7 +147,7 @@ public class OrderRepositoryImpl implements OrderRepository{
         return orders;
     }
 
-    // (Hàm 'save' chưa cần, sẽ làm khi có UseCase "Tạo Đơn hàng")
+    // (Hàm 'save' chưa cần cho Admin, sẽ làm khi có UseCase "Checkout" của Customer)
     @Override
     public OrderData save(OrderData orderData) { /* TODO */ return null; }
 

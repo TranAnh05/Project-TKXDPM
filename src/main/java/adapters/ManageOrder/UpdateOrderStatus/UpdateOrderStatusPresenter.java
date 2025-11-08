@@ -1,5 +1,6 @@
 package adapters.ManageOrder.UpdateOrderStatus;
 
+import java.text.DecimalFormat;
 import java.time.format.DateTimeFormatter;
 
 import adapters.ManageOrder.OrderViewDTO;
@@ -29,11 +30,14 @@ public class UpdateOrderStatusPresenter implements UpdateOrderStatusOutputBounda
 	private OrderViewDTO mapToViewDTO(OrderOutputData data) {
 		OrderViewDTO dto = new OrderViewDTO();
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm dd-MM-yyyy");
+		DecimalFormat numberFormatter = new DecimalFormat("#");
+		numberFormatter.setGroupingUsed(false);
+		
 		
         dto.id = String.valueOf(data.id);
         dto.userEmail = data.userEmail;
         dto.orderDate = data.orderDate.format(formatter); // LocalDateTime -> String
-        dto.totalAmount = String.valueOf(data.totalAmount); // double -> String
+        dto.totalAmount = numberFormatter.format(data.totalAmount); // double -> String
         dto.status = data.status.name(); // Enum -> String
         
         return dto;

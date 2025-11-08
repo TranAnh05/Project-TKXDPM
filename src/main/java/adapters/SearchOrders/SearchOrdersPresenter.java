@@ -1,5 +1,6 @@
 package adapters.SearchOrders;
 
+import java.text.DecimalFormat;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,11 +34,14 @@ public class SearchOrdersPresenter implements SearchOrdersOutputBoundary{
 	private OrderViewDTO mapToViewDTO(OrderOutputData data) {
 		OrderViewDTO dto = new OrderViewDTO();
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm dd-MM-yyyy");
+		DecimalFormat numberFormatter = new DecimalFormat("#");
+		numberFormatter.setGroupingUsed(false);
+		
 		
         dto.id = String.valueOf(data.id);
         dto.userEmail = data.userEmail;
         dto.orderDate = data.orderDate.format(formatter);
-        dto.totalAmount = String.valueOf(data.totalAmount);
+        dto.totalAmount = numberFormatter.format(data.totalAmount);
         dto.status = data.status.name();
         
         return dto;
