@@ -51,8 +51,7 @@ public class GetCategoryTemplateUsecase implements GetCategoryTemplateInputBound
            outputData.message = "Đã xảy ra lỗi hệ thống. Vui lòng thử lại.";
 		}
 		
-		outBoundary.present(this.outputData);
-		
+		outBoundary.present(outputData);
 	}
 
 }

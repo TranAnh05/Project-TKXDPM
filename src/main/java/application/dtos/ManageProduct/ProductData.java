@@ -18,7 +18,7 @@ public class ProductData {
     public String connectionType;
     public int dpi;
     
-    // THUỘC TÍNH MỚI
+    // THUỘC TÍNH Keyboard
     public String switchType;
     public String layout;
     
