@@ -75,7 +75,7 @@ public class TestUpdateOrderStatusUseCase {
         // (Chi tiết Đơn hàng 1)
         OrderDetailData detail = new OrderDetailData(1, pendingOrder.id, productInOrder.id, 3, 500.0);
         ((FakeOrderDetailRepository)orderDetailRepo).save(detail);
-//      
+        //      
     }
     
     @Test

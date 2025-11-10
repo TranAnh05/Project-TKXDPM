@@ -61,7 +61,8 @@ public class CancelOrderStrategy implements IOrderStatusUpdateStrategy{
             ProductData dataToUpdate = mapEntityToData(productEntity);
             
             // 6. Lưu CSDL
-            productRepo.update(dataToUpdate);
+            ProductData proTest = productRepo.update(dataToUpdate);
+            System.out.println(proTest.stockQuantity);
         }
         
         System.out.println("LOGIC: Đã trả hàng về kho cho Đơn hàng ID: " + order.getId());
