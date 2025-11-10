@@ -62,6 +62,13 @@ public abstract class Product {
         }
     }
     
+    public void addStock(int quantityToAdd) {
+        if ((this.stockQuantity + quantityToAdd) < 0) {
+            throw new IllegalArgumentException("Số lượng tồn kho không thể là số âm.");
+        }
+        this.stockQuantity += quantityToAdd;
+    }
+    
     public void updateCommon(String name, String description, double price, int stockQuantity, String imageUrl) {
         // 1. Gọi validation (static)
     	validateName(name);
