@@ -71,11 +71,11 @@ public class TestUpdateOrderStatusUseCase {
         // (Đơn hàng 1, status = PENDING, chứa 3 cái Laptop)
         OrderData order = new OrderData(0, cust.id, LocalDateTime.now(), 1500.0, OrderStatus.PENDING);
         pendingOrder = orderRepo.save(order); // ID: 1
-        
+       
         // (Chi tiết Đơn hàng 1)
         OrderDetailData detail = new OrderDetailData(1, pendingOrder.id, productInOrder.id, 3, 500.0);
         ((FakeOrderDetailRepository)orderDetailRepo).save(detail);
-        //      
+        //
     }
     
     @Test
