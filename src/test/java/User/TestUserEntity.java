@@ -6,8 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
 
-import domain.entities.Role;
-import domain.entities.User;
+import Entities.User;
+import Entities.UserRole;
 
 public class TestUserEntity {
 	// User failed

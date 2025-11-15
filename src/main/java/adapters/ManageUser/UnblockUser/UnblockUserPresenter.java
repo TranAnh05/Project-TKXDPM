@@ -1,9 +1,9 @@
 package adapters.ManageUser.UnblockUser;
 
 import adapters.ManageUser.UserViewDTO;
-import application.dtos.ManageUser.UserOutputData;
 import application.dtos.ManageUser.UnblockUser.UnblockUserOutputData;
 import application.ports.out.ManageUser.UnblockUser.UnblockUserOutputBoundary;
+import usecase.ManageUser.UserOutputData;
 
 public class UnblockUserPresenter implements UnblockUserOutputBoundary{
 	private UnblockUserViewModel viewModel;

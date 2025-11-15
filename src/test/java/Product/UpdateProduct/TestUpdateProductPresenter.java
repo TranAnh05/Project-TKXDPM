@@ -6,8 +6,8 @@ import org.junit.jupiter.api.Test;
 
 import adapters.ManageProduct.UpdateProduct.UpdateProductPresenter;
 import adapters.ManageProduct.UpdateProduct.UpdateProductViewModel;
-import application.dtos.ManageProduct.ProductOutputData;
-import application.dtos.ManageProduct.UpdateProduct.UpdateProductOutputData;
+import usecase.ManageProduct.ProductOutputData;
+import usecase.ManageProduct.UpdateProduct.UpdateProductOutputData;
 
 public class TestUpdateProductPresenter {
 	@Test
@@ -25,6 +25,6 @@ public class TestUpdateProductPresenter {
         // 3. Assert (Kiểm tra ViewModel "toàn string")
         assertEquals("true", viewModel.success);
         assertEquals("1", viewModel.updatedProduct.id);
-        assertEquals("150.0", viewModel.updatedProduct.price);
+        assertEquals("150", viewModel.updatedProduct.price);
     }
 }

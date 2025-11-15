@@ -6,8 +6,8 @@ import org.junit.jupiter.api.Test;
 
 import adapters.ManageProduct.AddNewProduct.AddNewProductPresenter;
 import adapters.ManageProduct.AddNewProduct.AddNewProductViewModel;
-import application.dtos.ManageProduct.ProductOutputData;
-import application.dtos.ManageProduct.AddNewProduct.AddNewProductOutputData;
+import usecase.ManageProduct.ProductOutputData;
+import usecase.ManageProduct.AddNewProduct.AddNewProductOutputData;
 
 public class TestAddNewProductPresenter {
 	@Test

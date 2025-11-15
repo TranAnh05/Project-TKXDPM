@@ -5,15 +5,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import Entities.Order;
 import application.dtos.ManageOrder.OrderData;
 import application.dtos.ManageOrder.OrderOutputData;
 import application.dtos.ManageOrder.ViewAllOrders.ViewAllOrdersOutputData;
-import application.dtos.ManageUser.UserData;
 import application.ports.in.ManageOrder.ViewAllOrders.ViewAllOrdersInputBoundary;
 import application.ports.out.ManageOrder.OrderRepository;
 import application.ports.out.ManageOrder.ViewAllOrders.ViewAllOrdersOutputBoundary;
 import application.ports.out.ManageUser.UserRepository;
-import domain.entities.Order;
+import usecase.ManageUser.UserData;
 
 public class ViewAllOrdersUsecase implements ViewAllOrdersInputBoundary{
 	private OrderRepository orderRepository;

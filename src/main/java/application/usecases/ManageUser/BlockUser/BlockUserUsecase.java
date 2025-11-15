@@ -1,13 +1,13 @@
 package application.usecases.ManageUser.BlockUser;
 
-import application.dtos.ManageUser.UserData;
-import application.dtos.ManageUser.UserOutputData;
+import Entities.User;
 import application.dtos.ManageUser.BlockUser.BlockUserInputData;
 import application.dtos.ManageUser.BlockUser.BlockUserOutputData;
 import application.ports.in.ManageUser.BlockUser.BlockUserInputBoundary;
 import application.ports.out.ManageUser.UserRepository;
 import application.ports.out.ManageUser.BlockUser.BlockUserOutputBoundary;
-import domain.entities.User;
+import usecase.ManageUser.UserData;
+import usecase.ManageUser.UserOutputData;
 
 public class BlockUserUsecase implements BlockUserInputBoundary{
 	private UserRepository userRepository;

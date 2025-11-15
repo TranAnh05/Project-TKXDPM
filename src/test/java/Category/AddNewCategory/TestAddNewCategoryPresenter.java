@@ -6,8 +6,8 @@ import org.junit.jupiter.api.Test;
 
 import adapters.ManageCategory.AddNewCategory.AddNewCategoryPresenter;
 import adapters.ManageCategory.AddNewCategory.AddNewCategoryViewModel;
-import application.dtos.ManageCategory.CategoryOutputData;
-import application.dtos.ManageCategory.AddNewCategory.AddNewCategoryOutputData;
+import usecase.ManageCategory.CategoryOutputData;
+import usecase.ManageCategory.AddNewCategory.AddNewCategoryOutputData;
 
 public class TestAddNewCategoryPresenter {
 	@Test

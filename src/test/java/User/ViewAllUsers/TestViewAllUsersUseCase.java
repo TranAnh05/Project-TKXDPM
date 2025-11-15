@@ -7,15 +7,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import Entities.UserRole;
 import User.FakeUserRepository;
 import adapters.ManageUser.ViewAllUsers.ViewAllUsersPresenter;
 import adapters.ManageUser.ViewAllUsers.ViewAllUsersViewModel;
-import application.dtos.ManageUser.UserData;
-import application.dtos.ManageUser.UserOutputData;
 import application.dtos.ManageUser.ViewAllUsers.ViewAllUsersOutputData;
 import application.ports.out.ManageUser.UserRepository;
 import application.usecases.ManageUser.ViewAllUsers.ViewAllUsersUsecase;
-import domain.entities.Role;
+import usecase.ManageUser.UserData;
+import usecase.ManageUser.UserOutputData;
 
 public class TestViewAllUsersUseCase {
 	private ViewAllUsersUsecase useCase;
@@ -34,7 +34,7 @@ public class TestViewAllUsersUseCase {
     @Test
     public void testExecute_SuccessCase_WithData() {
         // 1. Arrange: Tạo 1 UserData (có passwordHash)
-        UserData admin = new UserData(0, "admin@test.com", "hash123", "Admin", "addr1", Role.ADMIN, false);
+        UserData admin = new UserData(0, "admin@test.com", "hash123", "Admin", "addr1", UserRole.ADMIN, false);
         userRepo.save(admin);
 
         // 2. Act
@@ -50,7 +50,7 @@ public class TestViewAllUsersUseCase {
         // 4. KIỂM TRA BẢO MẬT (Quan trọng)
         UserOutputData result = output.users.get(0);
         assertEquals("admin@test.com", result.email);
-        assertEquals(Role.ADMIN, result.role);
+        assertEquals(UserRole.ADMIN, result.role);
     }
 
     @Test

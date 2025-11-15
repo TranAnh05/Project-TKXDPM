@@ -7,8 +7,8 @@ import org.junit.jupiter.api.Test;
 
 import adapters.ManageCategory.UpdateCategory.UpdateCategoryPresenter;
 import adapters.ManageCategory.UpdateCategory.UpdateCategoryViewModel;
-import application.dtos.ManageCategory.CategoryOutputData;
-import application.dtos.ManageCategory.UpdateCategory.UpdateCategoryOutputData;
+import usecase.ManageCategory.CategoryOutputData;
+import usecase.ManageCategory.UpdateCategory.UpdateCategoryOutputData;
 
 public class TestUpdateCategoryPresenter {
 	@Test

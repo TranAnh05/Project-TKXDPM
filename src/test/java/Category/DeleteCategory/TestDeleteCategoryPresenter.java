@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import adapters.ManageCategory.DeleteCategory.DeleteCategoryPresenter;
 import adapters.ManageCategory.DeleteCategory.DeleteCategoryViewModel;
-import application.dtos.ManageCategory.DeleteCategory.DeleteCategoryOutputData;
+import usecase.ManageCategory.DeleteCategory.DeleteCategoryOutputData;
 
 public class TestDeleteCategoryPresenter {
 	@Test

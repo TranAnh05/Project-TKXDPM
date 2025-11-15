@@ -2,7 +2,7 @@ package application.dtos.ManageUser.ViewAllUsers;
 
 import java.util.List;
 
-import application.dtos.ManageUser.UserOutputData;
+import usecase.ManageUser.UserOutputData;
 
 public class ViewAllUsersOutputData {
 	public boolean success;

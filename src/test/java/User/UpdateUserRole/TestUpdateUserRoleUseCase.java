@@ -8,13 +8,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import Entities.UserRole;
 import User.FakeUserRepository;
-import application.dtos.ManageUser.UserData;
 import application.dtos.ManageUser.UpdateUserRole.UpdateUserRoleInputData;
 import application.dtos.ManageUser.UpdateUserRole.UpdateUserRoleOutputData;
 import application.ports.out.ManageUser.UserRepository;
 import application.usecases.ManageUser.UpdateUserRole.UpdateUserRoleUsecase;
-import domain.entities.Role;
+import usecase.ManageUser.UserData;
 
 public class TestUpdateUserRoleUseCase {
 	private UpdateUserRoleUsecase useCase;
@@ -29,8 +29,8 @@ public class TestUpdateUserRoleUseCase {
         useCase = new UpdateUserRoleUsecase(userRepo, null);
         
         // Dữ liệu mồi
-        UserData admin = new UserData(0, "admin@test.com", "hash123", "Admin", "addr1", Role.ADMIN, false);
-        UserData cust = new UserData(0, "cust@test.com", "hash456", "Customer", "addr2", Role.CUSTOMER, false);
+        UserData admin = new UserData(0, "admin@test.com", "hash123", "Admin", "addr1", UserRole.ADMIN, false);
+        UserData cust = new UserData(0, "cust@test.com", "hash456", "Customer", "addr2", UserRole.CUSTOMER, false);
         adminUser = userRepo.save(admin); // ID: 1
         customerUser = userRepo.save(cust); // ID: 2
     }
@@ -48,11 +48,11 @@ public class TestUpdateUserRoleUseCase {
         // 3. Assert (KIỂM TRA OUTPUTDATA - Tầng 3)
         UpdateUserRoleOutputData output = useCase.getOutputData();
         assertTrue(output.success);
-        assertEquals(Role.ADMIN, output.updatedUser.role);
+        assertEquals(UserRole.ADMIN, output.updatedUser.role);
         assertEquals(customerUser.id, output.updatedUser.id);
         
         // Kiểm tra CSDL giả
-        assertEquals(Role.ADMIN, userRepo.findById(customerUser.id).role);
+        assertEquals(UserRole.ADMIN, userRepo.findById(customerUser.id).role);
     }
     
     @Test
@@ -67,7 +67,7 @@ public class TestUpdateUserRoleUseCase {
         UpdateUserRoleOutputData output = useCase.getOutputData();
         assertFalse(output.success);
         assertEquals("Không thể tự thay đổi vai trò của chính mình.", output.message);
-        assertEquals(Role.ADMIN, userRepo.findById(adminUser.id).role); // (Không đổi)
+        assertEquals(UserRole.ADMIN, userRepo.findById(adminUser.id).role); // (Không đổi)
     }
     
     @Test

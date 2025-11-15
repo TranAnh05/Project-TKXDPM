@@ -5,16 +5,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import Entities.Order;
 import application.dtos.ManageOrder.OrderData;
 import application.dtos.ManageOrder.OrderOutputData;
-import application.dtos.ManageUser.UserData;
 import application.dtos.SearchOrders.SearchOrdersInputData;
 import application.dtos.SearchOrders.SearchOrdersOutputData;
 import application.ports.in.SearchOrders.SearchOrdersInputBoundary;
 import application.ports.out.ManageOrder.OrderRepository;
 import application.ports.out.ManageUser.UserRepository;
 import application.ports.out.SearchOrders.SearchOrdersOutputBoundary;
-import domain.entities.Order;
+import usecase.ManageUser.UserData;
 
 public class SearchOrdersUsecase implements SearchOrdersInputBoundary{
 	private OrderRepository orderRepository;

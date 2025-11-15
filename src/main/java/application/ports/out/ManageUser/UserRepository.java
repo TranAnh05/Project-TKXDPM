@@ -2,7 +2,7 @@ package application.ports.out.ManageUser;
 
 import java.util.List;
 
-import application.dtos.ManageUser.UserData;
+import usecase.ManageUser.UserData;
 
 public interface UserRepository {
 	UserData findById(int id);

@@ -4,11 +4,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
 
+import Entities.UserRole;
 import adapters.ManageUser.UpdateUserRole.UpdateUserRolePresenter;
 import adapters.ManageUser.UpdateUserRole.UpdateUserRoleViewModel;
-import application.dtos.ManageUser.UserOutputData;
 import application.dtos.ManageUser.UpdateUserRole.UpdateUserRoleOutputData;
-import domain.entities.Role;
+import usecase.ManageUser.UserOutputData;
 
 public class TestUpdateUserRolePresenter {
 	@Test
@@ -19,7 +19,7 @@ public class TestUpdateUserRolePresenter {
         UpdateUserRoleOutputData output = new UpdateUserRoleOutputData();
         output.success = true;
         output.updatedUser = new UserOutputData();
-        output.updatedUser.role = Role.ADMIN; // <-- Enum
+        output.updatedUser.role = UserRole.ADMIN; // <-- Enum
         
         // 2. Act
         presenter.present(output);

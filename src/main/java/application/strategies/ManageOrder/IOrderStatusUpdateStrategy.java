@@ -1,6 +1,6 @@
 package application.strategies.ManageOrder;
 
-import domain.entities.Order;
+import Entities.Order;
 
 public interface IOrderStatusUpdateStrategy {
 	/**

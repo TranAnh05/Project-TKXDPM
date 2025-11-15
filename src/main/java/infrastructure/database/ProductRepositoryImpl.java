@@ -8,8 +8,8 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-import application.dtos.ManageProduct.ProductData;
 import application.ports.out.ManageProduct.ProductRepository;
+import usecase.ManageProduct.ProductData;
 
 public class ProductRepositoryImpl implements ProductRepository{
 

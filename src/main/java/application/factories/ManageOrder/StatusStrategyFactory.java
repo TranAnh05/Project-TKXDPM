@@ -1,13 +1,13 @@
 package application.factories.ManageOrder;
 
+import Entities.OrderStatus;
 import application.factories.ManageProduct.ProductFactory;
-import application.ports.out.ManageCategory.CategoryRepository;
 import application.ports.out.ManageOrder.OrderDetailRepository;
 import application.ports.out.ManageProduct.ProductRepository;
 import application.strategies.ManageOrder.CancelOrderStrategy;
 import application.strategies.ManageOrder.DefaultStatusStrategy;
 import application.strategies.ManageOrder.IOrderStatusUpdateStrategy;
-import domain.entities.OrderStatus;
+import usecase.ManageCategory.CategoryRepository;
 
 public class StatusStrategyFactory {
 	private OrderDetailRepository orderDetailRepo;

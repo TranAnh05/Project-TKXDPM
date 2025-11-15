@@ -5,9 +5,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import adapters.ManageProduct.AddNewProduct.ProductViewDTO;
-import application.dtos.ManageProduct.ProductOutputData;
-import application.dtos.SearchProducts.SearchProductsOutputData;
-import application.ports.out.SearchProducts.SearchProductsOutputBoundary;
+import usecase.ManageProduct.ProductOutputData;
+import usecase.ManageProduct.SearchProducts.SearchProductsOutputBoundary;
+import usecase.ManageProduct.SearchProducts.SearchProductsOutputData;
 
 public class SearchProductsPresenter implements SearchProductsOutputBoundary{
 	private SearchProductsViewModel viewModel;

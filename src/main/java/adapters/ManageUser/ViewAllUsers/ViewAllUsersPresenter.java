@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import adapters.ManageUser.UserViewDTO;
-import application.dtos.ManageUser.UserOutputData;
 import application.dtos.ManageUser.ViewAllUsers.ViewAllUsersOutputData;
 import application.ports.out.ManageUser.ViewAllUsers.ViewAllUsersOutputBoundary;
+import usecase.ManageUser.UserOutputData;
 
 public class ViewAllUsersPresenter implements ViewAllUsersOutputBoundary{
 	private ViewAllUsersViewModel viewModel;

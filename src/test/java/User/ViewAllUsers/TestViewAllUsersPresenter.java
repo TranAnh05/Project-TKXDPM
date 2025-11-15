@@ -6,11 +6,11 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import Entities.UserRole;
 import adapters.ManageUser.ViewAllUsers.ViewAllUsersPresenter;
 import adapters.ManageUser.ViewAllUsers.ViewAllUsersViewModel;
-import application.dtos.ManageUser.UserOutputData;
 import application.dtos.ManageUser.ViewAllUsers.ViewAllUsersOutputData;
-import domain.entities.Role;
+import usecase.ManageUser.UserOutputData;
 
 public class TestViewAllUsersPresenter {
 	@Test
@@ -23,7 +23,7 @@ public class TestViewAllUsersPresenter {
         
         UserOutputData uData = new UserOutputData();
         uData.id = 1;
-        uData.role = Role.ADMIN; // <-- Enum
+        uData.role = UserRole.ADMIN; // <-- Enum
         uData.isBlocked = true; // <-- boolean
         output.users = List.of(uData);
         

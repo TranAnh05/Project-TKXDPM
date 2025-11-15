@@ -9,17 +9,17 @@ import java.time.LocalDateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import Entities.OrderStatus;
+import Entities.UserRole;
 import Order.FakeOrderRepository;
 import User.FakeUserRepository;
 import application.dtos.ManageOrder.OrderData;
-import application.dtos.ManageUser.UserData;
 import application.dtos.SearchOrders.SearchOrdersInputData;
 import application.dtos.SearchOrders.SearchOrdersOutputData;
 import application.ports.out.ManageOrder.OrderRepository;
 import application.ports.out.ManageUser.UserRepository;
 import application.usecases.SearchOrders.SearchOrdersUsecase;
-import domain.entities.OrderStatus;
-import domain.entities.Role;
+import usecase.ManageUser.UserData;
 
 public class TestSearchOrdersUseCase {
 	private SearchOrdersUsecase useCase;
@@ -36,10 +36,10 @@ public class TestSearchOrdersUseCase {
         useCase = new SearchOrdersUsecase(orderRepo, userRepo, null);
         
         // Dữ liệu mồi
-        user1 = userRepo.save(new UserData(0, "user1@test.com", "hash", "U1", "Addr", Role.CUSTOMER, false)); // ID 1
-        user2 = userRepo.save(new UserData(0, "user2@test.com", "hash", "U2", "Addr", Role.CUSTOMER, false)); // ID 2
+        user1 = userRepo.save(new UserData(0, "user1@test.com", "hash", "U1", "Addr", UserRole.CUSTOMER, false)); // ID 1
+        user2 = userRepo.save(new UserData(0, "user2@test.com", "hash", "U2", "Addr", UserRole.CUSTOMER, false)); // ID 2
         // User không có đơn hàng
-        userRepo.save(new UserData(0, "user3@no-order.com", "hash", "U3", "Addr", Role.CUSTOMER, false)); // ID 3
+        userRepo.save(new UserData(0, "user3@no-order.com", "hash", "U3", "Addr", UserRole.CUSTOMER, false)); // ID 3
         
         // User 1 có 2 đơn hàng
         orderRepo.save(new OrderData(0, user1.id, LocalDateTime.now(), 100.0, OrderStatus.PENDING)); // ID 1

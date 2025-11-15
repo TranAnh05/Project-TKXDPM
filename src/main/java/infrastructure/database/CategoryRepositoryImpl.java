@@ -8,8 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.sql.Statement;
 
-import application.dtos.ManageCategory.CategoryData;
-import application.ports.out.ManageCategory.CategoryRepository;
+import usecase.ManageCategory.CategoryData;
+import usecase.ManageCategory.CategoryRepository;
 
 public class CategoryRepositoryImpl implements CategoryRepository{
 

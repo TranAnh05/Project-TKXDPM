@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import adapters.SearchProducts.SearchProductsPresenter;
 import adapters.SearchProducts.SearchProductsViewModel;
-import application.dtos.SearchProducts.SearchProductsOutputData;
+import usecase.ManageProduct.SearchProducts.SearchProductsOutputData;
 
 public class TestSearchProductsPresenter {
 	@Test

@@ -8,18 +8,18 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import Category.FakeCategoryRepository;
+import Entities.Laptop;
+import Entities.Mouse;
+import Entities.Product;
 import Product.FakeProductRepository;
-import application.dtos.ManageCategory.CategoryData;
-import application.dtos.ManageProduct.ProductData;
-import application.dtos.SearchProducts.SearchProductsInputData;
-import application.dtos.SearchProducts.SearchProductsOutputData;
 import application.factories.ManageProduct.ProductFactory;
-import application.ports.out.ManageCategory.CategoryRepository;
 import application.ports.out.ManageProduct.ProductRepository;
-import application.usecases.SearchProducts.SearchProductsUsecase;
-import domain.entities.Laptop;
-import domain.entities.Mouse;
-import domain.entities.Product;
+import usecase.ManageCategory.CategoryData;
+import usecase.ManageCategory.CategoryRepository;
+import usecase.ManageProduct.ProductData;
+import usecase.ManageProduct.SearchProducts.SearchProductsInputData;
+import usecase.ManageProduct.SearchProducts.SearchProductsOutputData;
+import usecase.ManageProduct.SearchProducts.SearchProductsUsecase;
 
 
 public class TestSearchProductsUseCase {

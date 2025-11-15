@@ -3,9 +3,9 @@ package adapters.ManageProduct.UpdateProduct;
 import java.text.DecimalFormat;
 
 import adapters.ManageProduct.AddNewProduct.ProductViewDTO;
-import application.dtos.ManageProduct.ProductOutputData;
-import application.dtos.ManageProduct.UpdateProduct.UpdateProductOutputData;
-import application.ports.out.ManageProduct.UpdateProduct.UpdateProductOutputBoundary;
+import usecase.ManageProduct.ProductOutputData;
+import usecase.ManageProduct.UpdateProduct.UpdateProductOutputBoundary;
+import usecase.ManageProduct.UpdateProduct.UpdateProductOutputData;
 
 public class UpdateProductPresenter implements UpdateProductOutputBoundary{
 	private UpdateProductViewModel viewModel;

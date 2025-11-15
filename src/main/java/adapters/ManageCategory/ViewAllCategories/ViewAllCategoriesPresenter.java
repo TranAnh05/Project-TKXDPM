@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import adapters.ManageCategory.AddNewCategory.CategoryViewDTO;
-import application.dtos.ManageCategory.CategoryOutputData;
-import application.dtos.ManageCategory.ViewAllCategories.ViewAllCategoriesOutputData;
-import application.ports.out.ManageCategory.ViewAllCategories.ViewAllCategoriesOutputBoundary;
+import usecase.ManageCategory.CategoryOutputData;
+import usecase.ManageCategory.ViewAllCategories.ViewAllCategoriesOutputBoundary;
+import usecase.ManageCategory.ViewAllCategories.ViewAllCategoriesOutputData;
 
 public class ViewAllCategoriesPresenter implements ViewAllCategoriesOutputBoundary{
 	private ViewAllCategoriesViewModel viewModel;
@@ -41,7 +41,6 @@ public class ViewAllCategoriesPresenter implements ViewAllCategoriesOutputBounda
 		CategoryViewDTO dto = new CategoryViewDTO();
         dto.id = String.valueOf(data.id); 
         dto.name = data.name;
-        dto.attributeTemplate = data.attributeTemplate;
         return dto;
 	}
 

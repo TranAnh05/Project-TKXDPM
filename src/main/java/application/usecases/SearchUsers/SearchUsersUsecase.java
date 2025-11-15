@@ -3,14 +3,14 @@ package application.usecases.SearchUsers;
 import java.util.ArrayList;
 import java.util.List;
 
-import application.dtos.ManageUser.UserData;
-import application.dtos.ManageUser.UserOutputData;
+import Entities.User;
 import application.dtos.SearchUsers.SearchUsersInputData;
 import application.dtos.SearchUsers.SearchUsersOutputData;
 import application.ports.in.SearchUsers.SearchUsersInputBoundary;
 import application.ports.out.ManageUser.UserRepository;
 import application.ports.out.SearchUsers.SearchUsersOutputBoundary;
-import domain.entities.User;
+import usecase.ManageUser.UserData;
+import usecase.ManageUser.UserOutputData;
 
 public class SearchUsersUsecase implements SearchUsersInputBoundary{
 	private UserRepository userRepository;

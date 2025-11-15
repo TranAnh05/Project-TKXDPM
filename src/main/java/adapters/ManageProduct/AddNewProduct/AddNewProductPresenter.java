@@ -2,9 +2,9 @@ package adapters.ManageProduct.AddNewProduct;
 
 import java.text.DecimalFormat;
 
-import application.dtos.ManageProduct.ProductOutputData;
-import application.dtos.ManageProduct.AddNewProduct.AddNewProductOutputData;
-import application.ports.out.ManageProduct.AddNewProduct.AddNewProductOutputBoundary;
+import usecase.ManageProduct.ProductOutputData;
+import usecase.ManageProduct.AddNewProduct.AddNewProductOutputBoundary;
+import usecase.ManageProduct.AddNewProduct.AddNewProductOutputData;
 
 public class AddNewProductPresenter implements AddNewProductOutputBoundary{
 	private AddNewProductViewModel viewModel;
@@ -45,7 +45,6 @@ public class AddNewProductPresenter implements AddNewProductOutputBoundary{
         dto.stockQuantity = String.valueOf(data.stockQuantity);
         dto.imageUrl = data.imageUrl;
         dto.categoryId = String.valueOf(data.categoryId);
-        dto.categoryName = data.categoryName;
         
         // Chuyển thuộc tính Laptop
         dto.cpu = data.cpu;

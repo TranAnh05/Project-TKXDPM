@@ -2,7 +2,7 @@ package application.dtos.ManageOrder;
 
 import java.time.LocalDateTime;
 
-import domain.entities.OrderStatus;
+import Entities.OrderStatus;
 
 public class OrderOutputData {
 	public int id;

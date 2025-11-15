@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import application.dtos.ManageProduct.ProductData;
 import application.ports.out.ManageProduct.ProductRepository;
+import usecase.ManageProduct.ProductData;
 
 public class FakeProductRepository implements ProductRepository{
 	private Map<Integer, ProductData> database = new HashMap<>();
@@ -60,10 +60,13 @@ public class FakeProductRepository implements ProductRepository{
 
 	@Override
 	public ProductData update(ProductData productData) {
+		System.out.println(productData.id);
+		System.out.println(database.containsKey(productData.id));
 		if (database.containsKey(productData.id)) {
             // (Giả lập logic "update" bằng cách sao chép)
             ProductData updatedData = new ProductData();
-            updatedData.id = sequence;
+            
+            updatedData.id = productData.id;
             updatedData.name = productData.name;
             updatedData.description = productData.description;
             updatedData.price = productData.price;
@@ -79,6 +82,7 @@ public class FakeProductRepository implements ProductRepository{
             updatedData.dpi = productData.dpi;
             updatedData.switchType = productData.switchType;
             updatedData.layout = productData.layout;
+            
             database.put(updatedData.id, updatedData);
             return updatedData;
         }

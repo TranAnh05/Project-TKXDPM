@@ -1,7 +1,7 @@
 package adapters.ManageCategory.DeleteCategory;
 
-import application.dtos.ManageCategory.DeleteCategory.DeleteCategoryOutputData;
-import application.ports.out.ManageCategory.DeleteCategory.DeleteCategoryOutputBoundary;
+import usecase.ManageCategory.DeleteCategory.DeleteCategoryOutputBoundary;
+import usecase.ManageCategory.DeleteCategory.DeleteCategoryOutputData;
 
 public class DeleteCategoryPresenter implements DeleteCategoryOutputBoundary{
 	private DeleteCategoryViewModel viewModel;

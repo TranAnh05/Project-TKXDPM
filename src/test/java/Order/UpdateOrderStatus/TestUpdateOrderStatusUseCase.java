@@ -10,26 +10,26 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import Category.FakeCategoryRepository;
+import Entities.OrderStatus;
+import Entities.UserRole;
 import Order.FakeOrderRepository;
 import OrderDetail.FakeOrderDetailRepository;
 import Product.FakeProductRepository;
 import User.FakeUserRepository;
-import application.dtos.ManageCategory.CategoryData;
 import application.dtos.ManageOrder.OrderData;
 import application.dtos.ManageOrder.OrderDetailData;
 import application.dtos.ManageOrder.UpdateOrderStatus.UpdateOrderStatusInputData;
 import application.dtos.ManageOrder.UpdateOrderStatus.UpdateOrderStatusOutputData;
-import application.dtos.ManageProduct.ProductData;
-import application.dtos.ManageUser.UserData;
 import application.factories.ManageProduct.ProductFactory;
-import application.ports.out.ManageCategory.CategoryRepository;
 import application.ports.out.ManageOrder.OrderDetailRepository;
 import application.ports.out.ManageOrder.OrderRepository;
 import application.ports.out.ManageProduct.ProductRepository;
 import application.ports.out.ManageUser.UserRepository;
 import application.usecases.ManageOrder.UpdateOrderStatus.UpdateOrderStatusUsecase;
-import domain.entities.OrderStatus;
-import domain.entities.Role;
+import usecase.ManageCategory.CategoryData;
+import usecase.ManageCategory.CategoryRepository;
+import usecase.ManageProduct.ProductData;
+import usecase.ManageUser.UserData;
 
 public class TestUpdateOrderStatusUseCase {
 	private UpdateOrderStatusUsecase useCase;
@@ -60,7 +60,7 @@ public class TestUpdateOrderStatusUseCase {
         );
         
         // 3. Dữ liệu mồi
-        UserData cust = userRepo.save(new UserData(0, "cust@test.com", "hash", "Cust", "Addr", Role.CUSTOMER, false));
+        UserData cust = userRepo.save(new UserData(0, "cust@test.com", "hash", "Cust", "Addr", UserRole.CUSTOMER, false));
         CategoryData cat = categoryRepo.save(new CategoryData(0, "Laptop", "{}"));
         
         // (Sản phẩm 1, tồn kho = 10)

@@ -6,13 +6,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import Entities.UserRole;
 import User.FakeUserRepository;
-import application.dtos.ManageUser.UserData;
 import application.dtos.SearchUsers.SearchUsersInputData;
 import application.dtos.SearchUsers.SearchUsersOutputData;
 import application.ports.out.ManageUser.UserRepository;
 import application.usecases.SearchUsers.SearchUsersUsecase;
-import domain.entities.Role;
+import usecase.ManageUser.UserData;
 
 public class TestSearchUsersUseCase {
 	private SearchUsersUsecase useCase;
@@ -24,9 +24,9 @@ public class TestSearchUsersUseCase {
         useCase = new SearchUsersUsecase(userRepo, null);
         
         // Dữ liệu mồi
-        userRepo.save(new UserData(0, "admin@test.com", "hash", "Admin", "Addr", Role.ADMIN, false));
-        userRepo.save(new UserData(0, "user1@test.com", "hash", "User 1", "Addr", Role.CUSTOMER, false));
-        userRepo.save(new UserData(0, "user2@gmail.com", "hash", "User 2", "Addr", Role.CUSTOMER, false));
+        userRepo.save(new UserData(0, "admin@test.com", "hash", "Admin", "Addr", UserRole.ADMIN, false));
+        userRepo.save(new UserData(0, "user1@test.com", "hash", "User 1", "Addr", UserRole.CUSTOMER, false));
+        userRepo.save(new UserData(0, "user2@gmail.com", "hash", "User 2", "Addr", UserRole.CUSTOMER, false));
     }
     
     @Test

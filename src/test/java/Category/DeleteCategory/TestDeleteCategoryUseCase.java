@@ -1,84 +1,105 @@
 package Category.DeleteCategory;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+//Import Mockito
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import static org.mockito.Mockito.*;
 
-import Category.FakeCategoryRepository;
 import adapters.ManageCategory.DeleteCategory.DeleteCategoryPresenter;
 import adapters.ManageCategory.DeleteCategory.DeleteCategoryViewModel;
-import application.dtos.ManageCategory.CategoryData;
-import application.dtos.ManageCategory.DeleteCategory.DeleteCategoryInputData;
-import application.ports.out.ManageCategory.CategoryRepository;
-import application.usecases.ManageCategory.DeleteCategory.DeleteCategoryUsecase;
+import usecase.ManageCategory.CategoryData;
+import usecase.ManageCategory.CategoryRepository;
+import usecase.ManageCategory.DeleteCategory.DeleteCategoryInputData;
+import usecase.ManageCategory.DeleteCategory.DeleteCategoryOutputBoundary;
+import usecase.ManageCategory.DeleteCategory.DeleteCategoryOutputData;
+import usecase.ManageCategory.DeleteCategory.DeleteCategoryUsecase;
 
-public class TestDeleteCategoryUseCase {
-	private DeleteCategoryUsecase useCase;
-	private CategoryRepository categoryRepo;
-	private DeleteCategoryPresenter presenter;
-    private DeleteCategoryViewModel viewModel;
+@ExtendWith(MockitoExtension.class)
+public class TestDeleteCategoryUsecase {
+	@Mock
+    private CategoryRepository categoryRepository;
     
-    private CategoryData categoryToDelete;
+    @Mock
+    private DeleteCategoryOutputBoundary categoryPresenter;
     
-    @BeforeEach
-    public void setup() {
-        // Phải cast (FakeCategoryRepository) để gọi hàm addFakeProduct
-        categoryRepo = new FakeCategoryRepository(); 
-        viewModel = new DeleteCategoryViewModel();
-        presenter = new DeleteCategoryPresenter(viewModel);
-        useCase = new DeleteCategoryUsecase(categoryRepo, presenter);
-        
-        // Dữ liệu mồi: Thêm 1 category (ID 1)
-        categoryToDelete = categoryRepo.save(new CategoryData(0, "Laptop", "{}"));	
-    }
+    @InjectMocks
+    private DeleteCategoryUsecase useCase;
     
+    // trường hợp xóa thành công
     @Test
     public void testExecute_SuccessCase() {
-        // 1. Arrange
-        DeleteCategoryInputData input = new DeleteCategoryInputData(categoryToDelete.id); // ID 1
-
+        // 1. Arrange (Dạy Mock)
+        DeleteCategoryInputData input = new DeleteCategoryInputData(1);
+        
+        // Dạy: "Khi findById(1) được gọi, HÃY trả về 1 CategoryData"
+        CategoryData existingData = new CategoryData(1, "Laptop");
+        when(categoryRepository.findById(1)).thenReturn(existingData);
+        
+        // Dạy: "Khi countProductsByCategoryId(1) được gọi, HÃY trả về 0 (không có SP)"
+        when(categoryRepository.countProductsByCategoryId(1)).thenReturn(0);
+        
         // 2. Act
         useCase.execute(input);
 
-        // 3. Assert (Kiểm tra ViewModel)
-        assertEquals(true, useCase.getOutputData().success);
-        assertEquals("Đã xóa thành công loại sản phẩm: Laptop", useCase.getOutputData().message);
+        // 3. Assert (Kiểm tra OutputData T3)
+        DeleteCategoryOutputData output = useCase.getOutputData();
         
-        // Kiểm tra CSDL giả
-        assertNull(categoryRepo.findById(categoryToDelete.id));
+        assertTrue(output.success);
+        assertEquals("Đã xóa thành công loại sản phẩm: Laptop", output.message);
+        
+        // (Quan trọng) Kiểm tra xem CSDL (Mock) có được gọi 'delete' đúng 1 lần không
+        verify(categoryRepository, times(1)).deleteById(1);
     }
     
+    // trường hợp xóa thất bại 
     @Test
     public void testExecute_Fail_NotFound() {
-        // 1. Arrange: Xóa ID 99
+        // 1. Arrange
         DeleteCategoryInputData input = new DeleteCategoryInputData(99);
         
+        // Dạy: "Khi findById(99) được gọi, HÃY trả về null"
+        when(categoryRepository.findById(99)).thenReturn(null);
+        
+        // 2. Act
+        useCase.execute(input);
+        
+        // 3. Assert (Kiểm tra OutputData T3)
+        DeleteCategoryOutputData output = useCase.getOutputData();
+        assertFalse(output.success);
+        assertEquals("Không tìm thấy loại sản phẩm để xóa.", output.message);
+        
+        // Khẳng định: 'delete' KHÔNG bao giờ được gọi
+        verify(categoryRepository, never()).deleteById(anyInt());
+    }
+    
+    // trường hợp thất bại do đang có trong trong một sản phẩm nào đó
+    @Test
+    public void testExecute_Fail_Business_CategoryInUse() {
+        // 1. Arrange
+        DeleteCategoryInputData input = new DeleteCategoryInputData(1);
+        
+        // Dạy: "Khi findById(1) được gọi, HÃY trả về 1 CategoryData"
+        when(categoryRepository.findById(1)).thenReturn(new CategoryData(1, "Laptop"));
+        
+        // Dạy: "Khi countProductsByCategoryId(1) được gọi, HÃY trả về 5 (còn 5 SP)"
+        when(categoryRepository.countProductsByCategoryId(1)).thenReturn(5);
+
         // 2. Act
         useCase.execute(input);
         
         // 3. Assert
-        assertEquals(false, useCase.getOutputData().success);
-        assertEquals("Không tìm thấy loại sản phẩm để xóa.", useCase.getOutputData().message);
-    }
-    
-    @Test
-    public void testExecute_Fail_Business_CategoryInUse() {
-        // 1. Arrange: Thêm 1 sản phẩm giả mạo thuộc Category ID 1
-        ((FakeCategoryRepository)categoryRepo).addFakeProduct(101, categoryToDelete.id);
+        DeleteCategoryOutputData output = useCase.getOutputData();
+        assertFalse(output.success);
+        assertEquals("Không thể xóa. Loại sản phẩm này đang chứa 5 sản phẩm.", output.message);
         
-        DeleteCategoryInputData input = new DeleteCategoryInputData(categoryToDelete.id); // ID 1
-        
-        // 2. Act
-        useCase.execute(input);
-        
-        // 3. Assert (UseCase bắt lỗi nghiệp vụ)
-        assertEquals(false, useCase.getOutputData().success);
-        assertEquals("Không thể xóa. Loại sản phẩm này đang chứa 1 sản phẩm.", useCase.getOutputData().message);
-        
-        // Kiểm tra CSDL giả (KHÔNG bị xóa)
-        assertNotNull(categoryRepo.findById(categoryToDelete.id));
+        // Khẳng định: 'delete' KHÔNG bao giờ được gọi
+        verify(categoryRepository, never()).deleteById(anyInt());
     }
 }

@@ -1,6 +1,6 @@
 package application.dtos.ManageUser.UpdateUserRole;
 
-import application.dtos.ManageUser.UserOutputData;
+import usecase.ManageUser.UserOutputData;
 
 public class UpdateUserRoleOutputData {
 	public boolean success;

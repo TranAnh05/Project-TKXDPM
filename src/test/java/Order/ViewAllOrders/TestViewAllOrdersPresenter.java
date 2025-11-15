@@ -7,11 +7,11 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import Entities.OrderStatus;
 import adapters.ManageOrder.ViewAllOrders.ViewAllOrdersPresenter;
 import adapters.ManageOrder.ViewAllOrders.ViewAllOrdersViewModel;
 import application.dtos.ManageOrder.OrderOutputData;
 import application.dtos.ManageOrder.ViewAllOrders.ViewAllOrdersOutputData;
-import domain.entities.OrderStatus;
 
 public class TestViewAllOrdersPresenter {
 	@Test

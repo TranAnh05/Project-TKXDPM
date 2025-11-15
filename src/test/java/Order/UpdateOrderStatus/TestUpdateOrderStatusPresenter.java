@@ -7,11 +7,11 @@ import java.time.LocalDateTime;
 
 import org.junit.jupiter.api.Test;
 
+import Entities.OrderStatus;
 import adapters.ManageOrder.UpdateOrderStatus.UpdateOrderStatusPresenter;
 import adapters.ManageOrder.UpdateOrderStatus.UpdateOrderStatusViewModel;
 import application.dtos.ManageOrder.OrderOutputData;
 import application.dtos.ManageOrder.UpdateOrderStatus.UpdateOrderStatusOutputData;
-import domain.entities.OrderStatus;
 
 public class TestUpdateOrderStatusPresenter {
 	@Test

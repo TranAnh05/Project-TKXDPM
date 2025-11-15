@@ -8,9 +8,9 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-import application.dtos.ManageUser.UserData;
+import Entities.UserRole;
 import application.ports.out.ManageUser.UserRepository;
-import domain.entities.Role;
+import usecase.ManageUser.UserData;
 
 public class UserRepositoryImpl implements UserRepository{
 
@@ -177,7 +177,7 @@ public class UserRepositoryImpl implements UserRepository{
             rs.getString("password_hash"),
             rs.getString("full_name"),
             rs.getString("address"),
-            Role.valueOf(rs.getString("role")), // String -> Enum
+            UserRole.valueOf(rs.getString("role")), // String -> Enum
             rs.getBoolean("is_blocked") // TINYINT(1) -> boolean
         );
     }

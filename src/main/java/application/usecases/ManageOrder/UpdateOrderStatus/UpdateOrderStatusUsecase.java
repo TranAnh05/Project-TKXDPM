@@ -1,22 +1,22 @@
 package application.usecases.ManageOrder.UpdateOrderStatus;
 
+import Entities.Order;
+import Entities.OrderStatus;
 import application.dtos.ManageOrder.OrderData;
 import application.dtos.ManageOrder.OrderOutputData;
 import application.dtos.ManageOrder.UpdateOrderStatus.UpdateOrderStatusInputData;
 import application.dtos.ManageOrder.UpdateOrderStatus.UpdateOrderStatusOutputData;
-import application.dtos.ManageUser.UserData;
 import application.factories.ManageOrder.StatusStrategyFactory;
 import application.factories.ManageProduct.ProductFactory;
 import application.ports.in.ManageOrder.UpdateOrderStatus.UpdateOrderStatusInputBoundary;
-import application.ports.out.ManageCategory.CategoryRepository;
 import application.ports.out.ManageOrder.OrderDetailRepository;
 import application.ports.out.ManageOrder.OrderRepository;
 import application.ports.out.ManageOrder.UpdateOrderStatus.UpdateOrderStatusOutputBoundary;
 import application.ports.out.ManageProduct.ProductRepository;
 import application.ports.out.ManageUser.UserRepository;
 import application.strategies.ManageOrder.IOrderStatusUpdateStrategy;
-import domain.entities.Order;
-import domain.entities.OrderStatus;
+import usecase.ManageCategory.CategoryRepository;
+import usecase.ManageUser.UserData;
 
 public class UpdateOrderStatusUsecase implements UpdateOrderStatusInputBoundary{
 	private OrderRepository orderRepository;

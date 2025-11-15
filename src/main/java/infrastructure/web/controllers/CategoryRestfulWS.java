@@ -15,16 +15,8 @@ import adapters.ManageCategory.UpdateCategory.UpdateCategoryPresenter;
 import adapters.ManageCategory.UpdateCategory.UpdateCategoryViewModel;
 import adapters.ManageCategory.ViewAllCategories.ViewAllCategoriesPresenter;
 import adapters.ManageCategory.ViewAllCategories.ViewAllCategoriesViewModel;
-import application.dtos.ManageCategory.AddNewCategory.AddNewCategoryInputData;
-import application.dtos.ManageCategory.DeleteCategory.DeleteCategoryInputData;
 import application.dtos.ManageCategory.GetCategoryTemplate.GetCategoryTemplateInputData;
-import application.dtos.ManageCategory.UpdateCategory.UpdateCategoryInputData;
-import application.ports.out.ManageCategory.CategoryRepository;
-import application.usecases.ManageCategory.AddNewCategory.AddNewCategoryUsecase;
-import application.usecases.ManageCategory.DeleteCategory.DeleteCategoryUsecase;
 import application.usecases.ManageCategory.GetCategoryTemplate.GetCategoryTemplateUsecase;
-import application.usecases.ManageCategory.UpdateCategory.UpdateCategoryUsecase;
-import application.usecases.ManageCategory.ViewAllCategories.ViewAllCategoryUsecase;
 import infrastructure.database.CategoryRepositoryImpl;
 import infrastructure.web.requests.AddCategory.AddCategoryRequest;
 import infrastructure.web.requests.UpdateCategory.UpdateCategoryRequest;
@@ -33,6 +25,14 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import usecase.ManageCategory.CategoryRepository;
+import usecase.ManageCategory.AddNewCategory.AddNewCategoryInputData;
+import usecase.ManageCategory.AddNewCategory.AddNewCategoryUsecase;
+import usecase.ManageCategory.DeleteCategory.DeleteCategoryInputData;
+import usecase.ManageCategory.DeleteCategory.DeleteCategoryUsecase;
+import usecase.ManageCategory.UpdateCategory.UpdateCategoryInputData;
+import usecase.ManageCategory.UpdateCategory.UpdateCategoryUsecase;
+import usecase.ManageCategory.ViewAllCategories.ViewAllCategoryUsecase;
 
 /**
  * TRIỂN KHAI API (Tầng 1) - DÙNG SERVLET

@@ -2,7 +2,7 @@ package application.dtos.SearchUsers;
 
 import java.util.List;
 
-import application.dtos.ManageUser.UserOutputData;
+import usecase.ManageUser.UserOutputData;
 
 public class SearchUsersOutputData {
 	public boolean success;

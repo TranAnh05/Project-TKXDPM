@@ -3,13 +3,13 @@ package application.usecases.ManageUser.ViewAllUsers;
 import java.util.ArrayList;
 import java.util.List;
 
-import application.dtos.ManageUser.UserData;
-import application.dtos.ManageUser.UserOutputData;
+import Entities.User;
 import application.dtos.ManageUser.ViewAllUsers.ViewAllUsersOutputData;
 import application.ports.in.ManageUser.ViewAllUsers.ViewAllUsersInputBoundary;
 import application.ports.out.ManageUser.UserRepository;
 import application.ports.out.ManageUser.ViewAllUsers.ViewAllUsersOutputBoundary;
-import domain.entities.User;
+import usecase.ManageUser.UserData;
+import usecase.ManageUser.UserOutputData;
 
 public class ViewAllUsersUsecase implements ViewAllUsersInputBoundary{
 	private UserRepository userRepository;

@@ -1,8 +1,8 @@
 package adapters.ManageCategory.AddNewCategory;
 
-import application.dtos.ManageCategory.CategoryOutputData;
-import application.dtos.ManageCategory.AddNewCategory.AddNewCategoryOutputData;
-import application.ports.out.ManageCategory.AddNewCategory.AddNewCategoryOutputBoundary;
+import usecase.ManageCategory.CategoryOutputData;
+import usecase.ManageCategory.AddNewCategory.AddNewCategoryOutputBoundary;
+import usecase.ManageCategory.AddNewCategory.AddNewCategoryOutputData;
 
 public class AddNewCategoryPresenter implements AddNewCategoryOutputBoundary{
 	private AddNewCategoryViewModel viewModel;
@@ -32,7 +32,6 @@ public class AddNewCategoryPresenter implements AddNewCategoryOutputBoundary{
 		CategoryViewDTO dto = new CategoryViewDTO();
         dto.id = String.valueOf(data.id);
         dto.name = data.name;
-        dto.attributeTemplate = data.attributeTemplate;
         return dto;
 	}
 

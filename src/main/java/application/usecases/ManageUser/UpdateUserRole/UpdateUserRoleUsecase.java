@@ -1,14 +1,14 @@
 package application.usecases.ManageUser.UpdateUserRole;
 
-import application.dtos.ManageUser.UserData;
-import application.dtos.ManageUser.UserOutputData;
+import Entities.User;
+import Entities.UserRole;
 import application.dtos.ManageUser.UpdateUserRole.UpdateUserRoleInputData;
 import application.dtos.ManageUser.UpdateUserRole.UpdateUserRoleOutputData;
 import application.ports.in.ManageUser.UpdateUserRole.UpdateUserRoleInputBoundary;
 import application.ports.out.ManageUser.UserRepository;
 import application.ports.out.ManageUser.UpdateUserRole.UpdateUserRoleOutputBoundary;
-import domain.entities.Role;
-import domain.entities.User;
+import usecase.ManageUser.UserData;
+import usecase.ManageUser.UserOutputData;
 
 public class UpdateUserRoleUsecase implements UpdateUserRoleInputBoundary{
 	private UserRepository userRepository;
@@ -32,9 +32,9 @@ public class UpdateUserRoleUsecase implements UpdateUserRoleInputBoundary{
 	public void execute(UpdateUserRoleInputData input) {
 		outputData = new UpdateUserRoleOutputData();
 		try {
-			Role newRole;
+			UserRole newRole;
 			User.validateRole(input.newRole);
-			newRole = Role.valueOf(input.newRole.toUpperCase());
+			newRole = UserRole.valueOf(input.newRole.toUpperCase());
 			
 			// 2. Kiểm tra nghiệp vụ (Admin tự sửa)
             if (input.userIdToUpdate == input.currentAdminId) {

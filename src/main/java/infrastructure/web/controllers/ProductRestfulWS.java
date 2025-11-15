@@ -15,19 +15,10 @@ import adapters.ManageProduct.ViewAllProducts.ViewAllProductsPresenter;
 import adapters.ManageProduct.ViewAllProducts.ViewAllProductsViewModel;
 import adapters.SearchProducts.SearchProductsPresenter;
 import adapters.SearchProducts.SearchProductsViewModel;
-import application.dtos.ManageProduct.AddNewProduct.AddNewProductInputData;
-import application.dtos.ManageProduct.DeleteProduct.DeleteProductInputData;
-import application.dtos.ManageProduct.UpdateProduct.UpdateProductInputData;
-import application.dtos.SearchProducts.SearchProductsInputData;
 import application.factories.ManageProduct.ProductFactory;
-import application.ports.out.ManageCategory.CategoryRepository;
 import application.ports.out.ManageOrder.OrderRepository;
 import application.ports.out.ManageProduct.ProductRepository;
 import application.usecases.ManageProduct.AddNewProduct.AddNewProductUsecase;
-import application.usecases.ManageProduct.DeleteProduct.DeleteProductUsecase;
-import application.usecases.ManageProduct.UpdateProduct.UpdateProductUsecase;
-import application.usecases.ManageProduct.ViewAllProducts.ViewAllProductsUsecase;
-import application.usecases.SearchProducts.SearchProductsUsecase;
 import infrastructure.database.CategoryRepositoryImpl;
 import infrastructure.database.OrderRepositoryImpl;
 import infrastructure.database.ProductRepositoryImpl;
@@ -38,6 +29,15 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import usecase.ManageCategory.CategoryRepository;
+import usecase.ManageProduct.AddNewProduct.AddNewProductInputData;
+import usecase.ManageProduct.DeleteProduct.DeleteProductInputData;
+import usecase.ManageProduct.DeleteProduct.DeleteProductUsecase;
+import usecase.ManageProduct.SearchProducts.SearchProductsInputData;
+import usecase.ManageProduct.SearchProducts.SearchProductsUsecase;
+import usecase.ManageProduct.UpdateProduct.UpdateProductInputData;
+import usecase.ManageProduct.UpdateProduct.UpdateProductUsecase;
+import usecase.ManageProduct.ViewAllProducts.ViewAllProductsUsecase;
 
 @WebServlet("/api/admin/products/*")
 public class ProductRestfulWS extends HttpServlet{

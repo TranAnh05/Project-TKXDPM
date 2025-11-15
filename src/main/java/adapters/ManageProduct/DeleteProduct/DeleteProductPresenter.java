@@ -1,7 +1,7 @@
 package adapters.ManageProduct.DeleteProduct;
 
-import application.dtos.ManageProduct.DeleteProduct.DeleteProductOutputData;
-import application.ports.out.ManageProduct.DeleteProduct.DeleteProductOutputBoundary;
+import usecase.ManageProduct.DeleteProduct.DeleteProductOutputBoundary;
+import usecase.ManageProduct.DeleteProduct.DeleteProductOutputData;
 
 public class DeleteProductPresenter implements DeleteProductOutputBoundary{
 	private DeleteProductViewModel viewModel;

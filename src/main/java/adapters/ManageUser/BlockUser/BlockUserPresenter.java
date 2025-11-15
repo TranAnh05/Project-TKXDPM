@@ -1,9 +1,9 @@
 package adapters.ManageUser.BlockUser;
 
 import adapters.ManageUser.UserViewDTO;
-import application.dtos.ManageUser.UserOutputData;
 import application.dtos.ManageUser.BlockUser.BlockUserOutputData;
 import application.ports.out.ManageUser.BlockUser.BlockUserOutputBoundary;
+import usecase.ManageUser.UserOutputData;
 
 public class BlockUserPresenter implements BlockUserOutputBoundary{
 	private BlockUserViewModel viewModel;

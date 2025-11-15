@@ -1,6 +1,6 @@
 package application.dtos.ManageUser.UnblockUser;
 
-import application.dtos.ManageUser.UserOutputData;
+import usecase.ManageUser.UserOutputData;
 
 public class UnblockUserOutputData {
 	public boolean success;

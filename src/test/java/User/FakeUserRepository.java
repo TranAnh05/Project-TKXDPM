@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import application.dtos.ManageUser.UserData;
 import application.ports.out.ManageUser.UserRepository;
+import usecase.ManageUser.UserData;
 
 public class FakeUserRepository implements UserRepository{
 	private Map<Integer, UserData> database = new HashMap<>();

@@ -9,17 +9,17 @@ import java.time.LocalDateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import Entities.OrderStatus;
+import Entities.UserRole;
 import Order.FakeOrderRepository;
 import User.FakeUserRepository;
 import application.dtos.ManageOrder.OrderData;
 import application.dtos.ManageOrder.OrderOutputData;
 import application.dtos.ManageOrder.ViewAllOrders.ViewAllOrdersOutputData;
-import application.dtos.ManageUser.UserData;
 import application.ports.out.ManageOrder.OrderRepository;
 import application.ports.out.ManageUser.UserRepository;
 import application.usecases.ManageOrder.ViewAllOrders.ViewAllOrdersUsecase;
-import domain.entities.OrderStatus;
-import domain.entities.Role;
+import usecase.ManageUser.UserData;
 
 public class TestViewAllOrdersUseCase {
 	private ViewAllOrdersUsecase useCase;
@@ -34,7 +34,7 @@ public class TestViewAllOrdersUseCase {
         useCase = new ViewAllOrdersUsecase(orderRepo, userRepo, null);
         
         // Dữ liệu mồi
-        UserData cust = new UserData(0, "cust@test.com", "hash", "Cust", "Addr", Role.CUSTOMER, false);
+        UserData cust = new UserData(0, "cust@test.com", "hash", "Cust", "Addr", UserRole.CUSTOMER, false);
         customerUser = userRepo.save(cust); // ID: 1
     }
     

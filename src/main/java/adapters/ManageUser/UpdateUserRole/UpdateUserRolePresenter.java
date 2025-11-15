@@ -1,9 +1,9 @@
 package adapters.ManageUser.UpdateUserRole;
 
 import adapters.ManageUser.UserViewDTO;
-import application.dtos.ManageUser.UserOutputData;
 import application.dtos.ManageUser.UpdateUserRole.UpdateUserRoleOutputData;
 import application.ports.out.ManageUser.UpdateUserRole.UpdateUserRoleOutputBoundary;
+import usecase.ManageUser.UserOutputData;
 
 public class UpdateUserRolePresenter implements UpdateUserRoleOutputBoundary{
 	private UpdateUserRoleViewModel viewModel;

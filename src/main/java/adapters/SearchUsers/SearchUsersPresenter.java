@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import adapters.ManageUser.UserViewDTO;
-import application.dtos.ManageUser.UserOutputData;
 import application.dtos.SearchUsers.SearchUsersOutputData;
 import application.ports.out.SearchUsers.SearchUsersOutputBoundary;
+import usecase.ManageUser.UserOutputData;
 
 public class SearchUsersPresenter implements SearchUsersOutputBoundary{
 	private SearchUsersViewModel viewModel;

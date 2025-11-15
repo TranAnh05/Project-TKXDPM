@@ -7,13 +7,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import Entities.UserRole;
 import User.FakeUserRepository;
-import application.dtos.ManageUser.UserData;
 import application.dtos.ManageUser.UnblockUser.UnblockUserInputData;
 import application.dtos.ManageUser.UnblockUser.UnblockUserOutputData;
 import application.ports.out.ManageUser.UserRepository;
 import application.usecases.ManageUser.UnblockUser.UnblockUserUsecase;
-import domain.entities.Role;
+import usecase.ManageUser.UserData;
 
 public class TestUnblockUserUseCase {
 	private UnblockUserUsecase useCase;
@@ -27,7 +27,7 @@ public class TestUnblockUserUseCase {
         useCase = new UnblockUserUsecase(userRepo, null);
         
         // Dữ liệu mồi: Một user ĐÃ BỊ KHÓA
-        UserData cust = new UserData(0, "cust@test.com", "hash456", "Customer", "addr2", Role.CUSTOMER, true); // isBlocked = true
+        UserData cust = new UserData(0, "cust@test.com", "hash456", "Customer", "addr2", UserRole.CUSTOMER, true); // isBlocked = true
         blockedUser = userRepo.save(cust); // ID: 1
     }
     

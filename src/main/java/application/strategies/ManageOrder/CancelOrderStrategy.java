@@ -4,18 +4,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import application.dtos.ManageCategory.CategoryData;
+import Entities.Keyboard;
+import Entities.Laptop;
+import Entities.Mouse;
+import Entities.Order;
+import Entities.Product;
 import application.dtos.ManageOrder.OrderDetailData;
-import application.dtos.ManageProduct.ProductData;
 import application.factories.ManageProduct.ProductFactory;
-import application.ports.out.ManageCategory.CategoryRepository;
 import application.ports.out.ManageOrder.OrderDetailRepository;
 import application.ports.out.ManageProduct.ProductRepository;
-import domain.entities.Keyboard;
-import domain.entities.Laptop;
-import domain.entities.Mouse;
-import domain.entities.Order;
-import domain.entities.Product;
+import usecase.ManageCategory.CategoryData;
+import usecase.ManageCategory.CategoryRepository;
+import usecase.ManageProduct.ProductData;
 
 public class CancelOrderStrategy implements IOrderStatusUpdateStrategy{
 	private OrderDetailRepository orderDetailRepo;

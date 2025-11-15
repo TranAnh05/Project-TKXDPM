@@ -7,13 +7,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import Entities.UserRole;
 import User.FakeUserRepository;
-import application.dtos.ManageUser.UserData;
 import application.dtos.ManageUser.BlockUser.BlockUserInputData;
 import application.dtos.ManageUser.BlockUser.BlockUserOutputData;
 import application.ports.out.ManageUser.UserRepository;
 import application.usecases.ManageUser.BlockUser.BlockUserUsecase;
-import domain.entities.Role;
+import usecase.ManageUser.UserData;
 
 public class TestBlockUserUseCase {
 	private BlockUserUsecase useCase;
@@ -28,8 +28,8 @@ public class TestBlockUserUseCase {
         useCase = new BlockUserUsecase(userRepo, null);
         
         // Dữ liệu mồi
-        UserData admin = new UserData(0, "admin@test.com", "hash123", "Admin", "addr1", Role.ADMIN, false);
-        UserData cust = new UserData(0, "cust@test.com", "hash456", "Customer", "addr2", Role.CUSTOMER, false);
+        UserData admin = new UserData(0, "admin@test.com", "hash123", "Admin", "addr1", UserRole.ADMIN, false);
+        UserData cust = new UserData(0, "cust@test.com", "hash456", "Customer", "addr2", UserRole.CUSTOMER, false);
         adminUser = userRepo.save(admin); // ID: 1
         customerUser = userRepo.save(cust); // ID: 2
     }

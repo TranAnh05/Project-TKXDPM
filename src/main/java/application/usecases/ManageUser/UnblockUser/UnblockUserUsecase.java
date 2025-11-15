@@ -1,13 +1,13 @@
 package application.usecases.ManageUser.UnblockUser;
 
-import application.dtos.ManageUser.UserData;
-import application.dtos.ManageUser.UserOutputData;
+import Entities.User;
 import application.dtos.ManageUser.UnblockUser.UnblockUserInputData;
 import application.dtos.ManageUser.UnblockUser.UnblockUserOutputData;
 import application.ports.in.ManageUser.UnblockUser.UnblockUserInputBoundary;
 import application.ports.out.ManageUser.UserRepository;
 import application.ports.out.ManageUser.UnblockUser.UnblockUserOutputBoundary;
-import domain.entities.User;
+import usecase.ManageUser.UserData;
+import usecase.ManageUser.UserOutputData;
 
 public class UnblockUserUsecase implements UnblockUserInputBoundary{
 	private UserRepository userRepository;

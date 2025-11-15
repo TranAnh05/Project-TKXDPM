@@ -6,8 +6,8 @@ import org.junit.jupiter.api.Test;
 
 import adapters.ManageUser.BlockUser.BlockUserPresenter;
 import adapters.ManageUser.BlockUser.BlockUserViewModel;
-import application.dtos.ManageUser.UserOutputData;
 import application.dtos.ManageUser.BlockUser.BlockUserOutputData;
+import usecase.ManageUser.UserOutputData;
 
 public class TestBlockUserPresenter {
 	@Test

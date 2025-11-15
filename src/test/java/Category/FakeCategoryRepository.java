@@ -5,8 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import application.dtos.ManageCategory.CategoryData;
-import application.ports.out.ManageCategory.CategoryRepository;
+import usecase.ManageCategory.CategoryData;
+import usecase.ManageCategory.CategoryRepository;
 
 public class FakeCategoryRepository implements CategoryRepository{
 	private Map<Integer, CategoryData> database = new HashMap<>();
@@ -25,7 +25,7 @@ public class FakeCategoryRepository implements CategoryRepository{
 	@Override
 	public CategoryData save(CategoryData d) {
 		sequence++;
-        CategoryData saved = new CategoryData(sequence, d.name, d.attributeTemplate);
+        CategoryData saved = new CategoryData(sequence, d.name);
         database.put(sequence, saved);
         return saved;
 	}
@@ -46,8 +46,7 @@ public class FakeCategoryRepository implements CategoryRepository{
             // Tạo một bản sao mới (giống CSDL)
             CategoryData updatedData = new CategoryData(
                 categoryData.id, 
-                categoryData.name,
-                categoryData.attributeTemplate
+                categoryData.name
             );
             database.put(categoryData.id, updatedData); // Ghi đè
             return updatedData;

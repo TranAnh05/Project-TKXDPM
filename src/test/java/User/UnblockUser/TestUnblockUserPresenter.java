@@ -6,8 +6,8 @@ import org.junit.jupiter.api.Test;
 
 import adapters.ManageUser.UnblockUser.UnblockUserPresenter;
 import adapters.ManageUser.UnblockUser.UnblockUserViewModel;
-import application.dtos.ManageUser.UserOutputData;
 import application.dtos.ManageUser.UnblockUser.UnblockUserOutputData;
+import usecase.ManageUser.UserOutputData;
 
 public class TestUnblockUserPresenter {
 	@Test

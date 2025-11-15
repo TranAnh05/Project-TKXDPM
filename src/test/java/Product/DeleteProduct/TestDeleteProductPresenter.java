@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import adapters.ManageProduct.DeleteProduct.DeleteProductPresenter;
 import adapters.ManageProduct.DeleteProduct.DeleteProductViewModel;
-import application.dtos.ManageProduct.DeleteProduct.DeleteProductOutputData;
+import usecase.ManageProduct.DeleteProduct.DeleteProductOutputData;
 
 public class TestDeleteProductPresenter {
 	@Test

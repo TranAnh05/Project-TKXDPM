@@ -7,9 +7,9 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import Entities.OrderStatus;
 import application.dtos.ManageOrder.OrderData;
 import application.ports.out.ManageOrder.OrderRepository;
-import domain.entities.OrderStatus;
 
 public class OrderRepositoryImpl implements OrderRepository{
 

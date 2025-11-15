@@ -2,8 +2,8 @@ package application.ports.out.ManageProduct;
 
 import java.util.List;
 
-import application.dtos.ManageProduct.ProductData;
-import domain.entities.Product;
+import Entities.Product;
+import usecase.ManageProduct.ProductData;
 
 public interface ProductRepository {
 	ProductData findByName(String name);
