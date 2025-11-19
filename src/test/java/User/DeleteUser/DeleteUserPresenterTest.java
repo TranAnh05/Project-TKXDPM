@@ -7,9 +7,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import adapters.ManageUser.DeleteUser.DeleteUserPresenter;
-import adapters.ManageUser.DeleteUser.DeleteUserViewModel;
-import usecase.ManageUser.DeleteUser.DeleteUserResponseData;
+import cgx.com.adapters.ManageUser.DeleteUser.DeleteUserPresenter;
+import cgx.com.adapters.ManageUser.DeleteUser.DeleteUserViewModel;
+import cgx.com.usecase.ManageUser.DeleteUser.DeleteUserResponseData;
 
 public class DeleteUserPresenterTest {
 	private DeleteUserPresenter presenter;

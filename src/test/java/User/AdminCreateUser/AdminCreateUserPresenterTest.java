@@ -7,11 +7,11 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import Entities.AccountStatus;
-import Entities.UserRole;
-import adapters.ManageUser.AdminCreatedUser.AdminCreateUserPresenter;
-import adapters.ManageUser.AdminCreatedUser.AdminCreateUserViewModel;
-import usecase.ManageUser.AdminCreateNewUser.AdminCreateUserResponseData;
+import cgx.com.Entities.AccountStatus;
+import cgx.com.Entities.UserRole;
+import cgx.com.adapters.ManageUser.AdminCreatedUser.AdminCreateUserPresenter;
+import cgx.com.adapters.ManageUser.AdminCreatedUser.AdminCreateUserViewModel;
+import cgx.com.usecase.ManageUser.AdminCreateNewUser.AdminCreateUserResponseData;
 
 public class AdminCreateUserPresenterTest {
 	private AdminCreateUserPresenter presenter;

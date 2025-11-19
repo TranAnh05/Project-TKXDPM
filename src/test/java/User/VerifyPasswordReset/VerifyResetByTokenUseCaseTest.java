@@ -20,15 +20,15 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import usecase.ManageUser.IPasswordHasher;
-import usecase.ManageUser.IPasswordResetTokenRepository;
-import usecase.ManageUser.IUserRepository;
-import usecase.ManageUser.PasswordResetTokenData;
-import usecase.ManageUser.UserData;
-import usecase.ManageUser.VerifyPasswordReset.VerifyPasswordResetOutputBoundary;
-import usecase.ManageUser.VerifyPasswordReset.VerifyPasswordResetRequestData;
-import usecase.ManageUser.VerifyPasswordReset.VerifyPasswordResetResponseData;
-import usecase.ManageUser.VerifyPasswordReset.VerifyResetByTokenUseCase;
+import cgx.com.usecase.ManageUser.IPasswordHasher;
+import cgx.com.usecase.ManageUser.IPasswordResetTokenRepository;
+import cgx.com.usecase.ManageUser.IUserRepository;
+import cgx.com.usecase.ManageUser.PasswordResetTokenData;
+import cgx.com.usecase.ManageUser.UserData;
+import cgx.com.usecase.ManageUser.VerifyPasswordReset.VerifyPasswordResetOutputBoundary;
+import cgx.com.usecase.ManageUser.VerifyPasswordReset.VerifyPasswordResetRequestData;
+import cgx.com.usecase.ManageUser.VerifyPasswordReset.VerifyPasswordResetResponseData;
+import cgx.com.usecase.ManageUser.VerifyPasswordReset.VerifyResetByTokenUseCase;
 
 @ExtendWith(MockitoExtension.class)
 public class VerifyResetByTokenUseCaseTest {

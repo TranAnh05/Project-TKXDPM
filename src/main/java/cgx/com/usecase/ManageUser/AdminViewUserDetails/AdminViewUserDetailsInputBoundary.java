@@ -1,0 +1,5 @@
+package cgx.com.usecase.ManageUser.AdminViewUserDetails;
+
+public interface AdminViewUserDetailsInputBoundary {
+	 void execute(AdminViewUserDetailsRequestData inputData);
+}

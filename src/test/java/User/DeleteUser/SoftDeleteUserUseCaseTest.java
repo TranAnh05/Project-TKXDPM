@@ -21,16 +21,16 @@ import org.mockito.Mock;
 
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import Entities.AccountStatus;
-import Entities.UserRole;
-import usecase.ManageUser.IAuthTokenValidator;
-import usecase.ManageUser.IUserRepository;
-import usecase.ManageUser.UserData;
-import usecase.ManageUser.DeleteUser.DeleteUserOutputBoundary;
-import usecase.ManageUser.DeleteUser.DeleteUserRequestData;
-import usecase.ManageUser.DeleteUser.DeleteUserResponseData;
-import usecase.ManageUser.DeleteUser.SoftDeleteUserUseCase;
-import usecase.ManageUser.ViewUserProfile.AuthPrincipal;
+import cgx.com.Entities.AccountStatus;
+import cgx.com.Entities.UserRole;
+import cgx.com.usecase.ManageUser.IAuthTokenValidator;
+import cgx.com.usecase.ManageUser.IUserRepository;
+import cgx.com.usecase.ManageUser.UserData;
+import cgx.com.usecase.ManageUser.DeleteUser.DeleteUserOutputBoundary;
+import cgx.com.usecase.ManageUser.DeleteUser.DeleteUserRequestData;
+import cgx.com.usecase.ManageUser.DeleteUser.DeleteUserResponseData;
+import cgx.com.usecase.ManageUser.DeleteUser.SoftDeleteUserUseCase;
+import cgx.com.usecase.ManageUser.ViewUserProfile.AuthPrincipal;
 
 @ExtendWith(MockitoExtension.class)
 public class SoftDeleteUserUseCaseTest {

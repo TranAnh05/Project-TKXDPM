@@ -7,9 +7,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import adapters.ManageUser.ViewUserProfile.ViewUserProfilePresenter;
-import adapters.ManageUser.ViewUserProfile.ViewUserProfileViewModel;
-import usecase.ManageUser.ViewUserProfile.ViewUserProfileResponseData;
+import cgx.com.adapters.ManageUser.ViewUserProfile.ViewUserProfilePresenter;
+import cgx.com.adapters.ManageUser.ViewUserProfile.ViewUserProfileViewModel;
+import cgx.com.usecase.ManageUser.ViewUserProfile.ViewUserProfileResponseData;
 
 public class ViewUserProfilePresenterTest {
 	private ViewUserProfilePresenter presenter;

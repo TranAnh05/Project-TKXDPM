@@ -9,12 +9,12 @@ import javax.management.relation.Role;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import Entities.AccountStatus;
-import Entities.UserRole;
-import adapters.ManageUser.AdminUpdateUser.AdminUpdateUserPresenter;
-import adapters.ManageUser.AdminUpdateUser.AdminUpdateUserViewModel;
-import usecase.ManageUser.AdminUpdateUser.AdminUpdateUserResponseData;
-import usecase.ManageUser.ViewUserProfile.ViewUserProfileResponseData;
+import cgx.com.Entities.AccountStatus;
+import cgx.com.Entities.UserRole;
+import cgx.com.adapters.ManageUser.AdminUpdateUser.AdminUpdateUserPresenter;
+import cgx.com.adapters.ManageUser.AdminUpdateUser.AdminUpdateUserViewModel;
+import cgx.com.usecase.ManageUser.AdminUpdateUser.AdminUpdateUserResponseData;
+import cgx.com.usecase.ManageUser.ViewUserProfile.ViewUserProfileResponseData;
 
 public class AdminUpdateUserPresenterTest {
 	private AdminUpdateUserPresenter presenter;

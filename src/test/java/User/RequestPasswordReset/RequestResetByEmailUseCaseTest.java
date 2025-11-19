@@ -17,18 +17,18 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import usecase.ManageUser.IEmailService;
-import usecase.ManageUser.IPasswordHasher;
-import usecase.ManageUser.IPasswordResetTokenIdGenerator;
-import usecase.ManageUser.IPasswordResetTokenRepository;
-import usecase.ManageUser.ISecureTokenGenerator;
-import usecase.ManageUser.IUserRepository;
-import usecase.ManageUser.PasswordResetTokenData;
-import usecase.ManageUser.UserData;
-import usecase.ManageUser.RequestPasswordReset.RequestPasswordResetOutputBoundary;
-import usecase.ManageUser.RequestPasswordReset.RequestPasswordResetRequestData;
-import usecase.ManageUser.RequestPasswordReset.RequestPasswordResetResponseData;
-import usecase.ManageUser.RequestPasswordReset.RequestResetByEmailUseCase;
+import cgx.com.usecase.ManageUser.IEmailService;
+import cgx.com.usecase.ManageUser.IPasswordHasher;
+import cgx.com.usecase.ManageUser.IPasswordResetTokenIdGenerator;
+import cgx.com.usecase.ManageUser.IPasswordResetTokenRepository;
+import cgx.com.usecase.ManageUser.ISecureTokenGenerator;
+import cgx.com.usecase.ManageUser.IUserRepository;
+import cgx.com.usecase.ManageUser.PasswordResetTokenData;
+import cgx.com.usecase.ManageUser.UserData;
+import cgx.com.usecase.ManageUser.RequestPasswordReset.RequestPasswordResetOutputBoundary;
+import cgx.com.usecase.ManageUser.RequestPasswordReset.RequestPasswordResetRequestData;
+import cgx.com.usecase.ManageUser.RequestPasswordReset.RequestPasswordResetResponseData;
+import cgx.com.usecase.ManageUser.RequestPasswordReset.RequestResetByEmailUseCase;
 
 @ExtendWith(MockitoExtension.class)
 public class RequestResetByEmailUseCaseTest {

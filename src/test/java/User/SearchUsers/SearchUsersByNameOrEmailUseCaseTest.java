@@ -19,16 +19,16 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import Entities.UserRole;
-import usecase.ManageUser.IAuthTokenValidator;
-import usecase.ManageUser.IUserRepository;
-import usecase.ManageUser.UserData;
-import usecase.ManageUser.SearchUsers.SearchUsersByNameOrEmailUseCase;
-import usecase.ManageUser.SearchUsers.SearchUsersOutputBoundary;
-import usecase.ManageUser.SearchUsers.SearchUsersRequestData;
-import usecase.ManageUser.SearchUsers.SearchUsersResponseData;
-import usecase.ManageUser.SearchUsers.UserSearchCriteria;
-import usecase.ManageUser.ViewUserProfile.AuthPrincipal;
+import cgx.com.Entities.UserRole;
+import cgx.com.usecase.ManageUser.IAuthTokenValidator;
+import cgx.com.usecase.ManageUser.IUserRepository;
+import cgx.com.usecase.ManageUser.UserData;
+import cgx.com.usecase.ManageUser.SearchUsers.SearchUsersByNameOrEmailUseCase;
+import cgx.com.usecase.ManageUser.SearchUsers.SearchUsersOutputBoundary;
+import cgx.com.usecase.ManageUser.SearchUsers.SearchUsersRequestData;
+import cgx.com.usecase.ManageUser.SearchUsers.SearchUsersResponseData;
+import cgx.com.usecase.ManageUser.SearchUsers.UserSearchCriteria;
+import cgx.com.usecase.ManageUser.ViewUserProfile.AuthPrincipal;
 
 @ExtendWith(MockitoExtension.class)
 public class SearchUsersByNameOrEmailUseCaseTest {

@@ -18,15 +18,15 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import Entities.UserRole;
-import usecase.ManageUser.IAuthTokenValidator;
-import usecase.ManageUser.IUserRepository;
-import usecase.ManageUser.UserData;
-import usecase.ManageUser.UpdateUserProfile.UpdateBasicProfileUseCase;
-import usecase.ManageUser.UpdateUserProfile.UpdateUserProfileOutputBoundary;
-import usecase.ManageUser.UpdateUserProfile.UpdateUserProfileRequestData;
-import usecase.ManageUser.ViewUserProfile.AuthPrincipal;
-import usecase.ManageUser.ViewUserProfile.ViewUserProfileResponseData;
+import cgx.com.Entities.UserRole;
+import cgx.com.usecase.ManageUser.IAuthTokenValidator;
+import cgx.com.usecase.ManageUser.IUserRepository;
+import cgx.com.usecase.ManageUser.UserData;
+import cgx.com.usecase.ManageUser.UpdateUserProfile.UpdateBasicProfileUseCase;
+import cgx.com.usecase.ManageUser.UpdateUserProfile.UpdateUserProfileOutputBoundary;
+import cgx.com.usecase.ManageUser.UpdateUserProfile.UpdateUserProfileRequestData;
+import cgx.com.usecase.ManageUser.ViewUserProfile.AuthPrincipal;
+import cgx.com.usecase.ManageUser.ViewUserProfile.ViewUserProfileResponseData;
 
 @ExtendWith(MockitoExtension.class)
 public class UpdateBasicProfileUseCaseTest {

@@ -18,14 +18,14 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import usecase.ManageUser.IPasswordHasher;
-import usecase.ManageUser.IUserIdGenerator;
-import usecase.ManageUser.IUserRepository;
-import usecase.ManageUser.UserData;
-import usecase.ManageUser.RegisterUser.RegisterByEmailUseCase;
-import usecase.ManageUser.RegisterUser.RegisterUserOutputBoundary;
-import usecase.ManageUser.RegisterUser.RegisterUserRequestData;
-import usecase.ManageUser.RegisterUser.RegisterUserResponseData;
+import cgx.com.usecase.ManageUser.IPasswordHasher;
+import cgx.com.usecase.ManageUser.IUserIdGenerator;
+import cgx.com.usecase.ManageUser.IUserRepository;
+import cgx.com.usecase.ManageUser.UserData;
+import cgx.com.usecase.ManageUser.RegisterUser.RegisterByEmailUseCase;
+import cgx.com.usecase.ManageUser.RegisterUser.RegisterUserOutputBoundary;
+import cgx.com.usecase.ManageUser.RegisterUser.RegisterUserRequestData;
+import cgx.com.usecase.ManageUser.RegisterUser.RegisterUserResponseData;
 
 /**
  * Unit Test cho Use Case (Interactor) - Layer 3

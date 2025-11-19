@@ -3,9 +3,9 @@ package Category.AddCategory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import adapters.ManageCategory.AddNewCategory.AddCategoryPresenter;
-import adapters.ManageCategory.AddNewCategory.AddCategoryViewModel;
-import usecase.ManageCategory.AddNewCategory.AddCategoryResponseData;
+import cgx.com.adapters.ManageCategory.AddNewCategory.AddCategoryPresenter;
+import cgx.com.adapters.ManageCategory.AddNewCategory.AddCategoryViewModel;
+import cgx.com.usecase.ManageCategory.AddNewCategory.AddCategoryResponseData;
 
 import static org.junit.jupiter.api.Assertions.*;
 

@@ -18,16 +18,18 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import Entities.UserRole;
-import usecase.ManageCategory.ICategoryIdGenerator;
-import usecase.ManageCategory.ICategoryRepository;
-import usecase.ManageCategory.AddNewCategory.AddCategoryOutputBoundary;
-import usecase.ManageCategory.AddNewCategory.AddCategoryRequestData;
-import usecase.ManageCategory.AddNewCategory.AddCategoryUseCase;
-import usecase.ManageUser.IAuthTokenValidator;
-import usecase.ManageUser.ViewUserProfile.AuthPrincipal;
-import usecase.ManageCategory.*;
-import usecase.ManageCategory.AddNewCategory.*;
+import cgx.com.Entities.UserRole;
+import cgx.com.usecase.ManageCategory.CategoryData;
+import cgx.com.usecase.ManageCategory.ICategoryIdGenerator;
+import cgx.com.usecase.ManageCategory.ICategoryRepository;
+import cgx.com.usecase.ManageCategory.AddNewCategory.AddCategoryOutputBoundary;
+import cgx.com.usecase.ManageCategory.AddNewCategory.AddCategoryRequestData;
+import cgx.com.usecase.ManageCategory.AddNewCategory.AddCategoryResponseData;
+import cgx.com.usecase.ManageCategory.AddNewCategory.AddCategoryUseCase;
+import cgx.com.usecase.ManageUser.IAuthTokenValidator;
+import cgx.com.usecase.ManageUser.ViewUserProfile.AuthPrincipal;
+import cgx.com.usecase.ManageCategory.*;
+import cgx.com.usecase.ManageCategory.AddNewCategory.*;
 
 @ExtendWith(MockitoExtension.class)
 public class AddCategoryUseCaseTest {

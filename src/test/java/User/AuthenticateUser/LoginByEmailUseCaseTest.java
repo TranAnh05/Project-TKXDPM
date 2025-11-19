@@ -16,17 +16,17 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import Entities.AccountStatus;
-import Entities.UserRole;
-import usecase.ManageUser.IAuthTokenGenerator;
-import usecase.ManageUser.IPasswordHasher;
-import usecase.ManageUser.IUserRepository;
-import usecase.ManageUser.UserData;
-import usecase.ManageUser.AuthenticateUser.AuthenticateUserOutputBoundary;
-import usecase.ManageUser.AuthenticateUser.AuthenticateUserRequestData;
-import usecase.ManageUser.AuthenticateUser.AuthenticateUserResponseData;
-import usecase.ManageUser.AuthenticateUser.LoginByEmailUseCase;
-import usecase.ManageUser.RegisterUser.RegisterUserResponseData;
+import cgx.com.Entities.AccountStatus;
+import cgx.com.Entities.UserRole;
+import cgx.com.usecase.ManageUser.IAuthTokenGenerator;
+import cgx.com.usecase.ManageUser.IPasswordHasher;
+import cgx.com.usecase.ManageUser.IUserRepository;
+import cgx.com.usecase.ManageUser.UserData;
+import cgx.com.usecase.ManageUser.AuthenticateUser.AuthenticateUserOutputBoundary;
+import cgx.com.usecase.ManageUser.AuthenticateUser.AuthenticateUserRequestData;
+import cgx.com.usecase.ManageUser.AuthenticateUser.AuthenticateUserResponseData;
+import cgx.com.usecase.ManageUser.AuthenticateUser.LoginByEmailUseCase;
+import cgx.com.usecase.ManageUser.RegisterUser.RegisterUserResponseData;
 
 @ExtendWith(MockitoExtension.class)
 public class LoginByEmailUseCaseTest {

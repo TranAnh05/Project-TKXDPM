@@ -19,16 +19,16 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import Entities.AccountStatus;
-import Entities.UserRole;
-import usecase.ManageUser.IAuthTokenValidator;
-import usecase.ManageUser.IUserRepository;
-import usecase.ManageUser.UserData;
-import usecase.ManageUser.AdminUpdateUser.AdminUpdateFullProfileUseCase;
-import usecase.ManageUser.AdminUpdateUser.AdminUpdateUserOutputBoundary;
-import usecase.ManageUser.AdminUpdateUser.AdminUpdateUserRequestData;
-import usecase.ManageUser.AdminUpdateUser.AdminUpdateUserResponseData;
-import usecase.ManageUser.ViewUserProfile.AuthPrincipal;
+import cgx.com.Entities.AccountStatus;
+import cgx.com.Entities.UserRole;
+import cgx.com.usecase.ManageUser.IAuthTokenValidator;
+import cgx.com.usecase.ManageUser.IUserRepository;
+import cgx.com.usecase.ManageUser.UserData;
+import cgx.com.usecase.ManageUser.AdminUpdateUser.AdminUpdateFullProfileUseCase;
+import cgx.com.usecase.ManageUser.AdminUpdateUser.AdminUpdateUserOutputBoundary;
+import cgx.com.usecase.ManageUser.AdminUpdateUser.AdminUpdateUserRequestData;
+import cgx.com.usecase.ManageUser.AdminUpdateUser.AdminUpdateUserResponseData;
+import cgx.com.usecase.ManageUser.ViewUserProfile.AuthPrincipal;
 
 @ExtendWith(MockitoExtension.class)
 public class AdminUpdateFullProfileUseCaseTest {

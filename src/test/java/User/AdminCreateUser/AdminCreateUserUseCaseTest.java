@@ -16,18 +16,18 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import Entities.AccountStatus;
-import Entities.UserRole;
-import usecase.ManageUser.IAuthTokenValidator;
-import usecase.ManageUser.IPasswordHasher;
-import usecase.ManageUser.IUserIdGenerator;
-import usecase.ManageUser.IUserRepository;
-import usecase.ManageUser.UserData;
-import usecase.ManageUser.AdminCreateNewUser.AdminCreateUserOutputBoundary;
-import usecase.ManageUser.AdminCreateNewUser.AdminCreateUserRequestData;
-import usecase.ManageUser.AdminCreateNewUser.AdminCreateUserResponseData;
-import usecase.ManageUser.AdminCreateNewUser.AdminCreateUserUseCase;
-import usecase.ManageUser.ViewUserProfile.AuthPrincipal;
+import cgx.com.Entities.AccountStatus;
+import cgx.com.Entities.UserRole;
+import cgx.com.usecase.ManageUser.IAuthTokenValidator;
+import cgx.com.usecase.ManageUser.IPasswordHasher;
+import cgx.com.usecase.ManageUser.IUserIdGenerator;
+import cgx.com.usecase.ManageUser.IUserRepository;
+import cgx.com.usecase.ManageUser.UserData;
+import cgx.com.usecase.ManageUser.AdminCreateNewUser.AdminCreateUserOutputBoundary;
+import cgx.com.usecase.ManageUser.AdminCreateNewUser.AdminCreateUserRequestData;
+import cgx.com.usecase.ManageUser.AdminCreateNewUser.AdminCreateUserResponseData;
+import cgx.com.usecase.ManageUser.AdminCreateNewUser.AdminCreateUserUseCase;
+import cgx.com.usecase.ManageUser.ViewUserProfile.AuthPrincipal;
 
 @ExtendWith(MockitoExtension.class)
 public class AdminCreateUserUseCaseTest {

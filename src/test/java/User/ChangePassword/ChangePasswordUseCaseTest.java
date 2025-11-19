@@ -17,16 +17,16 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import Entities.UserRole;
-import usecase.ManageUser.IAuthTokenValidator;
-import usecase.ManageUser.IPasswordHasher;
-import usecase.ManageUser.IUserRepository;
-import usecase.ManageUser.UserData;
-import usecase.ManageUser.ChangePassword.ChangePasswordOutputBoundary;
-import usecase.ManageUser.ChangePassword.ChangePasswordRequestData;
-import usecase.ManageUser.ChangePassword.ChangePasswordResponseData;
-import usecase.ManageUser.ChangePassword.ChangePasswordUseCase;
-import usecase.ManageUser.ViewUserProfile.AuthPrincipal;
+import cgx.com.Entities.UserRole;
+import cgx.com.usecase.ManageUser.IAuthTokenValidator;
+import cgx.com.usecase.ManageUser.IPasswordHasher;
+import cgx.com.usecase.ManageUser.IUserRepository;
+import cgx.com.usecase.ManageUser.UserData;
+import cgx.com.usecase.ManageUser.ChangePassword.ChangePasswordOutputBoundary;
+import cgx.com.usecase.ManageUser.ChangePassword.ChangePasswordRequestData;
+import cgx.com.usecase.ManageUser.ChangePassword.ChangePasswordResponseData;
+import cgx.com.usecase.ManageUser.ChangePassword.ChangePasswordUseCase;
+import cgx.com.usecase.ManageUser.ViewUserProfile.AuthPrincipal;
 
 @ExtendWith(MockitoExtension.class)
 public class ChangePasswordUseCaseTest {

@@ -11,13 +11,13 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import Entities.AccountStatus;
-import Entities.UserRole;
-import adapters.ManageUser.SearchUsers.SearchUsersPresenter;
-import adapters.ManageUser.SearchUsers.SearchUsersViewModel;
-import usecase.ManageUser.UserData;
-import usecase.ManageUser.SearchUsers.PaginationData;
-import usecase.ManageUser.SearchUsers.SearchUsersResponseData;
+import cgx.com.Entities.AccountStatus;
+import cgx.com.Entities.UserRole;
+import cgx.com.adapters.ManageUser.SearchUsers.SearchUsersPresenter;
+import cgx.com.adapters.ManageUser.SearchUsers.SearchUsersViewModel;
+import cgx.com.usecase.ManageUser.UserData;
+import cgx.com.usecase.ManageUser.SearchUsers.PaginationData;
+import cgx.com.usecase.ManageUser.SearchUsers.SearchUsersResponseData;
 
 public class SearchUsersPresenterTest {
 	private SearchUsersPresenter presenter;

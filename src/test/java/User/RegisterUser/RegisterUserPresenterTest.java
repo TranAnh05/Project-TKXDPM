@@ -7,9 +7,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import adapters.ManageUser.RegisterUser.RegisterUserPresenter;
-import adapters.ManageUser.RegisterUser.RegisterUserViewModel;
-import usecase.ManageUser.RegisterUser.RegisterUserResponseData;
+import cgx.com.adapters.ManageUser.RegisterUser.RegisterUserPresenter;
+import cgx.com.adapters.ManageUser.RegisterUser.RegisterUserViewModel;
+import cgx.com.usecase.ManageUser.RegisterUser.RegisterUserResponseData;
 
 /**
  * Unit Test cho Presenter - Layer 2 (ĐÃ ĐƯỢC REFACTOR)

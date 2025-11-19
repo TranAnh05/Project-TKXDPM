@@ -5,9 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import adapters.ManageUser.VerifyPasswordReset.VerifyPasswordResetPresenter;
-import adapters.ManageUser.VerifyPasswordReset.VerifyPasswordResetViewModel;
-import usecase.ManageUser.VerifyPasswordReset.VerifyPasswordResetResponseData;
+import cgx.com.adapters.ManageUser.VerifyPasswordReset.VerifyPasswordResetPresenter;
+import cgx.com.adapters.ManageUser.VerifyPasswordReset.VerifyPasswordResetViewModel;
+import cgx.com.usecase.ManageUser.VerifyPasswordReset.VerifyPasswordResetResponseData;
 
 public class VerifyPasswordResetPresenterTest {
 	private VerifyPasswordResetPresenter presenter;

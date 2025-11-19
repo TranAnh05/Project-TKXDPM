@@ -5,9 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import adapters.ManageUser.ChangePassword.ChangePasswordPresenter;
-import adapters.ManageUser.ChangePassword.ChangePasswordViewModel;
-import usecase.ManageUser.ChangePassword.ChangePasswordResponseData;
+import cgx.com.adapters.ManageUser.ChangePassword.ChangePasswordPresenter;
+import cgx.com.adapters.ManageUser.ChangePassword.ChangePasswordViewModel;
+import cgx.com.usecase.ManageUser.ChangePassword.ChangePasswordResponseData;
 
 public class ChangePasswordPresenterTest {
 	private ChangePasswordPresenter presenter;
