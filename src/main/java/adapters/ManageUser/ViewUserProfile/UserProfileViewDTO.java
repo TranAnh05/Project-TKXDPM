@@ -7,3 +7,4 @@ public class UserProfileViewDTO {
     public String lastName;
     public String phoneNumber;
 }
+

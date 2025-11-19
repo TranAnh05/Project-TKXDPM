@@ -1,30 +1,49 @@
 package Entities;
 
+import java.time.Instant;
+
 public class Category {
-	private int id;
+	private String categoryId;
     private String name;
-    
-    public Category() {
-    	
-    }
-    
-    public Category(String name) {
+    private String description;
+    private String parentCategoryId;
+    private Instant createdAt;
+    private Instant updatedAt;
+
+    public Category(String categoryId, String name, String description, String parentCategoryId, 
+                    Instant createdAt, Instant updatedAt) {
+        this.categoryId = categoryId;
         this.name = name;
+        this.description = description;
+        this.parentCategoryId = parentCategoryId;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
-    
-    public Category(int id, String name) {
-        this.id = id;
-        this.name = name;
+
+    /**
+     * Factory method để tạo Category mới.
+     */
+    public static Category create(String categoryId, String name, String description, String parentCategoryId) {
+        Instant now = Instant.now();
+        return new Category(categoryId, name, description, parentCategoryId, now, now);
     }
-    
-    public static void isValidName(String name) {
+
+    // --- VALIDATION LOGIC ---
+
+    public static void validateName(String name) {
         if (name == null || name.trim().isEmpty()) {
-            throw new IllegalArgumentException("Tên loại sản phẩm không được để trống.");
+            throw new IllegalArgumentException("Tên danh mục không được để trống.");
+        }
+        if (name.length() < 2) {
+            throw new IllegalArgumentException("Tên danh mục phải có ít nhất 2 ký tự.");
         }
     }
-    
-    public int getId() { return id; }
+
+    // --- GETTERS ---
+    public String getCategoryId() { return categoryId; }
     public String getName() { return name; }
-    
-    public void setName(String name) { this.name = name; }
+    public String getDescription() { return description; }
+    public String getParentCategoryId() { return parentCategoryId; }
+    public Instant getCreatedAt() { return createdAt; }
+    public Instant getUpdatedAt() { return updatedAt; }
 }
