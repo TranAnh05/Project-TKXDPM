@@ -4,6 +4,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.context.annotation.RequestScope;
 
+import cgx.com.adapters.ManageCategory.AddNewCategory.AddCategoryPresenter;
+import cgx.com.adapters.ManageCategory.AddNewCategory.AddCategoryViewModel;
+import cgx.com.adapters.ManageCategory.DeleteCategory.DeleteCategoryPresenter;
+import cgx.com.adapters.ManageCategory.DeleteCategory.DeleteCategoryViewModel;
+import cgx.com.adapters.ManageCategory.UpdateCategory.UpdateCategoryPresenter;
+import cgx.com.adapters.ManageCategory.UpdateCategory.UpdateCategoryViewModel;
+import cgx.com.adapters.ManageCategory.ViewAllCategories.ViewAllCategoriesPresenter;
+import cgx.com.adapters.ManageCategory.ViewAllCategories.ViewAllCategoriesViewModel;
 import cgx.com.adapters.ManageUser.AdminCreatedUser.AdminCreateUserPresenter;
 import cgx.com.adapters.ManageUser.AdminCreatedUser.AdminCreateUserViewModel;
 import cgx.com.adapters.ManageUser.AdminUpdateUser.AdminUpdateUserPresenter;
@@ -28,6 +36,16 @@ import cgx.com.adapters.ManageUser.VerifyPasswordReset.VerifyPasswordResetPresen
 import cgx.com.adapters.ManageUser.VerifyPasswordReset.VerifyPasswordResetViewModel;
 import cgx.com.adapters.ManageUser.ViewUserProfile.ViewUserProfilePresenter;
 import cgx.com.adapters.ManageUser.ViewUserProfile.ViewUserProfileViewModel;
+import cgx.com.usecase.ManageCategory.ICategoryIdGenerator;
+import cgx.com.usecase.ManageCategory.ICategoryRepository;
+import cgx.com.usecase.ManageCategory.AddNewCategory.AddCategoryInputBoundary;
+import cgx.com.usecase.ManageCategory.AddNewCategory.AddCategoryUseCase;
+import cgx.com.usecase.ManageCategory.DeleteCategory.DeleteCategoryInputBoundary;
+import cgx.com.usecase.ManageCategory.DeleteCategory.DeleteCategoryUseCase;
+import cgx.com.usecase.ManageCategory.UpdateCategory.UpdateCategoryInputBoundary;
+import cgx.com.usecase.ManageCategory.UpdateCategory.UpdateCategoryUseCase;
+import cgx.com.usecase.ManageCategory.ViewAllCategories.ViewAllCategoriesInputBoundary;
+import cgx.com.usecase.ManageCategory.ViewAllCategories.ViewAllCategoriesUseCase;
 import cgx.com.usecase.ManageUser.IAuthTokenGenerator;
 import cgx.com.usecase.ManageUser.IAuthTokenValidator;
 import cgx.com.usecase.ManageUser.IEmailService;
@@ -299,5 +317,77 @@ public class UseCaseConfiguration {
             VerifyPasswordResetPresenter presenter
     ) {
         return new VerifyResetByTokenUseCase(userRepository, tokenRepository, passwordHasher, presenter);
+    }
+    
+ // =========================================================================
+    // 4. PRODUCT TYPE (CATEGORY) MANAGEMENT
+    // =========================================================================
+
+    // UC-1: Add Category
+    @Bean
+    @RequestScope
+    public AddCategoryPresenter addCategoryPresenter() {
+        return new AddCategoryPresenter(new AddCategoryViewModel());
+    }
+
+    @Bean
+    @RequestScope
+    public AddCategoryInputBoundary addCategoryUseCase(
+            ICategoryRepository categoryRepository,
+            IAuthTokenValidator tokenValidator,
+            ICategoryIdGenerator idGenerator, // Dùng UuidGenerator
+            AddCategoryPresenter presenter
+    ) {
+        return new AddCategoryUseCase(categoryRepository, tokenValidator, idGenerator, presenter);
+    }
+
+    // UC-2: Update Category
+    @Bean
+    @RequestScope
+    public UpdateCategoryPresenter updateCategoryPresenter() {
+        return new UpdateCategoryPresenter(new UpdateCategoryViewModel());
+    }
+
+    @Bean
+    @RequestScope
+    public UpdateCategoryInputBoundary updateCategoryUseCase(
+            ICategoryRepository categoryRepository,
+            IAuthTokenValidator tokenValidator,
+            UpdateCategoryPresenter presenter
+    ) {
+        return new UpdateCategoryUseCase(categoryRepository, tokenValidator, presenter);
+    }
+
+    // UC-3: Delete Category
+    @Bean
+    @RequestScope
+    public DeleteCategoryPresenter deleteCategoryPresenter() {
+        return new DeleteCategoryPresenter(new DeleteCategoryViewModel());
+    }
+
+    @Bean
+    @RequestScope
+    public DeleteCategoryInputBoundary deleteCategoryUseCase(
+            ICategoryRepository categoryRepository,
+            IAuthTokenValidator tokenValidator,
+            DeleteCategoryPresenter presenter
+    ) {
+        return new DeleteCategoryUseCase(categoryRepository, tokenValidator, presenter);
+    }
+
+    // UC-4: View All Categories
+    @Bean
+    @RequestScope
+    public ViewAllCategoriesPresenter viewAllCategoriesPresenter() {
+        return new ViewAllCategoriesPresenter(new ViewAllCategoriesViewModel());
+    }
+
+    @Bean
+    @RequestScope
+    public ViewAllCategoriesInputBoundary viewAllCategoriesUseCase(
+            ICategoryRepository categoryRepository,
+            ViewAllCategoriesPresenter presenter
+    ) {
+        return new ViewAllCategoriesUseCase(categoryRepository, presenter);
     }
 }
