@@ -1,76 +1,39 @@
 package cgx.com.Entities;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.math.BigDecimal;
+import java.time.Instant;
 
-public class Laptop extends Product{
-	// Thuộc tính riêng
+/**
+ * Lớp Con: Laptop.
+ * Có các thuộc tính riêng: RAM, CPU, Screen Size...
+ */
+public class Laptop extends ComputerDevice {
     private String cpu;
-    private int ram;
-    private String screenSize;
+    private String ram; // Ví dụ: "16GB DDR5"
+    private String storage; // Ví dụ: "512GB SSD"
+    private double screenSize; // Ví dụ: 14.0
+
+    public Laptop(String id, String name, String description, BigDecimal price, int stockQuantity, 
+                  String categoryId, String status, String thumbnail, Instant createdAt, Instant updatedAt,
+                  String cpu, String ram, String storage, double screenSize) {
+        super(id, name, description, price, stockQuantity, categoryId, status, thumbnail, createdAt, updatedAt);
+        this.cpu = cpu;
+        this.ram = ram;
+        this.storage = storage;
+        this.screenSize = screenSize;
+    }
+
+    // --- Validation Riêng ---
+    public static void validateSpecs(String cpu, String ram, String storage, double screenSize) {
+        if (cpu == null || cpu.isEmpty()) throw new IllegalArgumentException("Thông tin CPU không được trống.");
+        if (ram == null || ram.isEmpty()) throw new IllegalArgumentException("Thông tin RAM không được trống.");
+        if(storage == null || storage.isEmpty()) throw new IllegalArgumentException("Thông tin Storage không được trống.");
+        if (screenSize <= 0) throw new IllegalArgumentException("Kích thước màn hình không hợp lệ.");
+    }
     
-	public Laptop(String name, String description, double price, int stockQuantity, String imageUrl, int categoryId,
-			String cpu, int ram, String screenSize) {
-		super(name, description, price, stockQuantity, imageUrl, categoryId);
-		this.cpu = cpu;
-		this.ram = ram;
-		this.screenSize = screenSize;
-	}
-
-	public Laptop(int id, String name, String description, double price, int stockQuantity, String imageUrl, int categoryId,
-			String cpu, int ram, String screenSize) {
-		super(id, name, description, price, stockQuantity, imageUrl, categoryId);
-		this.cpu = cpu;
-		this.ram = ram;
-		this.screenSize = screenSize;
-	}
-	
-	public static void validateSpecific(String cpu, int ram, String screenSize) {
-		if (cpu == null || cpu.trim().isEmpty()) {
-            throw new IllegalArgumentException("CPU không được để trống.");
-        }
-		
-		if (ram <= 0) {
-            throw new IllegalArgumentException("RAM phải là số dương.");
-        }
-		
-		 if (screenSize == null || screenSize.trim().isEmpty()) {
-	            throw new IllegalArgumentException("Kích thước màn hình không được để trống.");
-	     }
-	}
-	
-	public String getCpu() { return cpu; }
-    public int getRam() { return ram; }
-    public String getScreenSize() { return screenSize; }
-
-	@Override
-	public void updateSpecific(Map<String, String> attributes) {
-		try {
-            // 1. Lấy thuộc tính riêng từ Map
-            String cpu = attributes.get("cpu");
-            int ram = Integer.parseInt(attributes.get("ram"));
-            String screenSize = attributes.get("screenSize");
-            
-            // 2. Validate dữ liệu riêng (T4)
-            validateSpecific(cpu, ram, screenSize);
-            
-            // 3. Gán giá trị
-            this.cpu = cpu;
-            this.ram = ram;
-            this.screenSize = screenSize;
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("RAM phải là một con số.");
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Thuộc tính Laptop không hợp lệ: " + e.getMessage());
-        }
-	}
-
-	@Override
-	public Map<String, String> getSpecificAttributes() {
-		Map<String, String> specifics = new HashMap<>();
-        specifics.put("cpu", this.cpu);
-        specifics.put("ram", String.valueOf(this.ram));
-        specifics.put("screenSize", this.screenSize);
-        return specifics;
-	}
+    // Getters riêng...
+    public String getCpu() { return cpu; }
+    public String getRam() { return ram; }
+    public String getStorage() { return storage; }
+    public double getScreenSize() { return screenSize; }
 }
