@@ -46,6 +46,13 @@ public abstract class ComputerDevice {
         if (stockQuantity < 0) throw new IllegalArgumentException("Số lượng tồn kho không được âm.");
     }
     
+    public void validateStock(int quantity) {
+    	int currentStock = getStockQuantity();
+    	if(currentStock < quantity) {
+    		throw new IllegalArgumentException("Sản phẩm " + this.getName() + " không đủ hàng.");
+    	}
+    }
+    
     // --- BUSINESS LOGIC MỚI: Cập nhật tồn kho ---
     /**
      * Cập nhật số lượng tồn kho.
@@ -65,6 +72,10 @@ public abstract class ComputerDevice {
         }
         
         this.touch(); // Cập nhật thời gian
+    }
+    
+    public void minusStock(int quantity) {
+    	this.stockQuantity -= quantity;
     }
     
     // --- LOGIC MỚI: Xóa mềm ---

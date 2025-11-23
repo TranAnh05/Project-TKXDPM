@@ -12,6 +12,18 @@ import cgx.com.adapters.ManageCategory.UpdateCategory.UpdateCategoryPresenter;
 import cgx.com.adapters.ManageCategory.UpdateCategory.UpdateCategoryViewModel;
 import cgx.com.adapters.ManageCategory.ViewAllCategories.ViewAllCategoriesPresenter;
 import cgx.com.adapters.ManageCategory.ViewAllCategories.ViewAllCategoriesViewModel;
+import cgx.com.adapters.ManageProduct.AddNewProduct.AddDevicePresenter;
+import cgx.com.adapters.ManageProduct.AddNewProduct.AddDeviceViewModel;
+import cgx.com.adapters.ManageProduct.AdjustStock.AdjustStockPresenter;
+import cgx.com.adapters.ManageProduct.AdjustStock.AdjustStockViewModel;
+import cgx.com.adapters.ManageProduct.DeleteDevice.DeleteDevicePresenter;
+import cgx.com.adapters.ManageProduct.DeleteDevice.DeleteDeviceViewModel;
+import cgx.com.adapters.ManageProduct.SearchDevices.SearchDevicesPresenter;
+import cgx.com.adapters.ManageProduct.SearchDevices.SearchDevicesViewModel;
+import cgx.com.adapters.ManageProduct.UpdateProduct.UpdateDevicePresenter;
+import cgx.com.adapters.ManageProduct.UpdateProduct.UpdateDeviceViewModel;
+import cgx.com.adapters.ManageProduct.ViewDeviceDetail.ViewDeviceDetailPresenter;
+import cgx.com.adapters.ManageProduct.ViewDeviceDetail.ViewDeviceDetailViewModel;
 import cgx.com.adapters.ManageUser.AdminCreatedUser.AdminCreateUserPresenter;
 import cgx.com.adapters.ManageUser.AdminCreatedUser.AdminCreateUserViewModel;
 import cgx.com.adapters.ManageUser.AdminUpdateUser.AdminUpdateUserPresenter;
@@ -46,6 +58,27 @@ import cgx.com.usecase.ManageCategory.UpdateCategory.UpdateCategoryInputBoundary
 import cgx.com.usecase.ManageCategory.UpdateCategory.UpdateCategoryUseCase;
 import cgx.com.usecase.ManageCategory.ViewAllCategories.ViewAllCategoriesInputBoundary;
 import cgx.com.usecase.ManageCategory.ViewAllCategories.ViewAllCategoriesUseCase;
+import cgx.com.usecase.ManageProduct.IDeviceRepository;
+import cgx.com.usecase.ManageProduct.AddNewProduct.AddDeviceInputBoundary;
+import cgx.com.usecase.ManageProduct.AddNewProduct.AddLaptopRequestData;
+import cgx.com.usecase.ManageProduct.AddNewProduct.AddLaptopUseCase;
+import cgx.com.usecase.ManageProduct.AddNewProduct.AddMouseRequestData;
+import cgx.com.usecase.ManageProduct.AddNewProduct.AddMouseUseCase;
+import cgx.com.usecase.ManageProduct.AdjustStock.AdjustLaptopStockUseCase;
+import cgx.com.usecase.ManageProduct.AdjustStock.AdjustMouseStockUseCase;
+import cgx.com.usecase.ManageProduct.AdjustStock.AdjustStockInputBoundary;
+import cgx.com.usecase.ManageProduct.DeleteDevice.DeleteDeviceInputBoundary;
+import cgx.com.usecase.ManageProduct.DeleteDevice.DeleteLaptopUseCase;
+import cgx.com.usecase.ManageProduct.DeleteDevice.DeleteMouseUseCase;
+import cgx.com.usecase.ManageProduct.SearchDevices.SearchDevicesInputBoundary;
+import cgx.com.usecase.ManageProduct.SearchDevices.SearchDevicesUseCase;
+import cgx.com.usecase.ManageProduct.UpdateProduct.UpdateDeviceInputBoundary;
+import cgx.com.usecase.ManageProduct.UpdateProduct.UpdateLaptopRequestData;
+import cgx.com.usecase.ManageProduct.UpdateProduct.UpdateLaptopUseCase;
+import cgx.com.usecase.ManageProduct.UpdateProduct.UpdateMouseRequestData;
+import cgx.com.usecase.ManageProduct.UpdateProduct.UpdateMouseUseCase;
+import cgx.com.usecase.ManageProduct.ViewDeviceDetail.ViewDeviceDetailInputBoundary;
+import cgx.com.usecase.ManageProduct.ViewDeviceDetail.ViewDeviceDetailUseCase;
 import cgx.com.usecase.ManageUser.IAuthTokenGenerator;
 import cgx.com.usecase.ManageUser.IAuthTokenValidator;
 import cgx.com.usecase.ManageUser.IEmailService;
@@ -389,5 +422,123 @@ public class UseCaseConfiguration {
             ViewAllCategoriesPresenter presenter
     ) {
         return new ViewAllCategoriesUseCase(categoryRepository, presenter);
+    }
+    
+ // =========================================================================
+    // 5. PRODUCT MANAGEMENT (DEVICES)
+    // =========================================================================
+
+    // Add Laptop
+    @Bean @RequestScope
+    public AddDevicePresenter addDevicePresenter() {
+        return new AddDevicePresenter(new AddDeviceViewModel());
+    }
+
+    @Bean @RequestScope
+    public AddDeviceInputBoundary<AddLaptopRequestData> addLaptopUseCase(
+            IDeviceRepository deviceRepo, ICategoryRepository catRepo,
+            IAuthTokenValidator tokenVal, IUserIdGenerator idGen, AddDevicePresenter presenter
+    ) {
+        return new AddLaptopUseCase(deviceRepo, catRepo, tokenVal, idGen, presenter);
+    }
+
+    // Add Mouse
+    @Bean @RequestScope
+    public AddDeviceInputBoundary<AddMouseRequestData> addMouseUseCase(
+            IDeviceRepository deviceRepo, ICategoryRepository catRepo,
+            IAuthTokenValidator tokenVal, IUserIdGenerator idGen, AddDevicePresenter presenter
+    ) {
+        return new AddMouseUseCase(deviceRepo, catRepo, tokenVal, idGen, presenter);
+    }
+
+    // Update Laptop
+    @Bean @RequestScope
+    public UpdateDevicePresenter updateDevicePresenter() {
+        return new UpdateDevicePresenter(new UpdateDeviceViewModel());
+    }
+
+    @Bean @RequestScope
+    public UpdateDeviceInputBoundary<UpdateLaptopRequestData> updateLaptopUseCase(
+            IDeviceRepository deviceRepo, ICategoryRepository catRepo,
+            IAuthTokenValidator tokenVal, UpdateDevicePresenter presenter
+    ) {
+        return new UpdateLaptopUseCase(deviceRepo, catRepo, tokenVal, presenter);
+    }
+    
+    // Update Mouse
+    @Bean @RequestScope
+    public UpdateDeviceInputBoundary<UpdateMouseRequestData> updateMouseUseCase(
+            IDeviceRepository deviceRepo, ICategoryRepository catRepo,
+            IAuthTokenValidator tokenVal, UpdateDevicePresenter presenter
+    ) {
+        return new UpdateMouseUseCase(deviceRepo, catRepo, tokenVal, presenter);
+    }
+
+    // Adjust Stock
+    @Bean @RequestScope
+    public AdjustStockPresenter adjustStockPresenter() {
+        return new AdjustStockPresenter(new AdjustStockViewModel());
+    }
+
+    // 1. Adjust Stock for LAPTOP
+    @Bean @RequestScope
+    public AdjustStockInputBoundary adjustLaptopStockUseCase(
+            IDeviceRepository deviceRepo, IAuthTokenValidator tokenVal, AdjustStockPresenter presenter
+    ) {
+        return new AdjustLaptopStockUseCase(deviceRepo, tokenVal, presenter);
+    }
+
+    // 2. Adjust Stock for MOUSE
+    @Bean @RequestScope
+    public AdjustStockInputBoundary adjustMouseStockUseCase(
+            IDeviceRepository deviceRepo, IAuthTokenValidator tokenVal, AdjustStockPresenter presenter
+    ) {
+        return new AdjustMouseStockUseCase(deviceRepo, tokenVal, presenter);
+    }
+
+    // Delete Device
+    @Bean @RequestScope
+    public DeleteDevicePresenter deleteDevicePresenter() {
+        return new DeleteDevicePresenter(new DeleteDeviceViewModel());
+    }
+
+    @Bean @RequestScope
+    public DeleteDeviceInputBoundary deleteLaptopUseCase( // Dùng để xóa Laptop
+            IDeviceRepository deviceRepo, IAuthTokenValidator tokenVal, DeleteDevicePresenter presenter
+    ) {
+        return new DeleteLaptopUseCase(deviceRepo, tokenVal, presenter);
+    }
+    
+    @Bean @RequestScope
+    public DeleteDeviceInputBoundary deleteMouseUseCase( // Dùng để xóa Mouse
+            IDeviceRepository deviceRepo, IAuthTokenValidator tokenVal, DeleteDevicePresenter presenter
+    ) {
+        return new DeleteMouseUseCase(deviceRepo, tokenVal, presenter);
+    }
+
+    // View Detail
+    @Bean @RequestScope
+    public ViewDeviceDetailPresenter viewDeviceDetailPresenter() {
+        return new ViewDeviceDetailPresenter(new ViewDeviceDetailViewModel());
+    }
+
+    @Bean @RequestScope
+    public ViewDeviceDetailInputBoundary viewDeviceDetailUseCase(
+            IDeviceRepository deviceRepo, IAuthTokenValidator tokenVal, ViewDeviceDetailPresenter presenter
+    ) {
+        return new ViewDeviceDetailUseCase(deviceRepo, tokenVal, presenter);
+    }
+
+    // Search
+    @Bean @RequestScope
+    public SearchDevicesPresenter searchDevicesPresenter() {
+        return new SearchDevicesPresenter(new SearchDevicesViewModel());
+    }
+
+    @Bean @RequestScope
+    public SearchDevicesInputBoundary searchDevicesUseCase(
+            IDeviceRepository deviceRepo, IAuthTokenValidator tokenVal, SearchDevicesPresenter presenter
+    ) {
+        return new SearchDevicesUseCase(deviceRepo, tokenVal, presenter);
     }
 }

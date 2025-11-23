@@ -1,0 +1,18 @@
+# --- Các file/thư mục cần bỏ qua của Maven/Spring Boot ---
+/target/             # Thư mục chứa file đã biên dịch (.class, .jar, .war)
+/bin/                # Thư mục biên dịch cũ (nếu có)
+*.class              # File đã biên dịch
+
+# --- Các file cấu hình riêng của IDE (Không nên chia sẻ) ---
+# Eclipse/STS files
+.project
+.classpath
+.settings/
+
+# IntelliJ IDEA files
+*.iml
+.idea/
+
+# Logging/Temporary files
+*.log
+/temp/

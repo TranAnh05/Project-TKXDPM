@@ -15,6 +15,8 @@ public class DeviceData {
     public String thumbnail;
     public Instant createdAt;
     public Instant updatedAt;
+    
+    public String type;
 
     // Laptop specific
     public String cpu;
