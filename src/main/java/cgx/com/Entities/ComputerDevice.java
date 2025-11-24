@@ -78,6 +78,10 @@ public abstract class ComputerDevice {
     	this.stockQuantity -= quantity;
     }
     
+    public void plusStock(int quantity) {
+    	this.stockQuantity += quantity;
+    }
+    
     // --- LOGIC MỚI: Xóa mềm ---
     public void softDelete() {
         // Chuyển trạng thái sang DELETED (hoặc INACTIVE tùy quy ước)

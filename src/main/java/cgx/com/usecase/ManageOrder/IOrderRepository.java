@@ -11,4 +11,11 @@ public interface IOrderRepository {
      * @return Danh sách OrderData (sắp xếp giảm dần theo ngày tạo).
      */
 	List<OrderData> findByUserId(String userId);
+	
+	 /**
+     * Tìm đơn hàng theo ID.
+     * @param orderId ID đơn hàng.
+     * @return OrderData hoặc null.
+     */
+    OrderData findById(String orderId);
 }

@@ -27,7 +27,22 @@ public class Order {
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();
     }
+    
+    public Order(String id, String userId, String shippingAddress, OrderStatus status) {
+        this.id = id;
+        this.userId = userId;
+        this.shippingAddress = shippingAddress;
+        this.status = status;
+        this.items = new ArrayList<>();
+        this.totalAmount = BigDecimal.ZERO;
+    }
     	
+    public static void validateId(String id) {
+    	if (id == null || id.trim().isEmpty()) {
+            throw new IllegalArgumentException("ID đơn hàng không được để trống.");
+        }
+    }
+    
     public static void validateOrderInfo(String shippingAddress, String userId, Map<String, Integer> items) {
         if (shippingAddress == null || shippingAddress.trim().isEmpty()) {
             throw new IllegalArgumentException("Địa chỉ giao hàng không được để trống.");
@@ -55,6 +70,14 @@ public class Order {
         this.totalAmount = items.stream()
                 .map(OrderItem::getSubTotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+    
+    public void cancel() {
+        if (this.status != OrderStatus.PENDING) {
+            throw new IllegalStateException("Không thể hủy đơn hàng đã được xử lý hoặc đang giao.");
+        }
+        this.status = OrderStatus.CANCELLED;
+        this.updatedAt = Instant.now();
     }
 
     // --- Getters ---
