@@ -53,12 +53,8 @@ public class PlaceOrderUseCase implements PlaceOrderInputBoundary {
             // 2. Khởi tạo Order (Entity sẽ tự validate address, userId)
             String orderId = idGenerator.generate();
             // NẾU address rỗng -> Entity ném IllegalArgumentException -> Catch bên dưới
+            Order.validateOrderInfo(input.shippingAddress, principal.userId, input.cartItems);
             Order orderEntity = new Order(orderId, principal.userId, input.shippingAddress);
-
-            // 3. Xử lý Items (Use Case điều phối việc lấy dữ liệu và gán vào Entity)
-            if (input.cartItems == null || input.cartItems.isEmpty()) {
-                 throw new IllegalArgumentException("Giỏ hàng không được để trống.");
-            }
 
             for (Map.Entry<String, Integer> entry : input.cartItems.entrySet()) {
                 String deviceId = entry.getKey();
@@ -88,9 +84,6 @@ public class PlaceOrderUseCase implements PlaceOrderInputBoundary {
                 DeviceData updatedDeviceData = deviceMapper.toDTO(deviceEntity);
                 deviceRepository.save(updatedDeviceData);
             }
-            
-            // Validate lần cuối cho Order (ví dụ: tổng tiền > 0)
-            orderEntity.validateItems();
 
             // 4. Lưu Order
             OrderData orderData = mapOrderToData(orderEntity);

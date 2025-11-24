@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class Order {
     private String id;
@@ -27,7 +28,7 @@ public class Order {
         this.updatedAt = Instant.now();
     }
     	
-    private static void validateOrderInfo(String shippingAddress, String userId) {
+    public static void validateOrderInfo(String shippingAddress, String userId, Map<String, Integer> items) {
         if (shippingAddress == null || shippingAddress.trim().isEmpty()) {
             throw new IllegalArgumentException("Địa chỉ giao hàng không được để trống.");
         }
@@ -36,14 +37,10 @@ public class Order {
              // UseCase đảm bảo userId có (từ token), nhưng Entity vẫn nên check để chắc chắn
              throw new IllegalArgumentException("Người dùng không hợp lệ.");
         }
-    }
-    
-
-    
-    public void validateItems() {
-        if (this.items == null || this.items.isEmpty()) {
+        
+        if (items == null || items.isEmpty()) {
             throw new IllegalArgumentException("Giỏ hàng không được để trống.");
-        }
+       }
     }
     
     // --- Domain Logic ---
@@ -51,6 +48,7 @@ public class Order {
     public void addItem(OrderItem item) {
         this.items.add(item);
         recalculateTotal();
+        this.updatedAt = Instant.now();
     }
 
     private void recalculateTotal() {
