@@ -1,0 +1,20 @@
+-------------------------------------------------------------------------------
+Test set: Order.UpdateOrderStatus.TestUpdateOrderStatusUseCase
+-------------------------------------------------------------------------------
+Tests run: 2, Failures: 0, Errors: 2, Skipped: 0, Time elapsed: 0.033 s <<< FAILURE! -- in Order.UpdateOrderStatus.TestUpdateOrderStatusUseCase
+Order.UpdateOrderStatus.TestUpdateOrderStatusUseCase.testExecute_Fail_Validation_InvalidStatusString -- Time elapsed: 0.027 s <<< ERROR!
+java.lang.NullPointerException: Cannot invoke "application.ports.out.ManageOrder.UpdateOrderStatus.UpdateOrderStatusOutputBoundary.present(application.dtos.ManageOrder.UpdateOrderStatus.UpdateOrderStatusOutputData)" because "this.orderPresenter" is null
+	at application.usecases.ManageOrder.UpdateOrderStatus.UpdateOrderStatusUsecase.execute(UpdateOrderStatusUsecase.java:76)
+	at Order.UpdateOrderStatus.TestUpdateOrderStatusUseCase.testExecute_Fail_Validation_InvalidStatusString(TestUpdateOrderStatusUseCase.java:65)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+
+Order.UpdateOrderStatus.TestUpdateOrderStatusUseCase.testExecute_SuccessCase -- Time elapsed: 0.002 s <<< ERROR!
+java.lang.NullPointerException: Cannot invoke "application.ports.out.ManageOrder.UpdateOrderStatus.UpdateOrderStatusOutputBoundary.present(application.dtos.ManageOrder.UpdateOrderStatus.UpdateOrderStatusOutputData)" because "this.orderPresenter" is null
+	at application.usecases.ManageOrder.UpdateOrderStatus.UpdateOrderStatusUsecase.execute(UpdateOrderStatusUsecase.java:76)
+	at Order.UpdateOrderStatus.TestUpdateOrderStatusUseCase.testExecute_SuccessCase(TestUpdateOrderStatusUseCase.java:48)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+
