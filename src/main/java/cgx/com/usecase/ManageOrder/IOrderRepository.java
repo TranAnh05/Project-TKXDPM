@@ -2,6 +2,8 @@ package cgx.com.usecase.ManageOrder;
 
 import java.util.List;
 
+import cgx.com.usecase.ManageOrder.ManageOrders.OrderSearchCriteria;
+
 public interface IOrderRepository {
 	void save(OrderData orderData);
 	
@@ -18,4 +20,14 @@ public interface IOrderRepository {
      * @return OrderData hoặc null.
      */
     OrderData findById(String orderId);
+    
+    /**
+     * Tìm kiếm đơn hàng theo tiêu chí (Phân trang).
+     */
+    List<OrderData> search(OrderSearchCriteria criteria, int pageNumber, int pageSize);
+
+    /**
+     * Đếm tổng số đơn hàng theo tiêu chí.
+     */
+    long count(OrderSearchCriteria criteria);
 }

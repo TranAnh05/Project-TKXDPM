@@ -1,0 +1,36 @@
+-------------------------------------------------------------------------------
+Test set: SearchOrders.TestSearchOrdersUseCase
+-------------------------------------------------------------------------------
+Tests run: 4, Failures: 0, Errors: 4, Skipped: 0, Time elapsed: 0.009 s <<< FAILURE! -- in SearchOrders.TestSearchOrdersUseCase
+SearchOrders.TestSearchOrdersUseCase.testExecute_Fail_UserNotFound -- Time elapsed: 0.002 s <<< ERROR!
+java.lang.NullPointerException: Cannot invoke "application.ports.out.SearchOrders.SearchOrdersOutputBoundary.present(application.dtos.SearchOrders.SearchOrdersOutputData)" because "this.orderPresenter" is null
+	at application.usecases.SearchOrders.SearchOrdersUsecase.execute(SearchOrdersUsecase.java:91)
+	at SearchOrders.TestSearchOrdersUseCase.testExecute_Fail_UserNotFound(TestSearchOrdersUseCase.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+
+SearchOrders.TestSearchOrdersUseCase.testExecute_SuccessCase_FoundMultiple -- Time elapsed: 0.002 s <<< ERROR!
+java.lang.NullPointerException: Cannot invoke "application.ports.out.SearchOrders.SearchOrdersOutputBoundary.present(application.dtos.SearchOrders.SearchOrdersOutputData)" because "this.orderPresenter" is null
+	at application.usecases.SearchOrders.SearchOrdersUsecase.execute(SearchOrdersUsecase.java:91)
+	at SearchOrders.TestSearchOrdersUseCase.testExecute_SuccessCase_FoundMultiple(TestSearchOrdersUseCase.java:57)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+
+SearchOrders.TestSearchOrdersUseCase.testExecute_SuccessCase_FoundOneUser -- Time elapsed: 0.001 s <<< ERROR!
+java.lang.NullPointerException: Cannot invoke "application.ports.out.SearchOrders.SearchOrdersOutputBoundary.present(application.dtos.SearchOrders.SearchOrdersOutputData)" because "this.orderPresenter" is null
+	at application.usecases.SearchOrders.SearchOrdersUsecase.execute(SearchOrdersUsecase.java:91)
+	at SearchOrders.TestSearchOrdersUseCase.testExecute_SuccessCase_FoundOneUser(TestSearchOrdersUseCase.java:74)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+
+SearchOrders.TestSearchOrdersUseCase.testExecute_Fail_UserFound_NoOrders -- Time elapsed: 0.002 s <<< ERROR!
+java.lang.NullPointerException: Cannot invoke "application.ports.out.SearchOrders.SearchOrdersOutputBoundary.present(application.dtos.SearchOrders.SearchOrdersOutputData)" because "this.orderPresenter" is null
+	at application.usecases.SearchOrders.SearchOrdersUsecase.execute(SearchOrdersUsecase.java:91)
+	at SearchOrders.TestSearchOrdersUseCase.testExecute_Fail_UserFound_NoOrders(TestSearchOrdersUseCase.java:88)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+
