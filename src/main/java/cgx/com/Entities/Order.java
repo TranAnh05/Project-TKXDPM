@@ -43,6 +43,7 @@ public class Order {
         }
     }
     
+    
     public static void validateOrderInfo(String shippingAddress, String userId, Map<String, Integer> items) {
         if (shippingAddress == null || shippingAddress.trim().isEmpty()) {
             throw new IllegalArgumentException("Địa chỉ giao hàng không được để trống.");
@@ -80,6 +81,35 @@ public class Order {
         this.updatedAt = Instant.now();
     }
 
+    public void validateNewStatus(OrderStatus newStatus) {
+    	if (this.status == newStatus) {
+            throw new IllegalArgumentException("Đơn hàng đã ở trạng thái này rồi.");
+        }
+    }
+    
+    public void updateStatus(OrderStatus newStatus) {
+        if (this.status == newStatus) {
+            throw new IllegalArgumentException("Đơn hàng đã ở trạng thái này rồi.");
+        }
+
+        // Logic Hủy đơn
+        if (newStatus == OrderStatus.CANCELLED) {
+            if (this.status == OrderStatus.SHIPPED || this.status == OrderStatus.DELIVERED) {
+                throw new IllegalStateException("Không thể hủy đơn hàng đã được xử lý hoặc đang giao.");
+            }
+        } 
+        // Logic các trạng thái khác (Không cho phép sửa đơn đã kết thúc)
+        else {
+            if (this.status == OrderStatus.CANCELLED || this.status == OrderStatus.DELIVERED) {
+                throw new IllegalStateException("Đơn hàng đã kết thúc, không thể cập nhật trạng thái.");
+            }
+        }
+
+        // Nếu hợp lệ, cập nhật trạng thái
+        this.status = newStatus;
+        this.updatedAt = Instant.now();
+    }
+    
     // --- Getters ---
     public String getId() { return id; }
     public String getUserId() { return userId; }
