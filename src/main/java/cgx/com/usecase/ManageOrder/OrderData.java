@@ -10,6 +10,7 @@ public class OrderData {
     public BigDecimal totalAmount;
     public String status; // Enum -> String
     public String shippingAddress;
+    public String paymentMethod;
     public Instant createdAt;
     public Instant updatedAt;
     

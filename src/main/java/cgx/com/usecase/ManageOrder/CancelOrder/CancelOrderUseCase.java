@@ -4,6 +4,7 @@ import cgx.com.Entities.ComputerDevice;
 import cgx.com.Entities.Order;
 import cgx.com.Entities.OrderItem;
 import cgx.com.Entities.OrderStatus;
+import cgx.com.Entities.PaymentMethod;
 import cgx.com.Entities.UserRole;
 import cgx.com.usecase.ManageOrder.IOrderRepository;
 import cgx.com.usecase.ManageOrder.OrderData;
@@ -115,7 +116,7 @@ public class CancelOrderUseCase implements CancelOrderInputBoundary {
      */
     private Order mapDataToOrder(OrderData data) {
         // Sử dụng constructor rehydrate mới (Status được lấy từ DB)
-        Order order = new Order(data.id, data.userId, data.shippingAddress, OrderStatus.valueOf(data.status));
+        Order order = new Order(data.id, data.userId, data.shippingAddress, OrderStatus.valueOf(data.status), PaymentMethod.valueOf(data.paymentMethod), data.totalAmount);
         
         // Tái tạo items để có thể lặp qua (cho logic hoàn kho)
         if (data.items != null) {

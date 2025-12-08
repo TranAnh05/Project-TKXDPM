@@ -6,6 +6,7 @@ import cgx.com.Entities.Laptop;
 import cgx.com.Entities.Mouse;
 import cgx.com.Entities.Order;
 import cgx.com.Entities.OrderItem;
+import cgx.com.Entities.PaymentMethod;
 import cgx.com.usecase.ManageOrder.IOrderIdGenerator;
 import cgx.com.usecase.ManageOrder.IOrderRepository;
 import cgx.com.usecase.ManageOrder.OrderData;
@@ -53,8 +54,8 @@ public class PlaceOrderUseCase implements PlaceOrderInputBoundary {
             // 2. Khởi tạo Order (Entity sẽ tự validate address, userId)
             String orderId = idGenerator.generate();
             // NẾU address rỗng -> Entity ném IllegalArgumentException -> Catch bên dưới
-            Order.validateOrderInfo(input.shippingAddress, principal.userId, input.cartItems);
-            Order orderEntity = new Order(orderId, principal.userId, input.shippingAddress);
+            Order.validateOrderInfo(input.shippingAddress, principal.userId, input.cartItems, input.paymentMethod);
+            Order orderEntity = new Order(orderId, principal.userId, input.shippingAddress, PaymentMethod.valueOf(input.paymentMethod));
 
             for (Map.Entry<String, Integer> entry : input.cartItems.entrySet()) {
                 String deviceId = entry.getKey();
@@ -113,6 +114,7 @@ public class PlaceOrderUseCase implements PlaceOrderInputBoundary {
         data.totalAmount = entity.getTotalAmount();
         data.status = entity.getStatus().name();
         data.shippingAddress = entity.getShippingAddress();
+        data.paymentMethod = entity.getPaymentMethod().name();
         data.createdAt = entity.getCreatedAt();
         data.updatedAt = entity.getUpdatedAt();
         

@@ -53,6 +53,18 @@ public abstract class ComputerDevice {
     	}
     }
     
+    public static void validateStatus(String status) {
+    	if (!"ACTIVE".equals(status)) {
+            throw new IllegalArgumentException("Sản phẩm này hiện đang ngừng kinh doanh.");
+        }
+    }
+    
+    public static void validateStockQuantity(int stockQuantity) {
+    	if (stockQuantity <= 0) {
+            throw new IllegalArgumentException("Sản phẩm đã hết hàng.");
+        }	
+    }
+    
     // --- BUSINESS LOGIC MỚI: Cập nhật tồn kho ---
     /**
      * Cập nhật số lượng tồn kho.
@@ -91,6 +103,23 @@ public abstract class ComputerDevice {
 
     private void touch() {
         this.updatedAt = Instant.now();
+    }
+    
+    /**
+     * NGHIỆP VỤ: Kiểm tra khả năng cung ứng
+     * Entity tự trả lời xem nó có đáp ứng được số lượng yêu cầu không.
+     */
+    public ProductAvailability checkAvailability(int requestedQuantity) {
+        if (!"ACTIVE".equals(this.status)) {
+            return ProductAvailability.DISCONTINUED;
+        }
+        if (this.stockQuantity == 0) {
+            return ProductAvailability.OUT_OF_STOCK;
+        }
+        if (this.stockQuantity < requestedQuantity) {
+            return ProductAvailability.NOT_ENOUGH_STOCK;
+        }
+        return ProductAvailability.AVAILABLE;
     }
 
     public String getId() { return id; }

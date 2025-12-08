@@ -12,15 +12,17 @@ public class Order {
     private BigDecimal totalAmount;
     private OrderStatus status;
     private String shippingAddress;
+    private PaymentMethod paymentMethod;	
     private Instant createdAt;
     private Instant updatedAt;
     
     private List<OrderItem> items; // Danh sách sản phẩm
 
-    public Order(String id, String userId, String shippingAddress) {
+    public Order(String id, String userId, String shippingAddress, PaymentMethod paymentMethod) {
         this.id = id;
         this.userId = userId;
         this.shippingAddress = shippingAddress;
+        this.paymentMethod = paymentMethod;
         this.status = OrderStatus.PENDING; // Mặc định là chờ xử lý
         this.items = new ArrayList<>();
         this.totalAmount = BigDecimal.ZERO;
@@ -28,13 +30,15 @@ public class Order {
         this.updatedAt = Instant.now();
     }
     
-    public Order(String id, String userId, String shippingAddress, OrderStatus status) {
+    public Order(String id, String userId, String shippingAddress, OrderStatus status, PaymentMethod paymentMethod, BigDecimal totalAmount) {
         this.id = id;
         this.userId = userId;
         this.shippingAddress = shippingAddress;
         this.status = status;
+        this.paymentMethod = paymentMethod;
         this.items = new ArrayList<>();
-        this.totalAmount = BigDecimal.ZERO;
+        this.totalAmount = totalAmount;
+        this.updatedAt = Instant.now();
     }
     	
     public static void validateId(String id) {
@@ -44,7 +48,7 @@ public class Order {
     }
     
     
-    public static void validateOrderInfo(String shippingAddress, String userId, Map<String, Integer> items) {
+    public static void validateOrderInfo(String shippingAddress, String userId, Map<String, Integer> items, String paymentMethod) {
         if (shippingAddress == null || shippingAddress.trim().isEmpty()) {
             throw new IllegalArgumentException("Địa chỉ giao hàng không được để trống.");
         }
@@ -56,7 +60,19 @@ public class Order {
         
         if (items == null || items.isEmpty()) {
             throw new IllegalArgumentException("Giỏ hàng không được để trống.");
-       }
+        }
+        
+        if(paymentMethod == null) {
+        	throw new IllegalArgumentException("Phương thức thanh toán không được để trống.");
+        }
+        
+        try {
+            // Cố gắng ép kiểu String sang Enum
+            PaymentMethod.valueOf(paymentMethod); 
+        } catch (IllegalArgumentException e) {
+            // Nếu Java không tìm thấy Enum tương ứng, nó ném lỗi -> Ta bắt lại và báo lỗi nghiệp vụ
+        	throw new IllegalArgumentException("Phương thức thanh toán không hợp lệ: " + paymentMethod);
+        }
     }
     
     // --- Domain Logic ---
@@ -116,6 +132,7 @@ public class Order {
     public BigDecimal getTotalAmount() { return totalAmount; }
     public OrderStatus getStatus() { return status; }
     public String getShippingAddress() { return shippingAddress; }
+    public PaymentMethod getPaymentMethod() { return paymentMethod; }
     public List<OrderItem> getItems() { return new ArrayList<>(items); }
     public Instant getCreatedAt() { return createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }

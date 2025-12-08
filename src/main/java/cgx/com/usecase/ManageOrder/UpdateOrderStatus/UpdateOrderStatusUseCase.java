@@ -6,6 +6,7 @@ import cgx.com.Entities.ComputerDevice;
 import cgx.com.Entities.Order;
 import cgx.com.Entities.OrderItem;
 import cgx.com.Entities.OrderStatus;
+import cgx.com.Entities.PaymentMethod;
 import cgx.com.Entities.UserRole;
 import cgx.com.usecase.ManageOrder.IOrderRepository;
 import cgx.com.usecase.ManageOrder.OrderData;
@@ -119,7 +120,7 @@ public class UpdateOrderStatusUseCase implements UpdateOrderStatusInputBoundary 
 
     // Helper Rehydrate (Copy từ CancelOrderUseCase)
     private Order mapDataToOrder(OrderData data) {
-        Order order = new Order(data.id, data.userId, data.shippingAddress, OrderStatus.valueOf(data.status));
+        Order order = new Order(data.id, data.userId, data.shippingAddress, OrderStatus.valueOf(data.status), PaymentMethod.valueOf(data.paymentMethod), data.totalAmount);
         if (data.items != null) {
             for (OrderItemData itemData : data.items) {
                 order.addItem(new OrderItem(

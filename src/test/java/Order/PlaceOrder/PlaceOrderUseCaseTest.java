@@ -1,6 +1,7 @@
 package Order.PlaceOrder;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -25,6 +26,8 @@ import cgx.com.usecase.ManageUser.ViewUserProfile.AuthPrincipal;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -34,152 +37,213 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 public class PlaceOrderUseCaseTest {
 
+    // 1. Mock Dependencies
     @Mock private IOrderRepository mockOrderRepository;
     @Mock private IDeviceRepository mockDeviceRepository;
     @Mock private IAuthTokenValidator mockTokenValidator;
     @Mock private IOrderIdGenerator mockIdGenerator;
-    @Mock private IDeviceMapper mockDeviceMapper; // Mock Mapper Interface
+    @Mock private IDeviceMapper mockDeviceMapper;
     @Mock private PlaceOrderOutputBoundary mockOutputBoundary;
+    
+    // Mock Entity (Để verify logic trừ kho)
+    @Mock private ComputerDevice mockDeviceEntity;
 
+    // 2. Class Under Test
     private PlaceOrderUseCase useCase;
-    private AuthPrincipal customerPrincipal;
-    private DeviceData laptopData;
-    private Laptop laptopEntity;
+
+    // 3. Test Data
+    private AuthPrincipal userPrincipal;
+    private PlaceOrderRequestData validRequest;
+    private DeviceData deviceData;
 
     @BeforeEach
     void setUp() {
-        useCase = new PlaceOrderUseCase(
-            mockOrderRepository, mockDeviceRepository, mockTokenValidator, 
-            mockIdGenerator, mockDeviceMapper, mockOutputBoundary
-        );
+        useCase = new PlaceOrderUseCase(mockOrderRepository, mockDeviceRepository, mockTokenValidator, mockIdGenerator, mockDeviceMapper, mockOutputBoundary);
         
-        customerPrincipal = new AuthPrincipal("user-1", "user@test.com", UserRole.CUSTOMER);
+        userPrincipal = new AuthPrincipal("user-1", "test@mail.com", UserRole.CUSTOMER);
         
-        // Dữ liệu DTO giả lập từ DB
-        laptopData = new DeviceData();
-        laptopData.id = "lap-1";
-        laptopData.name = "Gaming Laptop";
-        laptopData.price = new BigDecimal("1000");
-        laptopData.stockQuantity = 5; 
-        laptopData.status = "ACTIVE";
-        laptopData.type = "LAPTOP"; // Trường mới
-        laptopData.cpu = "Intel";
-        laptopData.screenSize = 15.6;
+        // Request hợp lệ (Mua 1 cái Laptop)
+        Map<String, Integer> cartItems = new HashMap<>();
+        cartItems.put("lap-1", 1);
+        validRequest = new PlaceOrderRequestData("token", "Hanoi", cartItems, "COD");
 
-        // Entity giả lập mà Mapper sẽ trả về
-        laptopEntity = new Laptop(
-            "lap-1", "Gaming Laptop", "Desc", new BigDecimal("1000"), 5, 
-            "cat-1", "ACTIVE", "url", Instant.now(), Instant.now(),
-            "Intel", "16GB", "1TB", 15.6
-        );
+        // Device Data giả lập trong DB
+        deviceData = new DeviceData();
+        deviceData.id = "lap-1";
+        deviceData.price = new BigDecimal("20000000");
+        deviceData.stockQuantity = 10;
+        deviceData.status = "ACTIVE";
     }
 
-    // Case 1: Thành công
+    // =========================================================================
+    // KỊCH BẢN THÀNH CÔNG (HAPPY PATH)
+    // =========================================================================
+
     @Test
-    void test_execute_success() {
-        PlaceOrderRequestData input = new PlaceOrderRequestData("token", "Addr", Map.of("lap-1", 2));
-
-        when(mockTokenValidator.validate("token")).thenReturn(customerPrincipal);
+    @DisplayName("Thành công: Đặt hàng hợp lệ, kho đủ hàng")
+    void test_Execute_Success() {
+        // GIVEN
+        when(mockTokenValidator.validate("token")).thenReturn(userPrincipal);
         when(mockIdGenerator.generate()).thenReturn("order-123");
-        when(mockDeviceRepository.findById("lap-1")).thenReturn(laptopData);
         
-        // Mock Mapper: Khi nhận DTO -> Trả về Entity
-        when(mockDeviceMapper.toEntity(laptopData)).thenReturn(laptopEntity);
-        // Mock Mapper: Khi nhận Entity (sau khi trừ kho) -> Trả về DTO (để lưu)
-        when(mockDeviceMapper.toDTO(any(ComputerDevice.class))).thenReturn(laptopData);
+        // Mock Device
+        when(mockDeviceRepository.findById("lap-1")).thenReturn(deviceData);
+        when(mockDeviceMapper.toEntity(deviceData)).thenReturn(mockDeviceEntity);
+        
+        // Mock Entity Behavior
+        when(mockDeviceEntity.getId()).thenReturn("lap-1");
+        when(mockDeviceEntity.getPrice()).thenReturn(new BigDecimal("20000000"));
+        // Mock Mapper trả về DTO sau khi trừ kho
+        DeviceData updatedDeviceData = new DeviceData();
+        when(mockDeviceMapper.toDTO(mockDeviceEntity)).thenReturn(updatedDeviceData);
 
+        // WHEN
+        useCase.execute(validRequest);
+
+        // THEN
+        // 1. Verify Entity được gọi hàm trừ kho
+        verify(mockDeviceEntity).validateStock(1);
+        verify(mockDeviceEntity).minusStock(1);
+        
+        // 2. Verify Device được lưu lại (Cập nhật tồn kho)
+        verify(mockDeviceRepository).save(updatedDeviceData);
+
+        // 3. Verify Order được lưu
         ArgumentCaptor<OrderData> orderCaptor = ArgumentCaptor.forClass(OrderData.class);
-        ArgumentCaptor<DeviceData> deviceCaptor = ArgumentCaptor.forClass(DeviceData.class);
-        ArgumentCaptor<PlaceOrderResponseData> responseCaptor = ArgumentCaptor.forClass(PlaceOrderResponseData.class);
-
-        useCase.execute(input);
-
         verify(mockOrderRepository).save(orderCaptor.capture());
-        verify(mockDeviceRepository).save(deviceCaptor.capture());
-        verify(mockOutputBoundary).present(responseCaptor.capture());
+        OrderData savedOrder = orderCaptor.getValue();
+        assertEquals("user-1", savedOrder.userId);
+        assertEquals("COD", savedOrder.paymentMethod);
+        assertEquals(1, savedOrder.items.size());
 
+        // 4. Verify Phản hồi thành công
+        ArgumentCaptor<PlaceOrderResponseData> responseCaptor = ArgumentCaptor.forClass(PlaceOrderResponseData.class);
+        verify(mockOutputBoundary).present(responseCaptor.capture());
         assertTrue(responseCaptor.getValue().success);
         assertEquals("order-123", responseCaptor.getValue().orderId);
-        
-        // Kiểm tra logic nghiệp vụ trên Entity: 5 - 2 = 3
-        assertEquals(3, laptopEntity.getStockQuantity());
     }
 
-    // Case 2: Hết hàng (Validation trong Entity)
+    // =========================================================================
+    // KỊCH BẢN THẤT BẠI - VALIDATION (Đầu vào sai)
+    // =========================================================================
+
     @Test
-    void test_execute_failure_outOfStock() {
-        PlaceOrderRequestData input = new PlaceOrderRequestData("token", "Addr", Map.of("lap-1", 10));
-
-        when(mockTokenValidator.validate("token")).thenReturn(customerPrincipal);
-        when(mockDeviceRepository.findById("lap-1")).thenReturn(laptopData);
-        when(mockDeviceMapper.toEntity(laptopData)).thenReturn(laptopEntity);
-
-        ArgumentCaptor<PlaceOrderResponseData> responseCaptor = ArgumentCaptor.forClass(PlaceOrderResponseData.class);
-
-        useCase.execute(input);
-
-        verify(mockOrderRepository, never()).save(any());
-        verify(mockOutputBoundary).present(responseCaptor.capture());
-
-        assertFalse(responseCaptor.getValue().success);
-        // LaptopEntity sẽ ném lỗi khi updateStock nếu số lượng không đủ (logic này nằm trong Entity)
-        // Tuy nhiên, trong PlaceOrderUseCase hiện tại, chúng ta đang check thủ công trước khi gọi updateStock
-        // để ném message rõ ràng hơn.
-        assertTrue(responseCaptor.getValue().message.contains("không đủ hàng"));
-    }
-
-    // Case 3: Lỗi Mapper (Data lỗi, không map được)
-    @Test
-    void test_execute_failure_mappingError() {
-        PlaceOrderRequestData input = new PlaceOrderRequestData("token", "Addr", Map.of("lap-1", 1));
-
-        when(mockTokenValidator.validate("token")).thenReturn(customerPrincipal);
-        when(mockDeviceRepository.findById("lap-1")).thenReturn(laptopData);
-        // Giả lập Mapper trả về null (do data lỗi)
-        when(mockDeviceMapper.toEntity(laptopData))
-        	.thenThrow(new IllegalArgumentException("Dữ liệu sản phẩm lỗi (thiếu thông tin định danh loại)."));
-
-        ArgumentCaptor<PlaceOrderResponseData> responseCaptor = ArgumentCaptor.forClass(PlaceOrderResponseData.class);
+    @DisplayName("Thất bại: Token rỗng")
+    void test_Fail_EmptyToken() {
+        PlaceOrderRequestData input = new PlaceOrderRequestData(null, "HN", new HashMap<>(), "COD");
         
         useCase.execute(input);
-        
-        verify(mockOutputBoundary).present(responseCaptor.capture());
-        assertFalse(responseCaptor.getValue().success);
-        assertEquals("Dữ liệu sản phẩm lỗi (thiếu thông tin định danh loại).", responseCaptor.getValue().message);
-    }
-    
-    // Case 4: Sản phẩm không tồn tại
-    @Test
-    void test_execute_failure_notFound() {
-        PlaceOrderRequestData input = new PlaceOrderRequestData("token", "Addr", Map.of("invalid", 1));
-        when(mockTokenValidator.validate("token")).thenReturn(customerPrincipal);
-        when(mockDeviceRepository.findById("invalid")).thenReturn(null);
-
-        ArgumentCaptor<PlaceOrderResponseData> responseCaptor = ArgumentCaptor.forClass(PlaceOrderResponseData.class);
-        useCase.execute(input);
-        
-        verify(mockOutputBoundary).present(responseCaptor.capture());
-        assertFalse(responseCaptor.getValue().success);
-        assertEquals("Sản phẩm không tồn tại: invalid", responseCaptor.getValue().message);
-    }
-
-    // Case 5: DB Error
-    @Test
-    void test_execute_failure_dbError() {
-        PlaceOrderRequestData input = new PlaceOrderRequestData("token", "Addr", Map.of("lap-1", 1));
-        when(mockTokenValidator.validate("token")).thenReturn(customerPrincipal);
-        when(mockIdGenerator.generate()).thenReturn("order-1");
-        when(mockDeviceRepository.findById("lap-1")).thenReturn(laptopData);
-        when(mockDeviceMapper.toEntity(laptopData)).thenReturn(laptopData != null ? laptopEntity : null); // Mock mapper
-        when(mockDeviceMapper.toDTO(any())).thenReturn(laptopData);
-
-        // Giả lập lỗi khi lưu Order
-        lenient().doThrow(new RuntimeException("DB Crash")).when(mockOrderRepository).save(any(OrderData.class));
 
         ArgumentCaptor<PlaceOrderResponseData> captor = ArgumentCaptor.forClass(PlaceOrderResponseData.class);
-        useCase.execute(input);
-        
         verify(mockOutputBoundary).present(captor.capture());
+        assertFalse(captor.getValue().success);
+        assertEquals("Auth Token không được để trống.", captor.getValue().message);
+    }
+
+    @Test
+    @DisplayName("Thất bại: Địa chỉ rỗng (Lỗi từ Entity Order)")
+    void test_Fail_EmptyAddress() {
+        PlaceOrderRequestData input = new PlaceOrderRequestData("token", "", validRequest.cartItems, "COD");
+        when(mockTokenValidator.validate("token")).thenReturn(userPrincipal);
+        // Lưu ý: Order.validateOrderInfo sẽ ném IllegalArgumentException
+
+        useCase.execute(input);
+
+        ArgumentCaptor<PlaceOrderResponseData> captor = ArgumentCaptor.forClass(PlaceOrderResponseData.class);
+        verify(mockOutputBoundary).present(captor.capture());
+        assertFalse(captor.getValue().success);
+        assertEquals("Địa chỉ giao hàng không được để trống.", captor.getValue().message);
+    }
+
+    @Test
+    @DisplayName("Thất bại: Phương thức thanh toán không hợp lệ")
+    void test_Fail_InvalidPaymentMethod() {
+        PlaceOrderRequestData input = new PlaceOrderRequestData("token", "HN", validRequest.cartItems, "BITCOIN");
+        when(mockTokenValidator.validate("token")).thenReturn(userPrincipal);
+        
+        useCase.execute(input);
+
+        ArgumentCaptor<PlaceOrderResponseData> captor = ArgumentCaptor.forClass(PlaceOrderResponseData.class);
+        verify(mockOutputBoundary).present(captor.capture());
+        assertFalse(captor.getValue().success);
+        // Lỗi này ném ra từ PaymentMethod.valueOf() hoặc custom validate trong Entity Order
+        assertTrue(captor.getValue().message.contains("hợp lệ") || captor.getValue().message.contains("No enum constant"));
+    }
+
+    @Test
+    @DisplayName("Thất bại: Giỏ hàng rỗng")
+    void test_Fail_EmptyCart() {
+        PlaceOrderRequestData input = new PlaceOrderRequestData("token", "HN", Collections.emptyMap(), "COD");
+        when(mockTokenValidator.validate("token")).thenReturn(userPrincipal);
+
+        useCase.execute(input);
+
+        ArgumentCaptor<PlaceOrderResponseData> captor = ArgumentCaptor.forClass(PlaceOrderResponseData.class);
+        verify(mockOutputBoundary).present(captor.capture());
+        assertFalse(captor.getValue().success);
+        assertEquals("Giỏ hàng không được để trống.", captor.getValue().message);
+    }
+
+    // =========================================================================
+    // KỊCH BẢN THẤT BẠI - LOGIC & DATA (Kho, Sản phẩm)
+    // =========================================================================
+
+    @Test
+    @DisplayName("Thất bại: Sản phẩm không tồn tại trong DB")
+    void test_Fail_ProductNotFound() {
+        when(mockTokenValidator.validate("token")).thenReturn(userPrincipal);
+        when(mockIdGenerator.generate()).thenReturn("order-1");
+        
+        // Mock DB trả về null
+        when(mockDeviceRepository.findById("lap-1")).thenReturn(null);
+
+        useCase.execute(validRequest);
+
+        ArgumentCaptor<PlaceOrderResponseData> captor = ArgumentCaptor.forClass(PlaceOrderResponseData.class);
+        verify(mockOutputBoundary).present(captor.capture());
+        
+        assertFalse(captor.getValue().success);
+        assertEquals("Sản phẩm không tồn tại: lap-1", captor.getValue().message);
+    }
+
+    @Test
+    @DisplayName("Thất bại: Hết hàng / Không đủ tồn kho")
+    void test_Fail_OutOfStock() {
+        when(mockTokenValidator.validate("token")).thenReturn(userPrincipal);
+        when(mockIdGenerator.generate()).thenReturn("order-1");
+        
+        when(mockDeviceRepository.findById("lap-1")).thenReturn(deviceData);
+        when(mockDeviceMapper.toEntity(deviceData)).thenReturn(mockDeviceEntity);
+        
+        // Giả lập Entity ném lỗi khi validate stock
+        doThrow(new IllegalArgumentException("Sản phẩm không đủ hàng.")).when(mockDeviceEntity).validateStock(1);
+
+        useCase.execute(validRequest);
+
+        // Verify KHÔNG lưu Order
+        verify(mockOrderRepository, never()).save(any());
+
+        ArgumentCaptor<PlaceOrderResponseData> captor = ArgumentCaptor.forClass(PlaceOrderResponseData.class);
+        verify(mockOutputBoundary).present(captor.capture());
+        
+        assertFalse(captor.getValue().success);
+        assertEquals("Sản phẩm không đủ hàng.", captor.getValue().message);
+    }
+
+    // =========================================================================
+    // KỊCH BẢN THẤT BẠI - HỆ THỐNG
+    // =========================================================================
+
+    @Test
+    @DisplayName("Thất bại: Lỗi hệ thống bất ngờ (DB chết)")
+    void test_Fail_SystemError() {
+        when(mockTokenValidator.validate("token")).thenThrow(new RuntimeException("DB Connection Timeout"));
+
+        useCase.execute(validRequest);
+
+        ArgumentCaptor<PlaceOrderResponseData> captor = ArgumentCaptor.forClass(PlaceOrderResponseData.class);
+        verify(mockOutputBoundary).present(captor.capture());
+        
         assertFalse(captor.getValue().success);
         assertTrue(captor.getValue().message.contains("Lỗi hệ thống"));
     }
