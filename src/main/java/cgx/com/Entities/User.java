@@ -22,7 +22,6 @@ public class User {
     private Instant createdAt;
     private Instant updatedAt;
 
-    // (Constructor, Getters... vẫn như cũ)
     
     // Constructor đầy đủ (dành cho Repository)
     public User(String userId, String email, String hashedPassword, String firstName, String lastName,
@@ -148,7 +147,7 @@ public class User {
         Instant now = Instant.now();
         return new User(
             userId, email, hashedPassword, firstName, lastName,
-            null, UserRole.CUSTOMER, AccountStatus.ACTIVE, now, now
+            null, UserRole.CUSTOMER, AccountStatus.PENDING_VERIFICATION, now, now
         );
     }
     
@@ -166,6 +165,14 @@ public class User {
     public void suspend() {
         this.status = AccountStatus.SUSPENDED;
         this.touch();
+    }
+    
+    public void activate() {
+        if (this.status == AccountStatus.ACTIVE) {
+            throw new IllegalStateException("Tài khoản đã được kích hoạt trước đó.");
+        }
+        this.status = AccountStatus.ACTIVE;
+        this.updatedAt = Instant.now();
     }
     
     /**

@@ -1,9 +1,12 @@
 package cgx.com.usecase.ManageUser.RegisterUser;
 
 import cgx.com.Entities.User;
+import cgx.com.usecase.ManageUser.IEmailService;
 import cgx.com.usecase.ManageUser.IPasswordHasher;
+import cgx.com.usecase.ManageUser.ISecureTokenGenerator;
 import cgx.com.usecase.ManageUser.IUserIdGenerator;
 import cgx.com.usecase.ManageUser.IUserRepository;
+import cgx.com.usecase.ManageUser.IVerificationTokenRepository;
 import cgx.com.usecase.ManageUser.UserData;
 
 /**
@@ -14,12 +17,15 @@ import cgx.com.usecase.ManageUser.UserData;
 public class RegisterByEmailUseCase extends AbstractRegisterUserUseCase {
 
     // Constructor nhận dependencies và đẩy lên lớp Cha (super)
-    public RegisterByEmailUseCase(IUserRepository userRepository,
-                                  IPasswordHasher passwordHasher,
-                                  IUserIdGenerator userIdGenerator,
-                                  RegisterUserOutputBoundary outputBoundary) {
-        super(userRepository, passwordHasher, userIdGenerator, outputBoundary);
-    }
+	public RegisterByEmailUseCase(IUserRepository userRepository,
+            IPasswordHasher passwordHasher,
+            IUserIdGenerator userIdGenerator,
+            IEmailService emailService,           // Inject
+            ISecureTokenGenerator tokenGenerator,
+            IVerificationTokenRepository verificationTokenRepository,// Inject
+            RegisterUserOutputBoundary outputBoundary) {
+			super(userRepository, passwordHasher, userIdGenerator, emailService, tokenGenerator,verificationTokenRepository, outputBoundary);
+	}
 
     @Override
     protected void validateRegistrationTypeSpecific(RegisterUserRequestData input) throws IllegalArgumentException {
@@ -65,5 +71,14 @@ public class RegisterByEmailUseCase extends AbstractRegisterUserUseCase {
             user.getCreatedAt(),
             user.getUpdatedAt()
         );
+	}
+
+	@Override
+	protected void sendActivationEmail(UserData user, String verificationToken) {
+		this.emailService.sendVerificationEmail(
+	            user.email, 
+	            user.firstName + " " + user.lastName, 
+	            verificationToken
+	        );
 	}
 }

@@ -11,4 +11,12 @@ public interface IEmailService {
      * @param plainTextToken Token (dạng plain-text) để nhúng vào link
      */
     void sendPasswordResetEmail(String toEmail, String userName, String plainTextToken);
+    
+    /**
+     * [MỚI] Gửi email xác thực tài khoản sau khi đăng ký.
+     * @param toEmail Email người nhận
+     * @param userName Tên người dùng
+     * @param verificationToken Mã/Link xác thực
+     */
+    void sendVerificationEmail(String toEmail, String userName, String verificationToken);
 }
