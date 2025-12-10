@@ -55,7 +55,7 @@ public class UpdateCartUseCaseTest {
         // Setup Sản phẩm: ID="dev-1", Giá 10, Kho 10
         activeDevice = new DeviceData();
         activeDevice.id = "dev-1";
-        activeDevice.status = "ACTIVE";
+        activeDevice.status = "AVAILABLE";
         activeDevice.price = new BigDecimal("10"); 
         activeDevice.stockQuantity = 10; 
 
@@ -163,7 +163,7 @@ public class UpdateCartUseCaseTest {
     @DisplayName("Fail: Sản phẩm không còn ACTIVE")
     void test_Fail_DeviceInactive() {
         UpdateCartRequestData input = new UpdateCartRequestData("token", "dev-1", 5);
-        activeDevice.status = "INACTIVE"; // Ngừng bán
+        activeDevice.status = "DISCONTINUED"; // Ngừng bán
         
         when(mockTokenValidator.validate("token")).thenReturn(userPrincipal);
         when(mockDeviceRepo.findById("dev-1")).thenReturn(activeDevice);
@@ -203,7 +203,7 @@ public class UpdateCartUseCaseTest {
         UpdateCartRequestData input = new UpdateCartRequestData("token", "dev-2", 5);
         
         // Mock device 2 tồn tại
-        DeviceData dev2 = new DeviceData(); dev2.id = "dev-2"; dev2.status = "ACTIVE"; dev2.stockQuantity=10;
+        DeviceData dev2 = new DeviceData(); dev2.id = "dev-2"; dev2.status = "AVAILABLE"; dev2.stockQuantity=10;
         
         when(mockTokenValidator.validate("token")).thenReturn(userPrincipal);
         when(mockDeviceRepo.findById("dev-2")).thenReturn(dev2);

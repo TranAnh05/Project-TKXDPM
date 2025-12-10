@@ -51,7 +51,7 @@ public class ProcessPaymentUseCase implements ProcessPaymentInputBoundary {
                 throw new SecurityException("Bạn không có quyền thanh toán cho đơn hàng này.");
             }
             
-            if (!"PENDING".equals(orderData.status)) {
+            if (!"PENDING".equals(orderData.status) && !"CONFIRMED".equals(orderData.status)) {
                 throw new IllegalStateException("Đơn hàng không ở trạng thái chờ thanh toán.");
             }
             

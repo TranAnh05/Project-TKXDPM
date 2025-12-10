@@ -121,6 +121,38 @@ public class Cart {
            throw new IllegalArgumentException("Sản phẩm không tìm thấy trong giỏ hàng.");
        }
    }
+   
+   
+   public void removeItem(String deviceId, BigDecimal currentUnitPrice) {
+       // 1. Tìm item cần xóa
+       Optional<CartItem> itemOpt = items.stream()
+               .filter(i -> i.getDeviceId().equals(deviceId))
+               .findFirst();
+
+       if (itemOpt.isPresent()) {
+           CartItem itemToRemove = itemOpt.get();
+           
+           // 2. Tính toán số tiền cần trừ
+           // Logic: Tổng tiền mới = Tổng cũ - (Số lượng đang có * Giá hiện tại)
+           BigDecimal amountToSubtract = currentUnitPrice.multiply(BigDecimal.valueOf(itemToRemove.getQuantity()));
+           
+           this.totalEstimatedPrice = this.totalEstimatedPrice.subtract(amountToSubtract);
+           
+           // Đảm bảo không âm (Safety check)
+           if (this.totalEstimatedPrice.compareTo(BigDecimal.ZERO) < 0) {
+               this.totalEstimatedPrice = BigDecimal.ZERO;
+           }
+
+           // 3. Xóa khỏi danh sách
+           items.remove(itemToRemove);
+           
+           // 4. Update thời gian
+           this.updatedAt = Instant.now();
+       } else {
+           // Tùy nghiệp vụ: Có thể ném lỗi hoặc lờ đi nếu không tìm thấy.
+           // Ở đây ta chọn lờ đi (Idempotent) - nếu đã xóa rồi thì coi như thành công.
+       }
+   }
 
     // Getters
     public String getUserId() { return userId; }
