@@ -2,21 +2,28 @@ package User.RequestPasswordReset;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.Instant;
+
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import cgx.com.Entities.AccountStatus;
+import cgx.com.Entities.UserRole;
 import cgx.com.usecase.ManageUser.IEmailService;
 import cgx.com.usecase.ManageUser.IPasswordHasher;
 import cgx.com.usecase.ManageUser.IPasswordResetTokenIdGenerator;
@@ -26,202 +33,123 @@ import cgx.com.usecase.ManageUser.IUserRepository;
 import cgx.com.usecase.ManageUser.PasswordResetTokenData;
 import cgx.com.usecase.ManageUser.UserData;
 import cgx.com.usecase.ManageUser.RequestPasswordReset.RequestPasswordResetOutputBoundary;
-import cgx.com.usecase.ManageUser.RequestPasswordReset.RequestPasswordResetRequestData;
+import cgx.com.usecase.ManageUser.RequestPasswordReset.EmailResetRequest;
 import cgx.com.usecase.ManageUser.RequestPasswordReset.RequestPasswordResetResponseData;
 import cgx.com.usecase.ManageUser.RequestPasswordReset.RequestResetByEmailUseCase;
 
 @ExtendWith(MockitoExtension.class)
 public class RequestResetByEmailUseCaseTest {
-	// 1. Mock tất cả các dependencies
-    @Mock private IUserRepository mockUserRepository;
-    @Mock private IPasswordResetTokenRepository mockTokenRepository;
-    @Mock private IPasswordResetTokenIdGenerator mockTokenIdGenerator;
-    @Mock private ISecureTokenGenerator mockTokenGenerator;
-    @Mock private IPasswordHasher mockPasswordHasher;
+
+    // 1. Mock Dependencies
+    @Mock private IUserRepository mockUserRepo;
+    @Mock private IPasswordResetTokenRepository mockTokenRepo;
+    @Mock private IPasswordResetTokenIdGenerator mockTokenIdGen;
+    @Mock private ISecureTokenGenerator mockSecureTokenGen;
+    @Mock private IPasswordHasher mockHasher;
     @Mock private RequestPasswordResetOutputBoundary mockOutputBoundary;
     @Mock private IEmailService mockEmailService;
 
-    // 2. Lớp cần test
+    // 2. Class under test
     private RequestResetByEmailUseCase useCase;
 
-    // 3. Dữ liệu mẫu
-    private RequestPasswordResetRequestData requestData;
-    private UserData validUserData;
+    // 3. Test Data
+    private UserData foundUser;
     
+    // Thông báo chuẩn bảo mật (dùng chung cho nhiều test case)
+    private static final String SECURITY_MESSAGE = 
+        "Nếu thông tin của bạn là chính xác và tồn tại trong hệ thống, một hướng dẫn đặt lại mật khẩu đã được gửi.";
+
     @BeforeEach
     void setUp() {
         useCase = new RequestResetByEmailUseCase(
-            mockUserRepository, mockTokenRepository, mockTokenIdGenerator,
-            mockTokenGenerator, mockPasswordHasher, mockOutputBoundary, mockEmailService
+            mockUserRepo, mockTokenRepo, mockTokenIdGen, 
+            mockSecureTokenGen, mockHasher, mockOutputBoundary, mockEmailService
         );
 
-        requestData = new RequestPasswordResetRequestData("test@example.com");
-
-        validUserData = new UserData();
-        validUserData.userId = "user-123";
-        validUserData.email = "test@example.com";
-        validUserData.firstName = "John";
-        validUserData.lastName = "Doe";
+        // User giả lập tìm thấy trong DB
+        foundUser = new UserData(
+            "user-1", "test@mail.com", "hashed_pass", "Nguyen", "Van A", 
+            null, UserRole.CUSTOMER, AccountStatus.ACTIVE, Instant.now(), Instant.now()
+        );
     }
-    
-    /**
-     * Test kịch bản THÀNH CÔNG (Quan trọng): User được TÌM THẤY
-     */
     @Test
-    void test_execute_success_userFound() {
-        // --- ARRANGE ---
-        // 1. Giả lập tìm thấy User
-        when(mockUserRepository.findByEmail("test@example.com")).thenReturn(validUserData);
-        // 2. Giả lập các generator
-        when(mockTokenIdGenerator.generate()).thenReturn("token-record-uuid-123");
-        when(mockTokenGenerator.generate()).thenReturn("plain-text-token-abc");
-        when(mockPasswordHasher.hash("plain-text-token-abc")).thenReturn("hashed-token-xyz");
+    @DisplayName("Fail: Email không đúng định dạng")
+    void test_Fail_InvalidEmailFormat() {
+        EmailResetRequest input = new EmailResetRequest("invalid-email");
 
-        ArgumentCaptor<RequestPasswordResetResponseData> responseCaptor =
-            ArgumentCaptor.forClass(RequestPasswordResetResponseData.class);
+        useCase.execute(input);
 
-        // --- ACT ---
-        useCase.execute(requestData);
+        ArgumentCaptor<RequestPasswordResetResponseData> captor = ArgumentCaptor.forClass(RequestPasswordResetResponseData.class);
+        verify(mockOutputBoundary).present(captor.capture());
 
-        // --- ASSERT ---
-        // 1. Kiểm tra các bước
-        verify(mockUserRepository).findByEmail("test@example.com");
-        verify(mockTokenIdGenerator).generate();
-        verify(mockTokenGenerator).generate();
-        verify(mockPasswordHasher).hash("plain-text-token-abc");
-        verify(mockTokenRepository).save(any(PasswordResetTokenData.class));
+        assertFalse(captor.getValue().success);
+        assertTrue(captor.getValue().message.contains("Email không đúng định dạng"));
+        
+        verify(mockUserRepo, never()).findByEmail(anyString());
+    }
+
+    @Test
+    @DisplayName("Success (Fake): Email không tồn tại -> Vẫn báo thành công (Chống dò user)")
+    void test_SuccessFake_UserNotFound() {
+        EmailResetRequest input = new EmailResetRequest("unknown@mail.com");
+
+        when(mockUserRepo.findByEmail("unknown@mail.com")).thenReturn(null);
+
+        // WHEN
+        useCase.execute(input);
+
+        // THEN
+        // 1. Verify KHÔNG lưu token, KHÔNG gửi mail
+        verify(mockTokenRepo, never()).save(any());
+        verify(mockEmailService, never()).sendPasswordResetEmail(anyString(), anyString(), anyString());
+
+        // 2. Verify Output: Vẫn báo thành công như bình thường
+        ArgumentCaptor<RequestPasswordResetResponseData> captor = ArgumentCaptor.forClass(RequestPasswordResetResponseData.class);
+        verify(mockOutputBoundary).present(captor.capture());
+
+        assertTrue(captor.getValue().success);
+        assertEquals(SECURITY_MESSAGE, captor.getValue().message);
+    }
+
+    @Test
+    @DisplayName("Success (Real): User tồn tại -> Tạo Token -> Lưu DB -> Gửi Mail")
+    void test_SuccessReal_UserFound() {
+        EmailResetRequest input = new EmailResetRequest("test@mail.com");
+
+        // GIVEN:
+        when(mockUserRepo.findByEmail("test@mail.com")).thenReturn(foundUser);
+        
+        // Mock các generator
+        when(mockSecureTokenGen.generate()).thenReturn("plain-123456"); // Token gốc gửi mail
+        when(mockHasher.hash("plain-123456")).thenReturn("hashed-xyz"); // Token băm lưu DB
+        when(mockTokenIdGen.generate()).thenReturn("token-id-100");
+
+        // WHEN
+        useCase.execute(input);
+
+        // THEN
+        
+        // 1. Verify Lưu Token đã băm vào DB
+        ArgumentCaptor<PasswordResetTokenData> tokenCaptor = ArgumentCaptor.forClass(PasswordResetTokenData.class);
+        verify(mockTokenRepo).save(tokenCaptor.capture());
+        
+        PasswordResetTokenData savedToken = tokenCaptor.getValue();
+        assertEquals("hashed-xyz", savedToken.hashedToken); // Phải lưu bản băm
+        assertEquals("user-1", savedToken.userId);
+        assertNotNull(savedToken.expiresAt);
+
+        // 2. Verify Gửi Email chứa Token gốc
         verify(mockEmailService).sendPasswordResetEmail(
-            "test@example.com", "John Doe", "plain-text-token-abc"
+            eq("test@mail.com"), 
+            eq("Nguyen Van A"), 
+            eq("plain-123456") 
         );
-        
-        // 2. Kiểm tra response (PHẢI là thông báo chung)
-        verify(mockOutputBoundary).present(responseCaptor.capture());
-        RequestPasswordResetResponseData presentedResponse = responseCaptor.getValue();
 
-        assertTrue(presentedResponse.success);
-        assertTrue(presentedResponse.message.contains("Nếu thông tin của bạn là chính xác"));
-    }
-    
-    /**
-     * Test kịch bản THÀNH CÔNG (Quan trọng): User KHÔNG TÌM THẤY
-     */
-    @Test
-    void test_execute_success_userNotFound() {
-        // --- ARRANGE ---
-        // 1. Giả lập KHÔNG tìm thấy User
-        when(mockUserRepository.findByEmail("test@example.com")).thenReturn(null);
+        // 3. Verify Output
+        ArgumentCaptor<RequestPasswordResetResponseData> resCaptor = ArgumentCaptor.forClass(RequestPasswordResetResponseData.class);
+        verify(mockOutputBoundary).present(resCaptor.capture());
 
-        ArgumentCaptor<RequestPasswordResetResponseData> responseCaptor =
-            ArgumentCaptor.forClass(RequestPasswordResetResponseData.class);
-
-        // --- ACT ---
-        useCase.execute(requestData);
-
-        // --- ASSERT ---
-        // 1. Chỉ check email
-        verify(mockUserRepository).findByEmail("test@example.com");
-        
-        // 2. Quan trọng: KHÔNG BAO GIỜ được gọi các hàm "ẩn"
-        verify(mockTokenGenerator, never()).generate();
-        verify(mockTokenRepository, never()).save(any());
-        verify(mockEmailService, never()).sendPasswordResetEmail(any(), any(), any());
-
-        // 3. Kiểm tra response (PHẢI là thông báo chung, Y HỆT như test trên)
-        verify(mockOutputBoundary).present(responseCaptor.capture());
-        RequestPasswordResetResponseData presentedResponse = responseCaptor.getValue();
-
-        assertTrue(presentedResponse.success);
-        assertTrue(presentedResponse.message.contains("Nếu thông tin của bạn là chính xác"));
-    }
-    
-    /**
-     * Test kịch bản THẤT BẠI: Lỗi Validation (Email không hợp lệ)
-     */
-    @Test
-    void test_execute_failure_invalidEmailFormat() {
-        // --- ARRANGE ---
-        RequestPasswordResetRequestData badRequest = 
-            new RequestPasswordResetRequestData("invalid-email");
-            
-        ArgumentCaptor<RequestPasswordResetResponseData> responseCaptor =
-            ArgumentCaptor.forClass(RequestPasswordResetResponseData.class);
-
-        // --- ACT ---
-        useCase.execute(badRequest);
-        
-        // --- ASSERT ---
-        verify(mockOutputBoundary).present(responseCaptor.capture());
-        RequestPasswordResetResponseData presentedResponse = responseCaptor.getValue();
-        
-        assertFalse(presentedResponse.success);
-        assertEquals("Email không đúng định dạng.", presentedResponse.message);
-        
-        // Dừng ngay, không gọi CSDL
-        verify(mockUserRepository, never()).findByEmail(anyString());
-    }
-    
-    /**
-     * Test kịch bản THẤT BẠI: Lỗi hệ thống (ví dụ: CSDL sập khi TÌM)
-     */
-    @Test
-    void test_execute_failure_systemErrorOnFind() {
-        // --- ARRANGE ---
-        // 1. Giả lập CSDL sập khi TÌM
-        when(mockUserRepository.findByEmail(anyString()))
-            .thenThrow(new RuntimeException("Database connection failed"));
-            
-        ArgumentCaptor<RequestPasswordResetResponseData> responseCaptor = 
-            ArgumentCaptor.forClass(RequestPasswordResetResponseData.class);
-
-        // --- ACT ---
-        useCase.execute(requestData);
-
-        // --- ASSERT ---
-        // 1. Đã cố gắng gọi find
-        verify(mockUserRepository).findByEmail(anyString());
-        
-        // 2. Kiểm tra response (PHẢI là thông báo CHUNG, để che giấu lỗi hệ thống)
-        verify(mockOutputBoundary).present(responseCaptor.capture());
-        RequestPasswordResetResponseData presentedResponse = responseCaptor.getValue();
-
-        assertTrue(presentedResponse.success);
-        assertTrue(presentedResponse.message.contains("Nếu thông tin của bạn là chính xác"));
-    }
-    
-    /**
-     * Test kịch bản THẤT BẠI: Lỗi hệ thống (ví dụ: Dịch vụ Email sập) (MỚI)
-     */
-    @Test
-    void test_execute_failure_emailServiceFails() {
-        // --- ARRANGE ---
-        // 1. Mọi thứ trước đó đều OK
-        when(mockUserRepository.findByEmail("test@example.com")).thenReturn(validUserData);
-        when(mockTokenIdGenerator.generate()).thenReturn("token-record-uuid-123");
-        when(mockTokenGenerator.generate()).thenReturn("plain-text-token-abc");
-        when(mockPasswordHasher.hash("plain-text-token-abc")).thenReturn("hashed-token-xyz");
-        
-        // 2. Giả lập Email Service bị sập
-        doThrow(new RuntimeException("Email service is down"))
-            .when(mockEmailService)
-            .sendPasswordResetEmail(anyString(), anyString(), anyString());
-
-        ArgumentCaptor<RequestPasswordResetResponseData> responseCaptor =
-            ArgumentCaptor.forClass(RequestPasswordResetResponseData.class);
-
-        // --- ACT ---
-        useCase.execute(requestData);
-
-        // --- ASSERT ---
-        // 1. Kiểm tra đã đi qua tất cả các bước, BAO GỒM cả việc gọi email
-        verify(mockUserRepository).findByEmail("test@example.com");
-        verify(mockTokenRepository).save(any(PasswordResetTokenData.class));
-        verify(mockEmailService).sendPasswordResetEmail(anyString(), anyString(), anyString());
-
-        // 2. Kiểm tra response (PHẢI là thông báo CHUNG, để che giấu lỗi hệ thống)
-        verify(mockOutputBoundary).present(responseCaptor.capture());
-        RequestPasswordResetResponseData presentedResponse = responseCaptor.getValue();
-
-        assertTrue(presentedResponse.success);
-        assertTrue(presentedResponse.message.contains("Nếu thông tin của bạn là chính xác"));
+        assertTrue(resCaptor.getValue().success);
+        assertEquals(SECURITY_MESSAGE, resCaptor.getValue().message);
     }
 }

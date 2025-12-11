@@ -9,43 +9,32 @@ import cgx.com.usecase.ManageUser.IUserRepository;
 import cgx.com.usecase.ManageUser.IVerificationTokenRepository;
 import cgx.com.usecase.ManageUser.UserData;
 
-/**
- * Lớp Use Case CỤ THỂ (Concrete) đầu tiên: Đăng ký bằng Email.
- * Lớp này "cắm" vào lớp AbstractRegisterUserUseCase,
- * cung cấp các logic cụ thể cho kiểu đăng ký này.
- */
 public class RegisterByEmailUseCase extends AbstractRegisterUserUseCase {
 
-    // Constructor nhận dependencies và đẩy lên lớp Cha (super)
 	public RegisterByEmailUseCase(IUserRepository userRepository,
             IPasswordHasher passwordHasher,
             IUserIdGenerator userIdGenerator,
-            IEmailService emailService,           // Inject
+            IEmailService emailService,          
             ISecureTokenGenerator tokenGenerator,
-            IVerificationTokenRepository verificationTokenRepository,// Inject
+            IVerificationTokenRepository verificationTokenRepository,
             RegisterUserOutputBoundary outputBoundary) {
 			super(userRepository, passwordHasher, userIdGenerator, emailService, tokenGenerator,verificationTokenRepository, outputBoundary);
 	}
 
     @Override
     protected void validateRegistrationTypeSpecific(RegisterUserRequestData input) throws IllegalArgumentException {
-        // Logic validation "riêng" của kiểu đăng ký này:
-        // Phải validate mật khẩu.
-        // (RegisterByGoogle sẽ không cần bước này)
         User.validatePassword(input.password);
     }
 
     @Override
     protected User createEntity(RegisterUserRequestData input) {
-        // Logic tạo Entity "riêng" của kiểu đăng ký này:
-        
-        // 1. Tạo ID mới
+        // 1. Tạo ID mới -> Sử dụng service tạo entity
         String userId = this.userIdGenerator.generate();
         
-        // 2. Băm mật khẩu (dùng service đã được inject)
+        // 2. Băm mật khẩu -> Sử dụng service tạo entity
         String hashedPassword = this.passwordHasher.hash(input.password);
 
-        // 3. Gọi Factory của Entity (Layer 4)
+        // 3. Gọi Factory của Entity
         return User.createNewCustomer(
             userId,
             input.email,
@@ -57,8 +46,6 @@ public class RegisterByEmailUseCase extends AbstractRegisterUserUseCase {
 
 	@Override
 	protected UserData mapEntityToData(User user) {
-		// Logic mapping "riêng":
-        // Trong trường hợp này, nó chỉ là map 1:1 đơn giản.
         return new UserData(
             user.getUserId(),
             user.getEmail(),

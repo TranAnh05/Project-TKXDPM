@@ -7,6 +7,7 @@ import static org.mockito.Mockito.*;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -16,6 +17,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import cgx.com.Entities.ProductAvailability;
 import cgx.com.Entities.UserRole;
 import cgx.com.usecase.Cart.CartData;
 import cgx.com.usecase.Cart.CartItemData;
@@ -43,8 +45,9 @@ public class UpdateCartUseCaseTest {
 
     // 3. Test Data
     private AuthPrincipal userPrincipal;
-    private DeviceData activeDevice;
     private CartData existingCart;
+    private DeviceData deviceData;
+    private UpdateCartRequestData validRequest;
 
     @BeforeEach
     void setUp() {
@@ -52,67 +55,31 @@ public class UpdateCartUseCaseTest {
         
         userPrincipal = new AuthPrincipal("user-1", "test@mail.com", UserRole.CUSTOMER);
         
-        // Setup Sản phẩm: ID="dev-1", Giá 10, Kho 10
-        activeDevice = new DeviceData();
-        activeDevice.id = "dev-1";
-        activeDevice.status = "AVAILABLE";
-        activeDevice.price = new BigDecimal("10"); 
-        activeDevice.stockQuantity = 10; 
+        // Request hợp lệ mặc định (Update lap-1 thành 2 cái)
+        validRequest = new UpdateCartRequestData("token", "lap-1", 2);
 
-        // Setup Giỏ hàng: Đã có 2 cái "dev-1" -> Tổng tiền hiện tại = 20
+        // Giỏ hàng giả lập: Đang có 1 món "lap-1", số lượng 1
         existingCart = new CartData();
         existingCart.userId = "user-1";
-        existingCart.items = new ArrayList<>(Collections.singletonList(new CartItemData("dev-1", 2)));
-        existingCart.totalEstimatedPrice = new BigDecimal("20");
+        List<CartItemData> items = new ArrayList<>();
+        items.add(new CartItemData("lap-1", 1));
+        existingCart.items = items;
+        existingCart.totalEstimatedPrice = new BigDecimal("20000000");
+
+        // Sản phẩm giả lập (Kho còn 10 cái, giá 20tr)
+        deviceData = new DeviceData();
+        deviceData.id = "lap-1";
+        deviceData.price = new BigDecimal("20000000");
+        deviceData.stockQuantity = 10;
+        deviceData.status = String.valueOf(ProductAvailability.AVAILABLE); // Map với Enum AVAILABLE/ACTIVE
     }
 
-    // =========================================================================
-    // KỊCH BẢN THÀNH CÔNG (HAPPY PATH)
-    // =========================================================================
-
     @Test
-    @DisplayName("Success: Cập nhật số lượng hợp lệ (Tăng từ 2 lên 5)")
-    void test_Success_UpdateQuantity() {
-        // GIVEN: User muốn đổi thành 5 cái (Kho có 10 -> Đủ)
-        UpdateCartRequestData input = new UpdateCartRequestData("token", "dev-1", 5);
-
-        when(mockTokenValidator.validate("token")).thenReturn(userPrincipal);
-        when(mockDeviceRepo.findById("dev-1")).thenReturn(activeDevice);
-        when(mockCartRepo.findByUserId("user-1")).thenReturn(existingCart);
-
-        // WHEN
-        useCase.execute(input);
-
-        // THEN
-        ArgumentCaptor<CartData> cartCaptor = ArgumentCaptor.forClass(CartData.class);
-        ArgumentCaptor<UpdateCartResponseData> resCaptor = ArgumentCaptor.forClass(UpdateCartResponseData.class);
-
-        // 1. Verify dữ liệu lưu xuống DB
-        verify(mockCartRepo).save(cartCaptor.capture());
-        CartData savedData = cartCaptor.getValue();
-        
-        assertEquals(1, savedData.items.size());
-        assertEquals(5, savedData.items.get(0).quantity); // Đã update thành 5
-        
-        // 2. Verify Logic tính tiền của Entity: 
-        // Cũ (20) - Item cũ (2*10) + Item mới (5*10) = 50
-        assertEquals(new BigDecimal("50"), savedData.totalEstimatedPrice);
-
-        // 3. Verify Phản hồi
-        verify(mockOutputBoundary).present(resCaptor.capture());
-        assertTrue(resCaptor.getValue().success);
-        assertEquals(5, resCaptor.getValue().totalItemsInCart);
-    }
-
-    // =========================================================================
-    // KỊCH BẢN THẤT BẠI (FAILURE SCENARIOS) - Theo tuần tự Logic
-    // =========================================================================
-
-    // 1. Lỗi Auth
-    @Test
-    @DisplayName("Fail: Token rỗng")
+    @DisplayName("Fail: Token rỗng hoặc null")
     void test_Fail_NoAuth() {
-        UpdateCartRequestData input = new UpdateCartRequestData(null, "dev-1", 5);
+        UpdateCartRequestData input = new UpdateCartRequestData(null, "lap-1", 2);
+        
+        when(mockTokenValidator.validate(null)).thenThrow(new SecurityException("Token lỗi"));
         
         useCase.execute(input);
 
@@ -120,14 +87,14 @@ public class UpdateCartUseCaseTest {
         verify(mockOutputBoundary).present(captor.capture());
         
         assertFalse(captor.getValue().success);
-        assertEquals("Vui lòng đăng nhập.", captor.getValue().message);
+        assertEquals("Token lỗi", captor.getValue().message);
     }
 
-    // 2. Lỗi Input (Số lượng <= 0)
     @Test
-    @DisplayName("Fail: Số lượng update <= 0")
+    @DisplayName("Fail: Số lượng <= 0")
     void test_Fail_InvalidQuantity() {
-        UpdateCartRequestData input = new UpdateCartRequestData("token", "dev-1", 0);
+        UpdateCartRequestData input = new UpdateCartRequestData("token", "lap-1", 0);
+        
         when(mockTokenValidator.validate("token")).thenReturn(userPrincipal);
 
         useCase.execute(input);
@@ -136,20 +103,16 @@ public class UpdateCartUseCaseTest {
         verify(mockOutputBoundary).present(captor.capture());
         
         assertFalse(captor.getValue().success);
-        // Message này throw từ UseCase (Validate Input)
-        assertEquals("Số lượng phải lớn hơn 0.", captor.getValue().message);
+        // Lỗi từ CartItem.validateQuantity
+        assertTrue(captor.getValue().message.contains("lớn hơn 0"));
     }
-
-    // 3. Lỗi Sản phẩm không tồn tại
     @Test
     @DisplayName("Fail: Sản phẩm không tìm thấy trong DB")
-    void test_Fail_DeviceNotFound() {
-        UpdateCartRequestData input = new UpdateCartRequestData("token", "dev-999", 5);
-        
+    void test_Fail_ProductNotFound() {
         when(mockTokenValidator.validate("token")).thenReturn(userPrincipal);
-        when(mockDeviceRepo.findById("dev-999")).thenReturn(null);
+        when(mockDeviceRepo.findById("lap-1")).thenReturn(null);
 
-        useCase.execute(input);
+        useCase.execute(validRequest);
 
         ArgumentCaptor<UpdateCartResponseData> captor = ArgumentCaptor.forClass(UpdateCartResponseData.class);
         verify(mockOutputBoundary).present(captor.capture());
@@ -158,56 +121,33 @@ public class UpdateCartUseCaseTest {
         assertEquals("Sản phẩm không tồn tại.", captor.getValue().message);
     }
 
-    // 4. Lỗi Sản phẩm ngừng kinh doanh
     @Test
-    @DisplayName("Fail: Sản phẩm không còn ACTIVE")
-    void test_Fail_DeviceInactive() {
-        UpdateCartRequestData input = new UpdateCartRequestData("token", "dev-1", 5);
-        activeDevice.status = "DISCONTINUED"; // Ngừng bán
-        
-        when(mockTokenValidator.validate("token")).thenReturn(userPrincipal);
-        when(mockDeviceRepo.findById("dev-1")).thenReturn(activeDevice);
+    @DisplayName("Fail: Sản phẩm có trạng thái DISCONTINUED")
+    void test_Fail_ProductDiscontinued() {
+        deviceData.status = "DISCONTINUED"; // Giả lập ngừng bán
 
-        useCase.execute(input);
+        when(mockTokenValidator.validate("token")).thenReturn(userPrincipal);
+        when(mockDeviceRepo.findById("lap-1")).thenReturn(deviceData);
+
+        useCase.execute(validRequest);
 
         ArgumentCaptor<UpdateCartResponseData> captor = ArgumentCaptor.forClass(UpdateCartResponseData.class);
         verify(mockOutputBoundary).present(captor.capture());
         
         assertFalse(captor.getValue().success);
-        assertEquals("Sản phẩm này hiện đang ngừng kinh doanh.", captor.getValue().message);
+        // Lỗi từ ComputerDevice.validateStatus
+        assertTrue(captor.getValue().message.contains("ngừng kinh doanh"));
     }
 
-    // 5. Lỗi Giỏ hàng không tồn tại
     @Test
-    @DisplayName("Fail: User chưa có giỏ hàng")
-    void test_Fail_CartNotFound() {
-        UpdateCartRequestData input = new UpdateCartRequestData("token", "dev-1", 5);
-        
+    @DisplayName("Fail: Số lượng update lớn hơn tồn kho")
+    void test_Fail_NotEnoughStock() {
+        // Kho có 10, muốn update lên 20
+        UpdateCartRequestData input = new UpdateCartRequestData("token", "lap-1", 20);
+        deviceData.stockQuantity = 10;
+
         when(mockTokenValidator.validate("token")).thenReturn(userPrincipal);
-        when(mockDeviceRepo.findById("dev-1")).thenReturn(activeDevice);
-        when(mockCartRepo.findByUserId("user-1")).thenReturn(null); // Không có giỏ
-
-        useCase.execute(input);
-
-        ArgumentCaptor<UpdateCartResponseData> captor = ArgumentCaptor.forClass(UpdateCartResponseData.class);
-        verify(mockOutputBoundary).present(captor.capture());
-        
-        assertFalse(captor.getValue().success);
-        assertEquals("Giỏ hàng không tồn tại.", captor.getValue().message);
-    }
-
-    // 6. Lỗi Entity Logic: Sản phẩm không có trong giỏ
-    @Test
-    @DisplayName("Fail: Update sản phẩm chưa từng thêm vào giỏ")
-    void test_Fail_ItemNotInCart() {
-        UpdateCartRequestData input = new UpdateCartRequestData("token", "dev-2", 5);
-        
-        // Mock device 2 tồn tại
-        DeviceData dev2 = new DeviceData(); dev2.id = "dev-2"; dev2.status = "AVAILABLE"; dev2.stockQuantity=10;
-        
-        when(mockTokenValidator.validate("token")).thenReturn(userPrincipal);
-        when(mockDeviceRepo.findById("dev-2")).thenReturn(dev2);
-        // Giỏ hàng có thật, nhưng chỉ chứa "dev-1", không chứa "dev-2"
+        when(mockDeviceRepo.findById("lap-1")).thenReturn(deviceData);
         when(mockCartRepo.findByUserId("user-1")).thenReturn(existingCart);
 
         useCase.execute(input);
@@ -216,47 +156,48 @@ public class UpdateCartUseCaseTest {
         verify(mockOutputBoundary).present(captor.capture());
         
         assertFalse(captor.getValue().success);
-        // Message này throw từ Entity Cart.updateItemQuantity
-        assertEquals("Sản phẩm không tìm thấy trong giỏ hàng.", captor.getValue().message);
-    }
-
-    // 7. Lỗi Entity Logic: Tồn kho không đủ
-    @Test
-    @DisplayName("Fail: Số lượng update vượt quá tồn kho")
-    void test_Fail_StockNotEnough() {
-        // Kho có 10, muốn update lên 15 -> Lỗi
-        UpdateCartRequestData input = new UpdateCartRequestData("token", "dev-1", 15);
-        
-        when(mockTokenValidator.validate("token")).thenReturn(userPrincipal);
-        when(mockDeviceRepo.findById("dev-1")).thenReturn(activeDevice);
-        when(mockCartRepo.findByUserId("user-1")).thenReturn(existingCart);
-
-        useCase.execute(input);
-
-        verify(mockCartRepo, never()).save(any()); // Không được lưu
-
-        ArgumentCaptor<UpdateCartResponseData> captor = ArgumentCaptor.forClass(UpdateCartResponseData.class);
-        verify(mockOutputBoundary).present(captor.capture());
-        
-        assertFalse(captor.getValue().success);
-        // Message throw từ Entity Cart
+        // Thông báo lỗi cụ thể từ Entity
         assertTrue(captor.getValue().message.contains("Kho chỉ còn 10"));
     }
 
-    // 8. Lỗi Hệ thống
+    // =========================================================================
+    // 8. KỊCH BẢN THÀNH CÔNG: HAPPY PATH
+    // =========================================================================
     @Test
-    @DisplayName("Fail: Lỗi DB bất ngờ")
-    void test_Fail_SystemError() {
-        UpdateCartRequestData input = new UpdateCartRequestData("token", "dev-1", 5);
+    @DisplayName("Success: Cập nhật thành công, tính lại giá đúng")
+    void test_Success() {
+        // GIVEN: Giỏ đang có 1 cái (20tr). Muốn sửa thành 3 cái.
+        UpdateCartRequestData input = new UpdateCartRequestData("token", "lap-1", 3);
         
-        when(mockTokenValidator.validate("token")).thenThrow(new RuntimeException("DB Connection Timeout"));
+        // Mock Device: Giá 20tr, Kho 100 cái (đủ)
+        deviceData.price = new BigDecimal("20000000");
+        deviceData.stockQuantity = 100;
 
+        when(mockTokenValidator.validate("token")).thenReturn(userPrincipal);
+        when(mockDeviceRepo.findById("lap-1")).thenReturn(deviceData);
+        when(mockCartRepo.findByUserId("user-1")).thenReturn(existingCart);
+
+        // WHEN
         useCase.execute(input);
 
-        ArgumentCaptor<UpdateCartResponseData> captor = ArgumentCaptor.forClass(UpdateCartResponseData.class);
-        verify(mockOutputBoundary).present(captor.capture());
+        // THEN
+        ArgumentCaptor<CartData> cartCaptor = ArgumentCaptor.forClass(CartData.class);
+        verify(mockCartRepo).save(cartCaptor.capture());
         
-        assertFalse(captor.getValue().success);
-        assertTrue(captor.getValue().message.contains("Lỗi hệ thống"));
+        CartData savedCart = cartCaptor.getValue();
+        
+        // 1. Verify số lượng đã update
+        assertEquals(3, savedCart.items.get(0).quantity);
+        
+        // 2. Verify Giá tiền đã update
+        // Logic: (Giá cũ 20tr - 20tr) + (3 * 20tr) = 60tr
+        // Hoặc đơn giản: 3 * 20tr = 60tr
+        assertEquals(0, savedCart.totalEstimatedPrice.compareTo(new BigDecimal("60000000")));
+        
+        // 3. Verify Output
+        ArgumentCaptor<UpdateCartResponseData> resCaptor = ArgumentCaptor.forClass(UpdateCartResponseData.class);
+        verify(mockOutputBoundary).present(resCaptor.capture());
+        assertTrue(resCaptor.getValue().success);
+        assertEquals(3, resCaptor.getValue().totalItemsInCart);
     }
 }

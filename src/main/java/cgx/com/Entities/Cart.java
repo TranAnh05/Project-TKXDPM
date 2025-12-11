@@ -34,10 +34,7 @@ public class Cart {
      * 
      */
     public void addItem(String deviceId, int requestedQuantity, int currentStock, BigDecimal unitPrice) {
-        // 1. Validate Input cơ bản
-        if (requestedQuantity <= 0) throw new IllegalArgumentException("Số lượng phải lớn hơn 0.");
-        
-        // 2. Tính toán tổng số lượng dự kiến (Scenario Merge)
+        // Tính toán tổng số lượng dự kiến (Scenario Merge)
         int currentQtyInCart = 0;
         Optional<CartItem> existingItemOpt = items.stream()
                 .filter(item -> item.getDeviceId().equals(deviceId))
@@ -49,8 +46,7 @@ public class Cart {
 
         int finalQuantity = currentQtyInCart + requestedQuantity;
 
-        // 3. CHECK TỒN KHO THỰC TẾ (Business Rule Quan Trọng Nhất)
-        // Kịch bản: Kho có 5, Giỏ có 3, Muốn thêm 3 -> Tổng 6 > 5 -> Lỗi
+        // CHECK TỒN KHO
         if (finalQuantity > currentStock) {
             throw new IllegalArgumentException(
                 String.format("Số lượng vượt quá tồn kho. Kho còn: %d, Bạn đã có: %d, Muốn thêm: %d.", 
@@ -58,21 +54,20 @@ public class Cart {
             );
         }
 
-        // 4. Thực hiện thay đổi dữ liệu (State Change)
+        // Thực hiện thay đổi dữ liệu
         if (existingItemOpt.isPresent()) {
             // Case: Đã có -> Update số lượng
             existingItemOpt.get().addQuantity(requestedQuantity);
         } else {
-            // Case: Mới -> Thêm item mới
+            // Case: Chưa có -> Thêm item mới
             items.add(new CartItem(deviceId, requestedQuantity));
         }
 
-        // 5. Cập nhật tổng tiền tạm tính (Snapshot)
-        // Logic: Cộng thêm giá trị của lượng vừa thêm vào tổng cũ
+        // Cập nhật tổng tiền
         BigDecimal amountToAdd = unitPrice.multiply(BigDecimal.valueOf(requestedQuantity));
         this.totalEstimatedPrice = this.totalEstimatedPrice.add(amountToAdd);
         
-        // 6. Update thời gian
+        // Update thời gian
         this.updatedAt = Instant.now();
     }
     
@@ -80,78 +75,46 @@ public class Cart {
     * NGHIỆP VỤ: Cập nhật số lượng (Edit Cart)
     */
    public void updateItemQuantity(String deviceId, int newQuantity, int currentStock, BigDecimal currentUnitPrice) {
-       if (newQuantity <= 0) {
-           throw new IllegalArgumentException("Số lượng phải lớn hơn 0. Hãy dùng chức năng Xóa nếu muốn bỏ sản phẩm.");
-       }
-
-       // 1. Tìm item trong giỏ
+       // Tìm item trong giỏ
        Optional<CartItem> itemOpt = items.stream()
                .filter(i -> i.getDeviceId().equals(deviceId))
                .findFirst();
+       
+       CartItem item = itemOpt.get();
+       int oldQuantity = item.getQuantity();
 
-       if (itemOpt.isPresent()) {
-           CartItem item = itemOpt.get();
-           int oldQuantity = item.getQuantity();
-
-           // 2. CHECK TỒN KHO: Số lượng MỚI có vượt quá kho không?
-           // (Khách muốn set thành 10, kho có 8 -> Lỗi)
-           if (newQuantity > currentStock) {
-               throw new IllegalArgumentException("Kho chỉ còn " + currentStock + " sản phẩm. Không đủ số lượng yêu cầu.");
-           }
-
-           // 3. Cập nhật số lượng
-           item.setQuantity(newQuantity);
-
-           // 4. Tính toán lại Tổng tiền (Estimate)
-           // Logic: Trừ đi tiền của số lượng cũ, cộng tiền của số lượng mới
-           // (Dùng giá hiện tại để đảm bảo tính thực tế)
-           BigDecimal oldAmount = currentUnitPrice.multiply(BigDecimal.valueOf(oldQuantity));
-           BigDecimal newAmount = currentUnitPrice.multiply(BigDecimal.valueOf(newQuantity));
-           
-           // Tổng mới = Tổng cũ - Tiền cũ + Tiền mới
-           this.totalEstimatedPrice = this.totalEstimatedPrice.subtract(oldAmount).add(newAmount);
-           
-           // Đảm bảo không bị âm (do sai số float/double nếu có, dù dùng BigDecimal thì hiếm)
-           if (this.totalEstimatedPrice.compareTo(BigDecimal.ZERO) < 0) {
-               this.totalEstimatedPrice = BigDecimal.ZERO;
-           }
-
-           this.updatedAt = Instant.now();
-       } else {
-           throw new IllegalArgumentException("Sản phẩm không tìm thấy trong giỏ hàng.");
+       // check tồn kho với sl user chỉ định
+       if (newQuantity > currentStock) {
+           throw new IllegalArgumentException("Kho chỉ còn " + currentStock + " sản phẩm. Không đủ số lượng yêu cầu.");
        }
+
+       item.setQuantity(newQuantity);
+
+       BigDecimal oldAmount = currentUnitPrice.multiply(BigDecimal.valueOf(oldQuantity));
+       BigDecimal newAmount = currentUnitPrice.multiply(BigDecimal.valueOf(newQuantity));
+       
+       // Tổng mới = Tổng cũ - Tiền cũ + Tiền mới
+       this.totalEstimatedPrice = this.totalEstimatedPrice.subtract(oldAmount).add(newAmount);
+       
+       this.updatedAt = Instant.now();
    }
    
    
    public void removeItem(String deviceId, BigDecimal currentUnitPrice) {
-       // 1. Tìm item cần xóa
+       // Tìm item cần xóa
        Optional<CartItem> itemOpt = items.stream()
                .filter(i -> i.getDeviceId().equals(deviceId))
                .findFirst();
 
-       if (itemOpt.isPresent()) {
-           CartItem itemToRemove = itemOpt.get();
-           
-           // 2. Tính toán số tiền cần trừ
-           // Logic: Tổng tiền mới = Tổng cũ - (Số lượng đang có * Giá hiện tại)
-           BigDecimal amountToSubtract = currentUnitPrice.multiply(BigDecimal.valueOf(itemToRemove.getQuantity()));
-           
-           this.totalEstimatedPrice = this.totalEstimatedPrice.subtract(amountToSubtract);
-           
-           // Đảm bảo không âm (Safety check)
-           if (this.totalEstimatedPrice.compareTo(BigDecimal.ZERO) < 0) {
-               this.totalEstimatedPrice = BigDecimal.ZERO;
-           }
+       CartItem itemToRemove = itemOpt.get();
+       
+       BigDecimal amountToSubtract = currentUnitPrice.multiply(BigDecimal.valueOf(itemToRemove.getQuantity()));
+       
+       this.totalEstimatedPrice = this.totalEstimatedPrice.subtract(amountToSubtract);
 
-           // 3. Xóa khỏi danh sách
-           items.remove(itemToRemove);
-           
-           // 4. Update thời gian
-           this.updatedAt = Instant.now();
-       } else {
-           // Tùy nghiệp vụ: Có thể ném lỗi hoặc lờ đi nếu không tìm thấy.
-           // Ở đây ta chọn lờ đi (Idempotent) - nếu đã xóa rồi thì coi như thành công.
-       }
+       items.remove(itemToRemove);
+       
+       this.updatedAt = Instant.now();
    }
 
     // Getters

@@ -1,4 +1,4 @@
-package cgx.com.usecase.Payment.ProcessPayment;
+package cgx.com.usecase.Payment;
 
 import cgx.com.Entities.Order;
 

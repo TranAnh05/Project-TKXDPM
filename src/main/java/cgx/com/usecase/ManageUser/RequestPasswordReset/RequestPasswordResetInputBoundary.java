@@ -1,5 +1,5 @@
 package cgx.com.usecase.ManageUser.RequestPasswordReset;
 
-public interface RequestPasswordResetInputBoundary {
-    void execute(RequestPasswordResetRequestData inputData);
+public interface RequestPasswordResetInputBoundary<T> {
+	void execute(T input);
 }

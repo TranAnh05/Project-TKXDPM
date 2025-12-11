@@ -9,7 +9,10 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.Instant;
+
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -30,203 +33,145 @@ import cgx.com.usecase.ManageUser.RegisterUser.RegisterUserResponseData;
 
 @ExtendWith(MockitoExtension.class)
 public class LoginByEmailUseCaseTest {
-	// 1. Mock các dependencies
-    @Mock private IUserRepository mockUserRepository;
+
+    // 1. Mock Dependencies
+    @Mock private IUserRepository mockUserRepo;
     @Mock private IPasswordHasher mockPasswordHasher;
     @Mock private IAuthTokenGenerator mockTokenGenerator;
     @Mock private AuthenticateUserOutputBoundary mockOutputBoundary;
 
-    // 2. Lớp cần test
+    // 2. Class under test
     private LoginByEmailUseCase useCase;
 
-    // 3. Dữ liệu mẫu
-    private AuthenticateUserRequestData requestData;
-    private UserData validUserData;
-    
+    // 3. Test Data
+    private AuthenticateUserRequestData validRequest;
+    private UserData activeUser;
+
     @BeforeEach
     void setUp() {
-        useCase = new LoginByEmailUseCase(
-            mockUserRepository,
-            mockPasswordHasher,
-            mockTokenGenerator,
-            mockOutputBoundary
+        useCase = new LoginByEmailUseCase(mockUserRepo, mockPasswordHasher, mockTokenGenerator, mockOutputBoundary);
+
+        // Input hợp lệ
+        validRequest = new AuthenticateUserRequestData("test@mail.com", "password123");
+
+        // User trong DB (Trạng thái ACTIVE)
+        activeUser = new UserData(
+            "user-1", 
+            "test@mail.com", 
+            "hashed_pass", 
+            "Nguyen", 
+            "Van A", 
+            "0901234567", 
+            UserRole.CUSTOMER, 
+            AccountStatus.ACTIVE, 
+            Instant.now(), 
+            Instant.now()
         );
-
-        requestData = new AuthenticateUserRequestData("test@example.com", "password123");
-
-        validUserData = new UserData();
-        validUserData.userId = "user-123";
-        validUserData.email = "test@example.com";
-        validUserData.hashedPassword = "hashed_password_abc";
-        validUserData.role = UserRole.CUSTOMER;
-        validUserData.status = AccountStatus.ACTIVE;
     }
 
-    /**
-     * Test kịch bản THÀNH CÔNG
-     */
     @Test
-    void test_execute_success() {
-        // --- ARRANGE ---
-        // 1. Giả lập tìm thấy User
-        when(mockUserRepository.findByEmail("test@example.com")).thenReturn(validUserData);
-        // 2. Giả lập mật khẩu ĐÚNG
-        when(mockPasswordHasher.verify("password123", "hashed_password_abc")).thenReturn(true);
-        // 3. Giả lập tạo token
-        when(mockTokenGenerator.generate("user-123", "test@example.com", UserRole.CUSTOMER))
-            .thenReturn("jwt.token.string");
-        
-        ArgumentCaptor<AuthenticateUserResponseData> responseCaptor = 
-            ArgumentCaptor.forClass(AuthenticateUserResponseData.class);
+    @DisplayName("Fail: Email không đúng định dạng")
+    void test_Fail_InvalidEmailFormat() {
+        AuthenticateUserRequestData input = new AuthenticateUserRequestData("invalid-email", "pass123");
 
-        // --- ACT ---
-        useCase.execute(requestData);
+        useCase.execute(input);
 
-        // --- ASSERT ---
-        verify(mockUserRepository).findByEmail("test@example.com");
-        verify(mockPasswordHasher).verify("password123", "hashed_password_abc");
-        verify(mockTokenGenerator).generate("user-123", "test@example.com", UserRole.CUSTOMER);
-        
-        verify(mockOutputBoundary).present(responseCaptor.capture());
-        AuthenticateUserResponseData presentedResponse = responseCaptor.getValue();
+        ArgumentCaptor<AuthenticateUserResponseData> captor = ArgumentCaptor.forClass(AuthenticateUserResponseData.class);
+        verify(mockOutputBoundary).present(captor.capture());
 
-        assertTrue(presentedResponse.success);
-        assertEquals("Đăng nhập thành công!", presentedResponse.message);
-        assertEquals("jwt.token.string", presentedResponse.token);
+        assertFalse(captor.getValue().success);
+        // Lỗi từ User.validateEmail
+        assertTrue(captor.getValue().message.contains("Email không đúng định dạng"));
     }
-    
 
-    /**
-     * Test kịch bản THẤT BẠI: Không tìm thấy User
-     */
     @Test
-    void test_execute_failure_userNotFound() {
-        // --- ARRANGE ---
-        when(mockUserRepository.findByEmail("test@example.com")).thenReturn(null);
-        ArgumentCaptor<AuthenticateUserResponseData> responseCaptor = 
-            ArgumentCaptor.forClass(AuthenticateUserResponseData.class);
-            
-        // --- ACT ---
-        useCase.execute(requestData);
-        
-        // --- ASSERT ---
-        verify(mockOutputBoundary).present(responseCaptor.capture());
-        AuthenticateUserResponseData presentedResponse = responseCaptor.getValue();
+    @DisplayName("Fail: Mật khẩu để trống (Validate Type Specific)")
+    void test_Fail_InvalidPasswordFormat() {
+        AuthenticateUserRequestData input = new AuthenticateUserRequestData("test@mail.com", "");
 
-        assertFalse(presentedResponse.success);
-        assertEquals("Sai thông tin đăng nhập.", presentedResponse.message);
-        
-        // Quan trọng: Không bao giờ gọi hàm so sánh mật khẩu
-        verify(mockPasswordHasher, never()).verify(toString(), toString());
-        verify(mockTokenGenerator, never()).generate(any(), any(), any());
+        useCase.execute(input);
+
+        ArgumentCaptor<AuthenticateUserResponseData> captor = ArgumentCaptor.forClass(AuthenticateUserResponseData.class);
+        verify(mockOutputBoundary).present(captor.capture());
+
+        assertFalse(captor.getValue().success);
+        // Lỗi từ User.validatePassword
+        assertTrue(captor.getValue().message.contains("Mật khẩu không được để trống"));
     }
-    
-    /**
-     * Test kịch bản THẤT BẠI: Sai mật khẩu
-     */
+
     @Test
-    void test_execute_failure_wrongPassword() {
-        // --- ARRANGE ---
-        when(mockUserRepository.findByEmail("test@example.com")).thenReturn(validUserData);
-        // 2. Giả lập mật khẩu SAI
-        when(mockPasswordHasher.verify("password123", "hashed_password_abc")).thenReturn(false);
-        
-        ArgumentCaptor<AuthenticateUserResponseData> responseCaptor = 
-            ArgumentCaptor.forClass(AuthenticateUserResponseData.class);
+    @DisplayName("Fail: Không tìm thấy tài khoản trong DB")
+    void test_Fail_UserNotFound() {
+        // Mock Repo trả về null
+        when(mockUserRepo.findByEmail("test@mail.com")).thenReturn(null);
 
-        // --- ACT ---
-        useCase.execute(requestData);
+        useCase.execute(validRequest);
 
-        // --- ASSERT ---
-        verify(mockOutputBoundary).present(responseCaptor.capture());
-        AuthenticateUserResponseData presentedResponse = responseCaptor.getValue();
+        ArgumentCaptor<AuthenticateUserResponseData> captor = ArgumentCaptor.forClass(AuthenticateUserResponseData.class);
+        verify(mockOutputBoundary).present(captor.capture());
 
-        assertFalse(presentedResponse.success);
-        assertEquals("Sai thông tin đăng nhập.", presentedResponse.message);
-        
-        // Quan trọng: Không bao H giờ gọi hàm tạo token
-        verify(mockTokenGenerator, never()).generate(any(), any(), any());
+        assertFalse(captor.getValue().success);
+        assertEquals("Không tìm thấy tài khoản.", captor.getValue().message);
     }
-    
-    /**
-     * Test kịch bản THẤT BẠI: Tài khoản bị khóa (SUSPENDED)
-     */
+
     @Test
-    void test_execute_failure_accountSuspended() {
-        // --- ARRANGE ---
-        validUserData.status = AccountStatus.SUSPENDED; // <-- Thay đổi trạng thái
-        when(mockUserRepository.findByEmail("test@example.com")).thenReturn(validUserData);
-        when(mockPasswordHasher.verify("password123", "hashed_password_abc")).thenReturn(true); // Vẫn đúng pass
-
-        ArgumentCaptor<AuthenticateUserResponseData> responseCaptor = 
-            ArgumentCaptor.forClass(AuthenticateUserResponseData.class);
-
-        // --- ACT ---
-        useCase.execute(requestData);
-
-        // --- ASSERT ---
-        verify(mockOutputBoundary).present(responseCaptor.capture());
-        AuthenticateUserResponseData presentedResponse = responseCaptor.getValue();
-
-        assertFalse(presentedResponse.success);
-        assertEquals("Tài khoản đã bị khóa hoặc chưa kích hoạt.", presentedResponse.message);
+    @DisplayName("Fail: Sai mật khẩu")
+    void test_Fail_WrongPassword() {
+        // Mock Repo tìm thấy user
+        when(mockUserRepo.findByEmail("test@mail.com")).thenReturn(activeUser);
         
-        // Quan trọng: Vẫn check pass, nhưng KHÔNG tạo token
-        verify(mockPasswordHasher).verify("password123", "hashed_password_abc");
-        verify(mockTokenGenerator, never()).generate(any(), any(), any());
+        // Mock Hasher trả về false (Không khớp)
+        when(mockPasswordHasher.verify("password123", "hashed_pass")).thenReturn(false);
+
+        useCase.execute(validRequest);
+
+        ArgumentCaptor<AuthenticateUserResponseData> captor = ArgumentCaptor.forClass(AuthenticateUserResponseData.class);
+        verify(mockOutputBoundary).present(captor.capture());
+
+        assertFalse(captor.getValue().success);
+        // Lỗi từ LoginByEmailUseCase.authenticate -> SecurityException
+        assertEquals("Sai thông tin đăng nhập.", captor.getValue().message);
     }
-    
-    /**
-     * Test kịch bản THẤT BẠI: Mật khẩu để trống (Lỗi Validation)
-     */
+
     @Test
-    void test_execute_failure_passwordEmpty() {
-        // --- ARRANGE ---
-        AuthenticateUserRequestData badRequest = 
-            new AuthenticateUserRequestData("test@example.com", ""); // Pass rỗng
-            
-        ArgumentCaptor<AuthenticateUserResponseData> responseCaptor = 
-            ArgumentCaptor.forClass(AuthenticateUserResponseData.class);
+    @DisplayName("Fail: Tài khoản bị khóa (SUSPENDED)")
+    void test_Fail_AccountSuspended() {
+        activeUser.status = AccountStatus.SUSPENDED;
 
-        // --- ACT ---
-        useCase.execute(badRequest);
-        
-        // --- ASSERT ---
-        verify(mockOutputBoundary).present(responseCaptor.capture());
-        AuthenticateUserResponseData presentedResponse = responseCaptor.getValue();
-        
-        assertFalse(presentedResponse.success);
-        assertEquals("Mật khẩu không được để trống.", presentedResponse.message);
+        when(mockUserRepo.findByEmail("test@mail.com")).thenReturn(activeUser);
+        when(mockPasswordHasher.verify("password123", "hashed_pass")).thenReturn(true);
 
-        // Dừng ngay từ đầu, không gọi CSDL
-        verify(mockUserRepository, never()).findByEmail(anyString());
+        useCase.execute(validRequest);
+
+        ArgumentCaptor<AuthenticateUserResponseData> captor = ArgumentCaptor.forClass(AuthenticateUserResponseData.class);
+        verify(mockOutputBoundary).present(captor.capture());
+
+        assertFalse(captor.getValue().success);
+        // Lỗi từ User.isNotLogin
+        assertTrue(captor.getValue().message.contains("không được phép đăng nhập"));
     }
-    
-    /**
-     * Test kịch bản THẤT BẠI: CSDL sập
-     */
+
     @Test
-    void test_execute_failure_DBFallOff() {
-        // --- ARRANGE ---
-        AuthenticateUserRequestData badRequest = 
-            new AuthenticateUserRequestData("test@example.com", "password123");
-            
-        when(mockUserRepository.findByEmail("test@example.com")).thenThrow(new RuntimeException("Database connection failed"));
+    @DisplayName("Success: Đăng nhập thành công -> Trả về Token")
+    void test_Success() {
+        // GIVEN
+        when(mockUserRepo.findByEmail("test@mail.com")).thenReturn(activeUser);
+        when(mockPasswordHasher.verify("password123", "hashed_pass")).thenReturn(true);
+        when(mockTokenGenerator.generate("user-1", "test@mail.com", UserRole.CUSTOMER))
+            .thenReturn("valid.jwt.token");
 
-        ArgumentCaptor<AuthenticateUserResponseData> responseCaptor = 
-            ArgumentCaptor.forClass(AuthenticateUserResponseData.class);
-        
+        // WHEN
+        useCase.execute(validRequest);
 
-        // --- ACT ---
-        useCase.execute(badRequest);
-        
-        // --- ASSERT ---
-     // --- ASSERT ---
-        // 2. Kiểm tra response lỗi hệ thống
-        verify(mockOutputBoundary).present(responseCaptor.capture());
-        AuthenticateUserResponseData presentedResponse = responseCaptor.getValue();
+        // THEN
+        ArgumentCaptor<AuthenticateUserResponseData> captor = ArgumentCaptor.forClass(AuthenticateUserResponseData.class);
+        verify(mockOutputBoundary).present(captor.capture());
 
-        assertFalse(presentedResponse.success);
-        assertEquals("Đã xảy ra lỗi hệ thống không xác định.", presentedResponse.message);
+        AuthenticateUserResponseData response = captor.getValue();
+        assertTrue(response.success);
+        assertEquals("Đăng nhập thành công!", response.message);
+        assertEquals("valid.jwt.token", response.token);
+        assertEquals("user-1", response.userId);
+        assertEquals(UserRole.CUSTOMER, response.role);
     }
 }

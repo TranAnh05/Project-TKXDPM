@@ -3,6 +3,7 @@ package cgx.com.usecase.ManageUser.VerifyEmail;
 import java.time.Instant;
 
 import cgx.com.Entities.AccountStatus;
+import cgx.com.Entities.User;
 import cgx.com.Entities.VerificationToken;
 import cgx.com.usecase.ManageUser.IUserRepository;
 import cgx.com.usecase.ManageUser.IVerificationTokenRepository;
@@ -31,49 +32,30 @@ public class VerifyEmailUseCase implements VerifyEmailInputBoundary {
             // 1. Validate Input
             VerificationToken.validateToken(input.token);
 
-            // 2. Tìm Token trong DB (Kịch bản 2)
+            // 2. Tìm Token trong DB
             VerificationTokenData tokenData = tokenRepository.findByToken(input.token);
             if (tokenData == null) {
                 throw new IllegalArgumentException("Mã xác thực không hợp lệ hoặc không tồn tại.");
             }
 
-            // 3. Kiểm tra hết hạn (Kịch bản 3)
+            // 3. Kiểm tra hết hạn
             if (tokenData.expiryDate.isBefore(Instant.now())) {
-                // (Tùy chọn: Có thể xóa token hết hạn ở đây luôn để dọn dẹp DB)
-                // tokenRepository.deleteByToken(input.token);
                 throw new IllegalArgumentException("Mã xác thực đã hết hạn. Vui lòng yêu cầu gửi lại.");
             }
 
             // 4. Tìm User tương ứng với Token
             UserData userData = userRepository.findByUserId(tokenData.userId);
-//            if (userData == null) {
-//                // Trường hợp hiếm: Token còn nhưng User đã bị xóa cứng khỏi DB
-//                tokenRepository.deleteByToken(input.token); // Dọn rác
-//                throw new IllegalArgumentException("Tài khoản không tồn tại.");
-//            }
-
-            // 5. Kích hoạt tài khoản (Kịch bản 1 & 4)
-            if (userData.status == AccountStatus.ACTIVE) {
-                // Kịch bản 4: Đã kích hoạt rồi -> Coi như thành công luôn
-                output.success = true;
-                output.message = "Tài khoản của bạn đã được kích hoạt trước đó.";
-            } else {
-                // Kịch bản 1: Kích hoạt lần đầu
-                
-                // Cập nhật trạng thái DTO
-                userData.status = AccountStatus.ACTIVE;
-                userData.updatedAt = Instant.now();
-                
-                // Lưu User xuống DB
-                userRepository.update(userData);
-                
-                output.success = true;
-                output.message = "Kích hoạt tài khoản thành công! Bạn có thể đăng nhập ngay bây giờ.";
-            }
-
+            
+            User userEntity = mapDataToEntity(userData);
+            userEntity.activate();
+            
+            UserData dataToUpdate = mapEntityToData(userEntity);
+            userRepository.update(dataToUpdate);
+            
+            output.success = true;
+            output.message = "Kích hoạt tài khoản thành công! Bạn có thể đăng nhập ngay bây giờ.";
             // 6. Dọn dẹp: Xóa token đã sử dụng (để không dùng lại được)
             tokenRepository.deleteByToken(input.token);
-
         } catch (IllegalArgumentException e) {
             output.success = false;
             output.message = e.getMessage();
@@ -85,4 +67,34 @@ public class VerifyEmailUseCase implements VerifyEmailInputBoundary {
 
         outputBoundary.present(output);
     }
+
+	private UserData mapEntityToData(User entity) {
+		return new UserData(
+	            entity.getUserId(),
+	            entity.getEmail(),
+	            entity.getHashedPassword(),
+	            entity.getFirstName(),
+	            entity.getLastName(),
+	            entity.getPhoneNumber(),
+	            entity.getRole(),
+	            entity.getStatus(),
+	            entity.getCreatedAt(),
+	            entity.getUpdatedAt()
+	        );
+	}
+
+	private User mapDataToEntity(UserData data) {
+		return new User(
+	            data.userId,
+	            data.email,
+	            data.hashedPassword,
+	            data.firstName,
+	            data.lastName,
+	            data.phoneNumber,
+	            data.role,   
+	            data.status, 
+	            data.createdAt,
+	            data.updatedAt
+	        );
+	}
 }

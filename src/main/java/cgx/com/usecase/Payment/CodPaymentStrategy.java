@@ -1,4 +1,4 @@
-package cgx.com.usecase.Payment.ProcessPayment;
+package cgx.com.usecase.Payment;
 
 import java.util.UUID;
 
@@ -14,9 +14,7 @@ public class CodPaymentStrategy implements IPaymentStrategy {
 
     @Override
     public PaymentResult process(Order order) {
-        // Logic COD: Đơn giản là xác nhận sẽ thu tiền sau.
         // Tạo mã giao dịch giả lập
-        String transId = "COD-" + UUID.randomUUID().toString();
-        return new PaymentResult(true, "Vui lòng chuẩn bị tiền mặt khi nhận hàng.", null, transId);
+        return new PaymentResult(true, "Vui lòng chuẩn bị tiền mặt khi nhận hàng.", null, null);
     }
 }

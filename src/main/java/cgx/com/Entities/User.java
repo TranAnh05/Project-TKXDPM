@@ -168,11 +168,14 @@ public class User {
     }
     
     public void activate() {
-        if (this.status == AccountStatus.ACTIVE) {
-            throw new IllegalStateException("Tài khoản đã được kích hoạt trước đó.");
-        }
         this.status = AccountStatus.ACTIVE;
         this.updatedAt = Instant.now();
+    }
+    
+    public void validateLoginStatus() {
+    	if (this.status != AccountStatus.ACTIVE) {
+            throw new SecurityException("Tài khoản không được phép đăng nhập.");
+        }
     }
     
     /**
@@ -197,7 +200,7 @@ public class User {
         this.touch(); // Cập nhật thời gian
     }
     
-    private void touch() {
+    public void touch() {
         this.updatedAt = Instant.now();
     }
     

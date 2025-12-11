@@ -7,7 +7,6 @@ import java.time.Instant;
 * Lớp Entity: PasswordResetToken
 * Đại diện cho một token (mã) tạm thời, dùng một lần để cho phép
 * người dùng đặt lại mật khẩu khi họ quên.
-* Đây cũng là một POJO thuộc Layer 4.
 */
 public class PasswordResetToken {
 

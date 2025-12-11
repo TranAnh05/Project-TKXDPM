@@ -75,6 +75,20 @@ public class Order {
         }
     }
     
+    public static void validatePaymentStatus(String paymentMethod) {
+    	if(paymentMethod == null || paymentMethod.isEmpty()) {
+    		throw new IllegalArgumentException("Phương thức thanh toán không được để trống.");
+    	}
+    }
+    
+    public static PaymentMethod convertToPaymentMethod(String paymentMethod) {
+    	try {
+            return PaymentMethod.valueOf(paymentMethod); 
+        } catch (IllegalArgumentException e) {
+        	throw new IllegalArgumentException("Phương thức thanh toán không hợp lệ: " + paymentMethod);
+        }
+    }
+    
     // --- Domain Logic ---
 
     public void addItem(OrderItem item) {
@@ -121,9 +135,20 @@ public class Order {
             }
         }
 
-        // Nếu hợp lệ, cập nhật trạng thái
         this.status = newStatus;
         this.updatedAt = Instant.now();
+    }
+    
+    public void validatePayableStatus() {
+        if (this.status != OrderStatus.PENDING && this.status != OrderStatus.CONFIRMED) {
+            throw new IllegalStateException("Đơn hàng không ở trạng thái chờ thanh toán.");
+        }
+    }
+    
+    public void changePaymentMethod(PaymentMethod newMethod) {
+        if (!newMethod.equals(this.getPaymentMethod())) {
+        	this.setPaymentMethod(newMethod);
+        }
     }
     
     // --- Getters ---
@@ -136,4 +161,8 @@ public class Order {
     public List<OrderItem> getItems() { return new ArrayList<>(items); }
     public Instant getCreatedAt() { return createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }
+    
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+    	this.paymentMethod = paymentMethod;
+    }
 }

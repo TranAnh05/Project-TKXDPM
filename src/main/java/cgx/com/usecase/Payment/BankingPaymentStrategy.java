@@ -1,4 +1,4 @@
-package cgx.com.usecase.Payment.ProcessPayment;
+package cgx.com.usecase.Payment;
 
 import java.util.UUID;
 

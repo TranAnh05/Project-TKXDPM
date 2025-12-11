@@ -37,14 +37,13 @@ public class UpdateCartUseCase implements UpdateCartInputBoundary {
         UpdateCartResponseData output = new UpdateCartResponseData();
 
         try {
-            // 1. Validate Auth
-            if (input.authToken == null) throw new SecurityException("Vui lòng đăng nhập.");
+            // Validate Auth
             AuthPrincipal principal = tokenValidator.validate(input.authToken);
 
-            // 2. Validate Input
+            // Validate Input
             CartItem.validateQuantity(input.newQuantity);
 
-            // 3. Lấy thông tin Sản phẩm (Mới nhất từ DB để check giá và kho)
+            // Lấy thông tin Sản phẩm (Mới nhất từ DB để check giá và kho)
             DeviceData deviceData = deviceRepository.findById(input.deviceId);
             if (deviceData == null) {
                 throw new IllegalArgumentException("Sản phẩm không tồn tại.");
@@ -52,16 +51,13 @@ public class UpdateCartUseCase implements UpdateCartInputBoundary {
             
             ComputerDevice.validateStatus(deviceData.status);
 
-            // 4. Lấy Giỏ hàng
+            // Lấy Giỏ hàng
             CartData cartData = cartRepository.findByUserId(principal.userId);
-            if (cartData == null) {
-                throw new IllegalArgumentException("Giỏ hàng không tồn tại.");
-            }
-
-            // 5. Rehydrate Entity (Mapper)
+            
+            // map dto sang entity
             Cart cartEntity = mapDataToEntity(cartData, principal.userId);
 
-            // 6. THỰC HIỆN NGHIỆP VỤ (Entity lo việc tính toán và check tồn kho)
+            // nghiệp vụ thực hiện tính toán, check tồn kho
             cartEntity.updateItemQuantity(
                 input.deviceId, 
                 input.newQuantity, 
@@ -69,11 +65,9 @@ public class UpdateCartUseCase implements UpdateCartInputBoundary {
                 deviceData.price
             );
 
-            // 7. Lưu lại
             CartData dataToSave = mapEntityToData(cartEntity);
             cartRepository.save(dataToSave);
-
-            // 8. Success
+            
             output.success = true;
             output.message = "Cập nhật giỏ hàng thành công.";
             output.totalItemsInCart = cartEntity.getTotalItemCount();
@@ -90,7 +84,6 @@ public class UpdateCartUseCase implements UpdateCartInputBoundary {
         outputBoundary.present(output);
     }
 
-    // --- Private Mappers (Tương tự AddToCart) ---
     private Cart mapDataToEntity(CartData data, String userId) {
         List<CartItem> items = new ArrayList<>();
         if (data.items != null) {

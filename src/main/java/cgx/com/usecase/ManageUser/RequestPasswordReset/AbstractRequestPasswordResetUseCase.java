@@ -11,7 +11,7 @@ import cgx.com.usecase.ManageUser.IUserRepository;
 import cgx.com.usecase.ManageUser.PasswordResetTokenData;
 import cgx.com.usecase.ManageUser.UserData;
 
-public abstract class AbstractRequestPasswordResetUseCase implements RequestPasswordResetInputBoundary{
+public abstract class AbstractRequestPasswordResetUseCase<T extends ResetRequestData> implements RequestPasswordResetInputBoundary<T>{
 	protected final IUserRepository userRepository;
     protected final IPasswordResetTokenRepository tokenRepository;
     protected final IPasswordResetTokenIdGenerator tokenIdGenerator;
@@ -38,70 +38,58 @@ public abstract class AbstractRequestPasswordResetUseCase implements RequestPass
     
     
     @Override
-    public final void execute(RequestPasswordResetRequestData input) {
+    public final void execute(T input) {
         RequestPasswordResetResponseData output = new RequestPasswordResetResponseData();
 
         try {
-            // 1. Validate input (Riêng - Concrete)
             validateInput(input);
-
-            // 2. Tìm người dùng (Riêng - Concrete)
+            
+            // Tìm người dùng
             UserData userData = findUser(input);
 
-            // 3. Logic nghiệp vụ (Chung)
             if (userData != null) {
-                // Nếu tìm thấy User, chúng ta MỚI thực hiện các bước tiếp theo
-                
-                // 3a. Tạo token (plain-text)
+                // Tạo token 
                 String plainTextToken = tokenGenerator.generate();
-                // 3b. Băm token (để lưu CSDL)
+                
+                // Băm token (để lưu vào CSDL)
                 String hashedToken = passwordHasher.hash(plainTextToken);
-                // 3c. Tạo ID cho bản ghi token
+                
+                // Tạo ID cho bản ghi token
                 String tokenId = tokenIdGenerator.generate();
 
-                // 3d. Tạo Entity (Layer 4)
+                // Tạo entity 
                 PasswordResetToken tokenEntity = PasswordResetToken.create(
                         tokenId, userData.userId, hashedToken, TOKEN_VALIDITY
                 );
 
-                // 3e. Map sang DTO (Layer 3)
+                // Map sang DTO 
                 PasswordResetTokenData tokenData = mapEntityToData(tokenEntity);
                 
-                // 3f. Lưu token (đã băm) vào CSDL
+                // Lưu token vào csdl
                 tokenRepository.save(tokenData);
 
-                // 3g. Gửi thông báo (Riêng - Concrete)
+                // Gửi thông báo 
                 // (Gửi email/SMS chứa plainTextToken)
                 sendNotification(userData, plainTextToken);
             }
             
-            // 4. (Nếu userData == null, chúng ta không làm gì cả)
-            // -> BỎ QUA các bước 3a-3g.
-
-            // 5. Báo cáo thành công (Chung)
             // LUÔN LUÔN trả về thông báo này (Quy tắc bảo mật)
             output.success = true;
             output.message = "Nếu thông tin của bạn là chính xác và tồn tại trong hệ thống, " +
                              "một hướng dẫn đặt lại mật khẩu đã được gửi.";
 
         } catch (IllegalArgumentException e) {
-            // 6. BẮT LỖI VALIDATION (T4)
-            // (Ví dụ: Email/SĐT không đúng định dạng)
             output.success = false;
             output.message = e.getMessage();
             
         } catch (Exception e) {
-            // 7. Bắt lỗi hệ thống (ví dụ: CSDL sập, Email service sập)
-            // Mặc dù là lỗi, nhưng chúng ta vẫn trả về thông báo thành công
-            // để đảm bảo an toàn (không tiết lộ lỗi hệ thống).
-            // Chúng ta NÊN log lỗi `e` này ra.
+            // 7. Bắt lỗi hệ thống
             output.success = true;
             output.message = "Nếu thông tin của bạn là chính xác và tồn tại trong hệ thống, " +
                              "một hướng dẫn đặt lại mật khẩu đã được gửi.";
             e.printStackTrace();
         }
 
-        // 8. Trình bày kết quả (Chung)
         outputBoundary.present(output);
     }
 
@@ -119,8 +107,7 @@ public abstract class AbstractRequestPasswordResetUseCase implements RequestPass
 	}
 
 
-	protected abstract UserData findUser(RequestPasswordResetRequestData input);
+	protected abstract UserData findUser(T input);
 
-
-	protected abstract void validateInput(RequestPasswordResetRequestData input);
+	protected abstract void validateInput(T input);
 }

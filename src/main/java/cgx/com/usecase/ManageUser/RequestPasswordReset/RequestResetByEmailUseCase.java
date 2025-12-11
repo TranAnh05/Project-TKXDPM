@@ -9,8 +9,7 @@ import cgx.com.usecase.ManageUser.ISecureTokenGenerator;
 import cgx.com.usecase.ManageUser.IUserRepository;
 import cgx.com.usecase.ManageUser.UserData;
 
-public class RequestResetByEmailUseCase extends AbstractRequestPasswordResetUseCase{
-	// Thêm 1 dependency "riêng": IEmailService
+public class RequestResetByEmailUseCase extends AbstractRequestPasswordResetUseCase<EmailResetRequest>{
     private final IEmailService emailService;
 
 	public RequestResetByEmailUseCase(IUserRepository userRepository, IPasswordResetTokenRepository tokenRepository,
@@ -31,12 +30,12 @@ public class RequestResetByEmailUseCase extends AbstractRequestPasswordResetUseC
 	}
 
 	@Override
-	protected UserData findUser(RequestPasswordResetRequestData input) {
+	protected UserData findUser(EmailResetRequest input) {
 		 return this.userRepository.findByEmail(input.email);
 	}
 
 	@Override
-	protected void validateInput(RequestPasswordResetRequestData input) {
+	protected void validateInput(EmailResetRequest input) {
 		User.validateEmail(input.email);
 	}
 

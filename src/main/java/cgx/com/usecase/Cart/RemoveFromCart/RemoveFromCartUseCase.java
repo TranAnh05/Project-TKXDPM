@@ -38,36 +38,25 @@ public class RemoveFromCartUseCase implements RemoveFromCartInputBoundary {
         RemoveFromCartResponseData output = new RemoveFromCartResponseData();
 
         try {
-            // 1. Validate Auth
-            if (input.authToken == null) throw new SecurityException("Vui lòng đăng nhập.");
+        	// Validate người dùng
             AuthPrincipal principal = tokenValidator.validate(input.authToken);
 
-            // 2. Validate Input
+            // Validate Input
             ComputerDevice.validateId(input.deviceId);
             
-            // 3. Lấy giỏ hàng
+            // Lấy giỏ hàng
             CartData cartData = cartRepository.findByUserId(principal.userId);
-            if (cartData == null) {
-                throw new IllegalArgumentException("Giỏ hàng không tồn tại.");
-            }
-
-            // 4. Lấy giá hiện tại của sản phẩm để trừ tiền
-            // Lưu ý: Nếu sản phẩm đã bị xóa khỏi DB (null), ta lấy giá = 0 để tránh lỗi,
-            // ưu tiên việc xóa item khỏi giỏ.
+            
             DeviceData deviceData = deviceRepository.findById(input.deviceId);
-            BigDecimal currentPrice = (deviceData != null) ? deviceData.price : BigDecimal.ZERO;
+            BigDecimal currentPrice = deviceData.price;
 
-            // 5. Rehydrate Entity
             Cart cartEntity = mapDataToEntity(cartData, principal.userId);
 
-            // 6. THỰC HIỆN NGHIỆP VỤ (Entity xóa item và tính lại tiền)
             cartEntity.removeItem(input.deviceId, currentPrice);
 
-            // 7. Lưu lại
             CartData dataToSave = mapEntityToData(cartEntity);
             cartRepository.save(dataToSave);
 
-            // 8. Success
             output.success = true;
             output.message = "Đã xóa sản phẩm khỏi giỏ hàng.";
             output.totalItemsInCart = cartEntity.getTotalItemCount();
@@ -84,7 +73,6 @@ public class RemoveFromCartUseCase implements RemoveFromCartInputBoundary {
         outputBoundary.present(output);
     }
 
-    // --- Mappers (Giống các UseCase khác) ---
     private Cart mapDataToEntity(CartData data, String userId) {
         List<CartItem> items = new ArrayList<>();
         if (data.items != null) {

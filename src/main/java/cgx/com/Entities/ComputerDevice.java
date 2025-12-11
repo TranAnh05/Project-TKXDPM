@@ -54,10 +54,6 @@ public abstract class ComputerDevice {
     }
     
     public static void validateStatus(String status) {
-//    	if (!"ACTIVE".equals(status)) {
-//            throw new IllegalArgumentException("Sản phẩm này hiện đang ngừng kinh doanh.");
-//        }
-    	
     	if(ProductAvailability.valueOf(status) == ProductAvailability.DISCONTINUED) {
     		throw new IllegalArgumentException("Sản phẩm này hiện đang ngừng kinh doanh.");
     	}
@@ -114,9 +110,6 @@ public abstract class ComputerDevice {
      * Entity tự trả lời xem nó có đáp ứng được số lượng yêu cầu không.
      */
     public ProductAvailability checkAvailability(int requestedQuantity) {
-        if (!"ACTIVE".equals(this.status)) {
-            return ProductAvailability.DISCONTINUED;
-        }
         if (this.stockQuantity == 0) {
             return ProductAvailability.OUT_OF_STOCK;
         }

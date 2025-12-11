@@ -14,13 +14,11 @@ public class CartItem {
     }
     
     public void addQuantity(int extraQuantity) {
-        if (extraQuantity <= 0) throw new IllegalArgumentException("Số lượng thêm phải lớn hơn 0.");
         this.quantity += extraQuantity;
     }
     
     // Setter để update số lượng cụ thể (dùng cho tính năng Edit Cart sau này)
     public void setQuantity(int quantity) {
-        if (quantity <= 0) throw new IllegalArgumentException("Số lượng phải lớn hơn 0.");
         this.quantity = quantity;
     }
 

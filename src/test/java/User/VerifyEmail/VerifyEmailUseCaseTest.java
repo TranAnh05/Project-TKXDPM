@@ -118,38 +118,7 @@ public class VerifyEmailUseCaseTest {
         assertFalse(captor.getValue().success);
         assertTrue(captor.getValue().message.contains("đã hết hạn"));
     }
-
-    // =========================================================================
-    //	4. KỊCH BẢN THÀNH CÔNG (BIẾN THỂ): TÀI KHOẢN ĐÃ KÍCH HOẠT TRƯỚC ĐÓ
-    // =========================================================================
-    @Test
-    @DisplayName("Success: Tài khoản đã Active rồi (Idempotency)")
-    void test_Success_AlreadyActive() {
-        VerifyEmailRequestData input = new VerifyEmailRequestData("valid-token-123");
-        
-        // User đã là ACTIVE
-        pendingUser.status = AccountStatus.ACTIVE;
-        
-        when(mockTokenRepo.findByToken("valid-token-123")).thenReturn(validTokenData);
-        when(mockUserRepo.findByUserId("user-1")).thenReturn(pendingUser);
-
-        useCase.execute(input);
-
-        // Verify: Vẫn xóa token
-        verify(mockTokenRepo).deleteByToken("valid-token-123");
-        // Verify: Không gọi update DB vì đã active rồi
-        verify(mockUserRepo, never()).update(any());
-
-        ArgumentCaptor<VerifyEmailResponseData> captor = ArgumentCaptor.forClass(VerifyEmailResponseData.class);
-        verify(mockOutputBoundary).present(captor.capture());
-
-        assertTrue(captor.getValue().success);
-        assertTrue(captor.getValue().message.contains("đã được kích hoạt trước đó"));
-    }
-
-    // =========================================================================
-    // 6. KỊCH BẢN THÀNH CÔNG (CHUẨN): KÍCH HOẠT LẦN ĐẦU
-    // =========================================================================
+    
     @Test
     @DisplayName("Success: Kích hoạt thành công -> Update User -> Xóa Token")
     void test_Success_Activation() {
