@@ -19,8 +19,8 @@ import cgx.com.usecase.ManageOrder.UpdateOrderStatus.UpdateOrderStatusResponseDa
 import cgx.com.usecase.ManageOrder.UpdateOrderStatus.UpdateOrderStatusUseCase;
 import cgx.com.usecase.ManageProduct.DeviceData;
 import cgx.com.usecase.ManageProduct.IDeviceRepository;
+import cgx.com.usecase.ManageUser.AuthPrincipal;
 import cgx.com.usecase.ManageUser.IAuthTokenValidator;
-import cgx.com.usecase.ManageUser.ViewUserProfile.AuthPrincipal;
 
 import java.math.BigDecimal;
 import java.time.Instant;

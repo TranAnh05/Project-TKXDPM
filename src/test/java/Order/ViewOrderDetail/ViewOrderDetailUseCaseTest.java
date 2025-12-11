@@ -15,8 +15,8 @@ import cgx.com.usecase.ManageOrder.ViewOrderDetail.ViewOrderDetailOutputBoundary
 import cgx.com.usecase.ManageOrder.ViewOrderDetail.ViewOrderDetailRequestData;
 import cgx.com.usecase.ManageOrder.ViewOrderDetail.ViewOrderDetailResponseData;
 import cgx.com.usecase.ManageOrder.ViewOrderDetail.ViewOrderDetailUseCase;
+import cgx.com.usecase.ManageUser.AuthPrincipal;
 import cgx.com.usecase.ManageUser.IAuthTokenValidator;
-import cgx.com.usecase.ManageUser.ViewUserProfile.AuthPrincipal;
 
 import java.math.BigDecimal;
 import java.time.Instant;

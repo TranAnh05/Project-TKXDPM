@@ -2,10 +2,10 @@ package cgx.com.usecase.ManageUser.UpdateUserProfile;
 
 import java.time.Instant;
 
+import cgx.com.usecase.ManageUser.AuthPrincipal;
 import cgx.com.usecase.ManageUser.IAuthTokenValidator;
 import cgx.com.usecase.ManageUser.IUserRepository;
 import cgx.com.usecase.ManageUser.UserData;
-import cgx.com.usecase.ManageUser.ViewUserProfile.AuthPrincipal;
 import cgx.com.usecase.ManageUser.ViewUserProfile.ViewUserProfileResponseData;
 
 public abstract class AbstractUpdateUserProfileUseCase implements UpdateUserProfileInputBoundary{

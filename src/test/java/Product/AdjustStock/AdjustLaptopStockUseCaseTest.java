@@ -14,8 +14,8 @@ import cgx.com.usecase.ManageProduct.AdjustStock.AdjustLaptopStockUseCase;
 import cgx.com.usecase.ManageProduct.AdjustStock.AdjustStockOutputBoundary;
 import cgx.com.usecase.ManageProduct.AdjustStock.AdjustStockRequestData;
 import cgx.com.usecase.ManageProduct.AdjustStock.AdjustStockResponseData;
+import cgx.com.usecase.ManageUser.AuthPrincipal;
 import cgx.com.usecase.ManageUser.IAuthTokenValidator;
-import cgx.com.usecase.ManageUser.ViewUserProfile.AuthPrincipal;
 
 import java.math.BigDecimal;
 

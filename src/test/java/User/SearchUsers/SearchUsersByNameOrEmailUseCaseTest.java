@@ -20,6 +20,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import cgx.com.Entities.UserRole;
+import cgx.com.usecase.ManageUser.AuthPrincipal;
 import cgx.com.usecase.ManageUser.IAuthTokenValidator;
 import cgx.com.usecase.ManageUser.IUserRepository;
 import cgx.com.usecase.ManageUser.UserData;
@@ -28,7 +29,6 @@ import cgx.com.usecase.ManageUser.SearchUsers.SearchUsersOutputBoundary;
 import cgx.com.usecase.ManageUser.SearchUsers.SearchUsersRequestData;
 import cgx.com.usecase.ManageUser.SearchUsers.SearchUsersResponseData;
 import cgx.com.usecase.ManageUser.SearchUsers.UserSearchCriteria;
-import cgx.com.usecase.ManageUser.ViewUserProfile.AuthPrincipal;
 
 @ExtendWith(MockitoExtension.class)
 public class SearchUsersByNameOrEmailUseCaseTest {

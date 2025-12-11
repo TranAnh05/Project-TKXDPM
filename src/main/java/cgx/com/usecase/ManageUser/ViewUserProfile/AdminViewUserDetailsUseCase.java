@@ -1,6 +1,7 @@
 package cgx.com.usecase.ManageUser.ViewUserProfile;
 
 import cgx.com.Entities.UserRole;
+import cgx.com.usecase.ManageUser.AuthPrincipal;
 import cgx.com.usecase.ManageUser.IAuthTokenValidator;
 import cgx.com.usecase.ManageUser.IUserRepository;
 

@@ -19,13 +19,13 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import cgx.com.Entities.UserRole;
+import cgx.com.usecase.ManageUser.AuthPrincipal;
 import cgx.com.usecase.ManageUser.IAuthTokenValidator;
 import cgx.com.usecase.ManageUser.IUserRepository;
 import cgx.com.usecase.ManageUser.UserData;
 import cgx.com.usecase.ManageUser.UpdateUserProfile.UpdateBasicProfileUseCase;
 import cgx.com.usecase.ManageUser.UpdateUserProfile.UpdateUserProfileOutputBoundary;
 import cgx.com.usecase.ManageUser.UpdateUserProfile.UpdateUserProfileRequestData;
-import cgx.com.usecase.ManageUser.ViewUserProfile.AuthPrincipal;
 import cgx.com.usecase.ManageUser.ViewUserProfile.ViewUserProfileResponseData;
 
 @ExtendWith(MockitoExtension.class)

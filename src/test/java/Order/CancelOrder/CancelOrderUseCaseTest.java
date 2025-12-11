@@ -19,8 +19,8 @@ import cgx.com.usecase.ManageOrder.CancelOrder.CancelOrderUseCase;
 import cgx.com.usecase.ManageOrder.PlaceOrder.IDeviceMapper;
 import cgx.com.usecase.ManageProduct.DeviceData;
 import cgx.com.usecase.ManageProduct.IDeviceRepository;
+import cgx.com.usecase.ManageUser.AuthPrincipal;
 import cgx.com.usecase.ManageUser.IAuthTokenValidator;
-import cgx.com.usecase.ManageUser.ViewUserProfile.AuthPrincipal;
 
 import java.math.BigDecimal;
 import java.time.Instant;

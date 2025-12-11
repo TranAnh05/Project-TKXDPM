@@ -5,9 +5,9 @@ import java.util.List;
 import cgx.com.Entities.UserRole;
 import cgx.com.usecase.ManageOrder.IOrderRepository;
 import cgx.com.usecase.ManageOrder.OrderData;
+import cgx.com.usecase.ManageUser.AuthPrincipal;
 import cgx.com.usecase.ManageUser.IAuthTokenValidator;
 import cgx.com.usecase.ManageUser.SearchUsers.PaginationData;
-import cgx.com.usecase.ManageUser.ViewUserProfile.AuthPrincipal;
 
 public class ManageOrdersUseCase implements ManageOrdersInputBoundary {
 

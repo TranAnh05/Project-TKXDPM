@@ -8,7 +8,7 @@ public class OrderData {
 	public String id;
     public String userId;
     public BigDecimal totalAmount;
-    public String status; // Enum -> String
+    public String status;
     public String shippingAddress;
     public String paymentMethod;
     public Instant createdAt;

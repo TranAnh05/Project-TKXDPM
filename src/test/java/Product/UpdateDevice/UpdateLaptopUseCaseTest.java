@@ -9,7 +9,7 @@ import cgx.com.usecase.ManageProduct.UpdateProduct.UpdateDeviceOutputBoundary;
 import cgx.com.usecase.ManageProduct.UpdateProduct.UpdateDeviceResponseData;
 import cgx.com.usecase.ManageProduct.UpdateProduct.UpdateLaptopRequestData;
 import cgx.com.usecase.ManageProduct.UpdateProduct.UpdateLaptopUseCase;
-import cgx.com.usecase.ManageUser.ViewUserProfile.AuthPrincipal;
+import cgx.com.usecase.ManageUser.AuthPrincipal;
 import cgx.com.usecase.ManageUser.IAuthTokenValidator;
 
 import org.junit.jupiter.api.BeforeEach;

@@ -15,8 +15,8 @@ import cgx.com.usecase.ManageOrder.ManageOrders.ManageOrdersRequestData;
 import cgx.com.usecase.ManageOrder.ManageOrders.ManageOrdersResponseData;
 import cgx.com.usecase.ManageOrder.ManageOrders.ManageOrdersUseCase;
 import cgx.com.usecase.ManageOrder.ManageOrders.OrderSearchCriteria;
+import cgx.com.usecase.ManageUser.AuthPrincipal;
 import cgx.com.usecase.ManageUser.IAuthTokenValidator;
-import cgx.com.usecase.ManageUser.ViewUserProfile.AuthPrincipal;
 
 import java.util.List;
 

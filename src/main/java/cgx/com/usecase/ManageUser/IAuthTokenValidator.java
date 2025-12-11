@@ -1,7 +1,5 @@
 package cgx.com.usecase.ManageUser;
 
-import cgx.com.usecase.ManageUser.ViewUserProfile.AuthPrincipal;
-
 /**
  * Interface cho dịch vụ Xác thực Token (ví dụ: JWT).
  * Đây là "mặt đối lập" của IAuthTokenGenerator.

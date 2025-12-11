@@ -1,4 +1,4 @@
-package cgx.com.usecase.ManageUser.ViewUserProfile;
+package cgx.com.usecase.ManageUser;
 
 import cgx.com.Entities.UserRole;
 

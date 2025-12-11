@@ -5,8 +5,8 @@ import cgx.com.Entities.UserRole;
 import cgx.com.usecase.ManageCategory.CategoryData;
 import cgx.com.usecase.ManageCategory.ICategoryIdGenerator;
 import cgx.com.usecase.ManageCategory.ICategoryRepository;
+import cgx.com.usecase.ManageUser.AuthPrincipal;
 import cgx.com.usecase.ManageUser.IAuthTokenValidator;
-import cgx.com.usecase.ManageUser.ViewUserProfile.AuthPrincipal;
 
 public class AddCategoryUseCase implements AddCategoryInputBoundary{
 	private final ICategoryRepository categoryRepository;

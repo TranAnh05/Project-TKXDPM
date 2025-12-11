@@ -43,8 +43,10 @@ public class PasswordResetToken {
     * Quy tắc nghiệp vụ: Kiểm tra xem token đã hết hạn hay chưa.
     * @return true nếu đã hết hạn, ngược lại false.
     */
-   public boolean isExpired() {
-       return Instant.now().isAfter(this.expiresAt);
+   public void isExpired() {
+	   if(Instant.now().isAfter(this.expiresAt)) {
+		   throw new SecurityException("Token đã hết hạn.");
+	   }
    }
 
    // --- Getters ---

@@ -38,13 +38,13 @@ public class User {
         this.updatedAt = updatedAt;
     }
 
-    // --- CÁC PHƯƠNG THỨC VALIDATION TĨNH (THEO YÊU CẦU) ---
-
-    /**
-     * Kiểm tra quy tắc của Email.
-     * @param email Email cần kiểm tra
-     * @throws IllegalArgumentException Nếu email rỗng hoặc không đúng định dạng.
-     */
+    // --- CÁC PHƯƠNG THỨC VALIDATION TĨNH 
+    public static void validateId(String id) {
+    	 if (id == null || id.trim().isEmpty()) {
+             throw new IllegalArgumentException("ID người dùng không được để trống");
+         }
+    }
+    
     public static void validateEmail(String email) throws IllegalArgumentException {
         if (email == null || email.trim().isEmpty()) {
             throw new IllegalArgumentException("Email không được để trống.");
@@ -54,11 +54,6 @@ public class User {
         }
     }
 
-    /**
-     * Kiểm tra quy tắc của Mật khẩu.
-     * @param password Mật khẩu (dạng plain-text) cần kiểm tra
-     * @throws IllegalArgumentException Nếu mật khẩu quá ngắn.
-     */
     public static void validatePassword(String password) throws IllegalArgumentException {
         if (password == null || password.isEmpty()) {
             throw new IllegalArgumentException("Mật khẩu không được để trống.");
@@ -67,15 +62,8 @@ public class User {
         if (password.length() < 8) {
             throw new IllegalArgumentException("Mật khẩu phải có ít nhất 8 ký tự.");
         }
-        // Bạn có thể thêm các quy tắc khác (chữ hoa, chữ thường, số...)
     }
-
-    /**
-     * Kiểm tra quy tắc của Tên.
-     * @param firstName Tên
-     * @param lastName Họ
-     * @throws IllegalArgumentException Nếu Tên hoặc Họ bị bỏ trống.
-     */
+    
     public static void validateName(String firstName, String lastName) throws IllegalArgumentException {
         if (firstName == null || firstName.trim().isEmpty()) {
             throw new IllegalArgumentException("Tên không được để trống.");
@@ -85,64 +73,45 @@ public class User {
         }
     }
     
-    /**
-     * Kiểm tra quy tắc của Số Điện Thoại (MỚI).
-     * @param phoneNumber SĐT cần kiểm tra
-     * @throws IllegalArgumentException Nếu SĐT không rỗng và không đúng định dạng.
-     */
+    
     public static void validatePhoneNumber(String phoneNumber) throws IllegalArgumentException {
-        // Quy tắc nghiệp vụ: SĐT có thể để trống (null hoặc rỗng)
         if (phoneNumber == null || phoneNumber.trim().isEmpty()) {
-            return; // Hợp lệ
+            throw new IllegalArgumentException("Số điện thoại không được rỗng.");
         }
-        // Nếu không rỗng, nó phải đúng định dạng
+        
         if (!PHONE_PATTERN.matcher(phoneNumber).matches()) {
             throw new IllegalArgumentException("Số điện thoại không đúng định dạng (yêu cầu 10 số, bắt đầu bằng 03, 05, 07, 08, 09).");
         }
     }
     
-    /**
-     * Kiểm tra quy tắc của Role (Vai trò) (MỚI).
-     * @param role Chuỗi vai trò (ví dụ: "CUSTOMER")
-     * @return UserRole Enum
-     * @throws IllegalArgumentException Nếu chuỗi vai trò không hợp lệ.
-     */
     public static UserRole validateRole(String role) throws IllegalArgumentException {
-        if (role == null || role.trim().isEmpty()) {
-            throw new IllegalArgumentException("Vai trò (Role) không được để trống.");
-        }
         try {
-            // Thử chuyển đổi String sang Enum. Nếu thất bại, nó sẽ ném ra
-            // một IllegalArgumentException.
             return UserRole.valueOf(role.toUpperCase());
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Vai trò (Role) không hợp lệ: " + role);
         }
     }
 
-    /**
-     * Kiểm tra quy tắc của Account Status (Trạng thái) (MỚI).
-     * @param status Chuỗi trạng thái (ví dụ: "ACTIVE")
-     * @return AccountStatus Enum
-     * @throws IllegalArgumentException Nếu chuỗi trạng thái không hợp lệ.
-     */
     public static AccountStatus validateStatus(String status) throws IllegalArgumentException {
         if (status == null || status.trim().isEmpty()) {
             throw new IllegalArgumentException("Trạng thái (Status) không được để trống.");
         }
+        
         try {
             return AccountStatus.valueOf(status.toUpperCase());
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Trạng thái (Status) không hợp lệ: " + status);
         }
     }
+    
+    public static void validateIsAdmin(UserRole role) {
+    	 if (role != UserRole.ADMIN) {
+             throw new SecurityException("Không có quyền truy cập.");
+         }
+    }
+    
 
     // --- PHƯƠNG THỨC FACTORY TĨNH ---
-
-    /**
-     * Phương thức "Static Factory Method" để tạo một Customer mới.
-     * Phương thức này được gọi *SAU KHI* dữ liệu đã được Use Case validate.
-     */
     public static User createNewCustomer(String userId, String email, String hashedPassword, String firstName, String lastName) {
         Instant now = Instant.now();
         return new User(
@@ -151,9 +120,7 @@ public class User {
         );
     }
     
-    
-    // --- CÁC PHƯƠNG THỨC INSTANCE (LOGIC NGHIỆP VỤ CỦA 1 ENTITY) ---
-
+    // --- CÁC PHƯƠNG THỨC INSTANCE 
     public boolean canLogin() {
         return this.status == AccountStatus.ACTIVE;
     }
@@ -177,22 +144,11 @@ public class User {
             throw new SecurityException("Tài khoản không được phép đăng nhập.");
         }
     }
-    
-    /**
-     * Thay đổi mật khẩu (MỚI).
-     * Được gọi sau khi Use Case đã validate (cả pass cũ và mới)
-     * và đã băm mật khẩu mới.
-     * @param newHashedPassword Mật khẩu MỚI đã được băm
-     */
     public void changePassword(String newHashedPassword) {
         this.hashedPassword = newHashedPassword;
         this.touch(); // Cập nhật thời gian
     }
     
-    /**
-     * Cập nhật thông tin hồ sơ cơ bản (MỚI).
-     * Được gọi sau khi dữ liệu đã được Use Case validate.
-     */
     public void updateProfile(String firstName, String lastName, String phoneNumber) {
         this.firstName = firstName;
         this.lastName = lastName;
@@ -204,43 +160,16 @@ public class User {
         this.updatedAt = Instant.now();
     }
     
-    /**
-     * Thực hiện "Xóa mềm" (Soft Delete) tài khoản này (MỚI).
-     * Được gọi bởi Use Case của Admin.
-     * Phương thức này ẩn danh thông tin cá nhân (PII)
-     * và vô hiệu hóa tài khoản.
-     */
-    public void softDelete() {
-        // 1. Ẩn danh Email
-        this.email = anonymizeEmail(this.email, this.userId);
-        
-        // 2. Xóa thông tin cá nhân (PII)
-        this.firstName = "Deleted";
-        this.lastName = "User";
-        this.phoneNumber = null;
-        
-        // 3. Vô hiệu hóa mật khẩu (để không ai có thể đăng nhập, kể cả Admin)
-        this.hashedPassword = "DELETED_" + Instant.now().toString();
-        
-        // 4. Đặt trạng thái
-        this.status = AccountStatus.DELETED;
-        
-        this.touch(); // Cập nhật thời gian
+    public void validateAdminSelfUpdate(String userId) {
+    	 if (userId.equals(this.userId)) {
+             throw new SecurityException("Admin không thể tự cập nhật vai trò/trạng thái của chính mình. " +
+                                         "Vui lòng sử dụng chức năng 'Cập nhật Hồ sơ' thông thường.");
+         }
     }
     
-    /**
-     * Hàm helper để tạo một email ẩn danh duy nhất.
-     * Ví dụ: "john.doe@gmail.com" -> "deleted_user123_john.doe@gmail.com"
-     */
-    private String anonymizeEmail(String oldEmail, String userId) {
-        String uniquePrefix = "deleted_" + userId + "_";
-        // Lấy phần @domain
-        String domainPart = "";
-        int atIndex = oldEmail.lastIndexOf('@');
-        if (atIndex != -1) {
-            domainPart = oldEmail.substring(atIndex); // ví dụ: "@gmail.com"
-        }
-        return uniquePrefix + oldEmail.substring(0, Math.min(oldEmail.length(), 50)) + domainPart;
+    public void softDelete() {
+        this.status = AccountStatus.DELETED;
+        this.touch();
     }
 
     // (Getters cho tất cả các trường)
@@ -254,4 +183,46 @@ public class User {
     public AccountStatus getStatus() { return status; }
     public Instant getCreatedAt() { return createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }
+    
+    public void setHashedPassword(String hashedPassword) {
+    	this.hashedPassword = hashedPassword;
+    }
+
+	public void setUserId(String userId) {
+		this.userId = userId;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public void setFirstName(String firstName) {
+		this.firstName = firstName;
+	}
+
+	public void setLastName(String lastName) {
+		this.lastName = lastName;
+	}
+
+	public void setPhoneNumber(String phoneNumber) {
+		this.phoneNumber = phoneNumber;
+	}
+
+	public void setRole(UserRole role) {
+		this.role = role;
+	}
+
+	public void setStatus(AccountStatus status) {
+		this.status = status;
+	}
+
+	public void setCreatedAt(Instant createdAt) {
+		this.createdAt = createdAt;
+	}
+
+	public void setUpdatedAt(Instant updatedAt) {
+		this.updatedAt = updatedAt;
+	}
+    
+    
 }

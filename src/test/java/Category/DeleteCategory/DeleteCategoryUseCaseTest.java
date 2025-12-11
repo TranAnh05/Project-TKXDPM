@@ -14,8 +14,8 @@ import cgx.com.usecase.ManageCategory.DeleteCategory.DeleteCategoryOutputBoundar
 import cgx.com.usecase.ManageCategory.DeleteCategory.DeleteCategoryRequestData;
 import cgx.com.usecase.ManageCategory.DeleteCategory.DeleteCategoryResponseData;
 import cgx.com.usecase.ManageCategory.DeleteCategory.DeleteCategoryUseCase;
+import cgx.com.usecase.ManageUser.AuthPrincipal;
 import cgx.com.usecase.ManageUser.IAuthTokenValidator;
-import cgx.com.usecase.ManageUser.ViewUserProfile.AuthPrincipal;
 
 import java.time.Instant;
 

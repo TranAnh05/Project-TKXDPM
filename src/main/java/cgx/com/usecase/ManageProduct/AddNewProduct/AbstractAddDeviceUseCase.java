@@ -5,9 +5,9 @@ import cgx.com.Entities.UserRole;
 import cgx.com.usecase.ManageCategory.ICategoryRepository;
 import cgx.com.usecase.ManageProduct.DeviceData;
 import cgx.com.usecase.ManageProduct.IDeviceRepository;
+import cgx.com.usecase.ManageUser.AuthPrincipal;
 import cgx.com.usecase.ManageUser.IAuthTokenValidator;
 import cgx.com.usecase.ManageUser.IUserIdGenerator;
-import cgx.com.usecase.ManageUser.ViewUserProfile.AuthPrincipal;
 
 /**
  * Use Case TRỪU TƯỢNG: Thêm Thiết Bị.

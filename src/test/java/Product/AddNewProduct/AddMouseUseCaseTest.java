@@ -16,9 +16,9 @@ import cgx.com.usecase.ManageProduct.AddNewProduct.AddDeviceOutputBoundary;
 import cgx.com.usecase.ManageProduct.AddNewProduct.AddDeviceResponseData;
 import cgx.com.usecase.ManageProduct.AddNewProduct.AddMouseRequestData;
 import cgx.com.usecase.ManageProduct.AddNewProduct.AddMouseUseCase;
+import cgx.com.usecase.ManageUser.AuthPrincipal;
 import cgx.com.usecase.ManageUser.IAuthTokenValidator;
 import cgx.com.usecase.ManageUser.IUserIdGenerator;
-import cgx.com.usecase.ManageUser.ViewUserProfile.AuthPrincipal;
 
 import java.math.BigDecimal;
 

@@ -2,13 +2,14 @@ package cgx.com.usecase.ManageUser.VerifyPasswordReset;
 
 import java.time.Instant;
 
+import cgx.com.Entities.User;
 import cgx.com.usecase.ManageUser.IPasswordHasher;
 import cgx.com.usecase.ManageUser.IPasswordResetTokenRepository;
 import cgx.com.usecase.ManageUser.IUserRepository;
 import cgx.com.usecase.ManageUser.PasswordResetTokenData;
 import cgx.com.usecase.ManageUser.UserData;
 
-public abstract class AbstractVerifyPasswordResetUseCase implements VerifyPasswordResetInputBoundary{
+public abstract class AbstractVerifyPasswordResetUseCase<T extends BaseVerifyResetRequestData> implements VerifyPasswordResetInputBoundary<T>{
 	protected final IUserRepository userRepository;
     protected final IPasswordResetTokenRepository tokenRepository;
     protected final IPasswordHasher passwordHasher;
@@ -25,67 +26,80 @@ public abstract class AbstractVerifyPasswordResetUseCase implements VerifyPasswo
     }
     
     @Override
-    public final void execute(VerifyPasswordResetRequestData input) {
+    public final void execute(T input) {
         VerifyPasswordResetResponseData output = new VerifyPasswordResetResponseData();
 
         try {
-            // 1. Validate input (Riêng - Concrete)
-            // (Ví dụ: validate mật khẩu mới)
             validateInput(input);
             
-            // 2. Tìm và Xác thực Token (Riêng - Concrete)
-            // (Tìm token, check hết hạn, ...)
             PasswordResetTokenData tokenData = findAndValidateToken(input);
 
-            // 3. Tìm User Data từ CSDL (Chung)
+            // Tìm User Data từ CSDL
             UserData userData = userRepository.findByUserId(tokenData.userId);
-            if (userData == null) {
-                // Rất hiếm khi xảy ra (token tồn tại nhưng user không)
-                throw new SecurityException("Token không hợp lệ hoặc đã hết hạn.");
-            }
             
-            // 4. Băm mật khẩu mới (Chung)
+            User userEntity = mapToEntity(userData);
+            
+            // Băm mật khẩu mới
             String newHashedPassword = passwordHasher.hash(input.newPassword);
             
-            // 5. Cập nhật User (Chung)
-            userData.hashedPassword = newHashedPassword;
-            userData.updatedAt = Instant.now();
-            userRepository.update(userData);
+            // nghiệp vụ đổi mật khẩu
+            userEntity.changePassword(newHashedPassword);
             
-            // 6. Xóa Token (Chung)
-            // Chúng ta nên xóa token, nhưng ngay cả khi việc này thất bại,
-            // nghiệp vụ vẫn được coi là thành công vì mật khẩu ĐÃ được đổi.
-            try {
-                tokenRepository.deleteByTokenId(tokenData.tokenId);
-            } catch (Exception e) {
-                // Log lỗi này (ví dụ: "Không thể xóa token đã sử dụng: " + tokenData.tokenId)
-                // Nhưng KHÔNG ném lỗi cho người dùng.
-            	System.out.println("Không thể xóa token đã sử dụng: " + tokenData.tokenId);
-            }
+            UserData dataToUpdate = mapToData(userEntity);
+            userRepository.update(dataToUpdate);
+            
+            // Xóa token
+            tokenRepository.deleteByTokenId(tokenData.tokenId);
 
-            // 7. Báo cáo thành công (Chung)
             output.success = true;
             output.message = "Đặt lại mật khẩu thành công. Bạn có thể đăng nhập ngay bây giờ.";
 
         } catch (IllegalArgumentException e) {
-            // 8. BẮT LỖI VALIDATION (T4)
             output.success = false;
             output.message = e.getMessage();
         } catch (SecurityException e) {
-            // 9. BẮT LỖI NGHIỆP VỤ / BẢO MẬT (T3)
             output.success = false;
             output.message = e.getMessage();
         } catch (Exception e) {
-            // 10. Bắt lỗi hệ thống
+            // Bắt lỗi hệ thống
             output.success = false;
             output.message = "Đã xảy ra lỗi hệ thống không xác định.";
         }
 
-        // 11. Trình bày kết quả (Chung)
         outputBoundary.present(output);
     }
 
-	protected abstract PasswordResetTokenData findAndValidateToken(VerifyPasswordResetRequestData input);
+	private UserData mapToData(User entity) {
+		return new UserData(
+            entity.getUserId(),
+            entity.getEmail(),
+            entity.getHashedPassword(),
+            entity.getFirstName(),
+            entity.getLastName(),
+            entity.getPhoneNumber(),
+            entity.getRole(),
+            entity.getStatus(),
+            entity.getCreatedAt(),
+            entity.getUpdatedAt()
+        );
+	}
 
-	protected abstract void validateInput(VerifyPasswordResetRequestData input);
+	private User mapToEntity(UserData data) {
+		return new User(
+	            data.userId,
+	            data.email,
+	            data.hashedPassword,
+	            data.firstName,
+	            data.lastName,
+	            data.phoneNumber,
+	            data.role,     
+	            data.status,   
+	            data.createdAt,
+	            data.updatedAt
+	        );
+	}
+
+	protected abstract PasswordResetTokenData findAndValidateToken(T input);
+
+	protected abstract void validateInput(T input);
 }

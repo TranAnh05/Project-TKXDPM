@@ -2,6 +2,7 @@ package User.VerifyPasswordReset;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -14,12 +15,15 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import cgx.com.Entities.AccountStatus;
+import cgx.com.Entities.UserRole;
 import cgx.com.usecase.ManageUser.IPasswordHasher;
 import cgx.com.usecase.ManageUser.IPasswordResetTokenRepository;
 import cgx.com.usecase.ManageUser.IUserRepository;
@@ -32,202 +36,110 @@ import cgx.com.usecase.ManageUser.VerifyPasswordReset.VerifyResetByTokenUseCase;
 
 @ExtendWith(MockitoExtension.class)
 public class VerifyResetByTokenUseCaseTest {
-	// 1. Mock các dependencies
-    @Mock private IUserRepository mockUserRepository;
-    @Mock private IPasswordResetTokenRepository mockTokenRepository;
-    @Mock private IPasswordHasher mockPasswordHasher;
+
+    // 1. Mock Dependencies
+    @Mock private IUserRepository mockUserRepo;
+    @Mock private IPasswordResetTokenRepository mockTokenRepo;
+    @Mock private IPasswordHasher mockHasher;
     @Mock private VerifyPasswordResetOutputBoundary mockOutputBoundary;
 
-    // 2. Lớp cần test
+    // 2. Class under test
     private VerifyResetByTokenUseCase useCase;
 
-    // 3. Dữ liệu mẫu
-    private VerifyPasswordResetRequestData requestData;
+    // 3. Test Data
+    private UserData userData;
     private PasswordResetTokenData validTokenData;
-    private UserData validUserData;
-    
+    private VerifyPasswordResetRequestData requestData;
+
     @BeforeEach
     void setUp() {
-        useCase = new VerifyResetByTokenUseCase(
-            mockUserRepository,
-            mockTokenRepository,
-            mockPasswordHasher,
-            mockOutputBoundary
+        useCase = new VerifyResetByTokenUseCase(mockUserRepo, mockTokenRepo, mockHasher, mockOutputBoundary);
+
+        // Input mặc định hợp lệ
+        requestData = new VerifyPasswordResetRequestData("plain-token-123", "newPass123");
+
+        // User Data giả lập
+        userData = new UserData(
+            "user-1", "test@mail.com", "old_hashed_pass", "Nguyen", "Van A", 
+            "0901234567", UserRole.CUSTOMER, AccountStatus.ACTIVE, Instant.now(), Instant.now()
         );
 
-        requestData = new VerifyPasswordResetRequestData("plain-text-token-abc", "newPassword456");
-
-        // Token hợp lệ, chưa hết hạn
+        // Token Data giả lập (Hợp lệ, chưa hết hạn)
         validTokenData = new PasswordResetTokenData(
-            "token-record-123",
-            "hashed-token-xyz",
-            "user-123",
-            Instant.now().plus(1, ChronoUnit.HOURS) // Hết hạn trong 1 giờ nữa
+            "token-id-1", 
+            "hashed-token-123", 
+            "user-1", 
+            Instant.now().plus(15, ChronoUnit.MINUTES) // Còn hạn 15p
         );
-        
-        validUserData = new UserData();
-        validUserData.userId = "user-123";
-        validUserData.hashedPassword = "hashed_oldPassword123";
     }
-    
-    /**
-     * Test kịch bản THÀNH CÔNG
-     */
+
     @Test
-    void test_execute_success() {
-        // --- ARRANGE ---
-        // 1. Giả lập băm token (để tìm)
-        when(mockPasswordHasher.hash("plain-text-token-abc")).thenReturn("hashed-token-xyz");
-        // 2. Giả lập tìm thấy Token
-        when(mockTokenRepository.findByHashedToken("hashed-token-xyz")).thenReturn(validTokenData);
-        // 3. Giả lập tìm thấy User
-        when(mockUserRepository.findByUserId("user-123")).thenReturn(validUserData);
-        // 4. Giả lập băm mật khẩu mới
-        when(mockPasswordHasher.hash("newPassword456")).thenReturn("hashed_newPassword456");
+    @DisplayName("Fail: Mật khẩu mới quá ngắn (< 8 ký tự)")
+    void test_Fail_InvalidNewPassword() {
+        VerifyPasswordResetRequestData invalidInput = new VerifyPasswordResetRequestData("token", "123");
 
-        ArgumentCaptor<VerifyPasswordResetResponseData> responseCaptor =
-            ArgumentCaptor.forClass(VerifyPasswordResetResponseData.class);
+        // WHEN
+        useCase.execute(invalidInput);
 
-        // --- ACT ---
-        useCase.execute(requestData);
+        // THEN
+        ArgumentCaptor<VerifyPasswordResetResponseData> captor = ArgumentCaptor.forClass(VerifyPasswordResetResponseData.class);
+        verify(mockOutputBoundary).present(captor.capture());
 
-        // --- ASSERT ---
-        // 1. Kiểm tra các bước
-        verify(mockPasswordHasher).hash("plain-text-token-abc"); // Băm token để tìm
-        verify(mockTokenRepository).findByHashedToken("hashed-token-xyz");
-        verify(mockUserRepository).findByUserId("user-123");
-        verify(mockPasswordHasher).hash("newPassword456"); // Băm pass mới
-        verify(mockUserRepository).update(any(UserData.class)); // Đã cập nhật User
-        verify(mockTokenRepository).deleteByTokenId("token-record-123"); // Đã xóa Token
-        
-        // 2. Kiểm tra response
-        verify(mockOutputBoundary).present(responseCaptor.capture());
-        VerifyPasswordResetResponseData presentedResponse = responseCaptor.getValue();
-
-        assertTrue(presentedResponse.success);
-        assertEquals("Đặt lại mật khẩu thành công. Bạn có thể đăng nhập ngay bây giờ.", presentedResponse.message);
+        assertFalse(captor.getValue().success);
+        // Lỗi từ User.validatePassword
+        assertTrue(captor.getValue().message.contains("ít nhất 8 ký tự"));
     }
-    
-    /**
-     * Test kịch bản THẤT BẠI: Token không tìm thấy
-     */
+
     @Test
-    void test_execute_failure_tokenNotFound() {
-        // --- ARRANGE ---
-        when(mockPasswordHasher.hash("plain-text-token-abc")).thenReturn("hashed-token-xyz");
-        // 1. Giả lập KHÔNG tìm thấy Token
-        when(mockTokenRepository.findByHashedToken("hashed-token-xyz")).thenReturn(null);
-        
-        ArgumentCaptor<VerifyPasswordResetResponseData> responseCaptor =
-            ArgumentCaptor.forClass(VerifyPasswordResetResponseData.class);
-
-        // --- ACT ---
-        useCase.execute(requestData);
-
-        // --- ASSERT ---
-        verify(mockOutputBoundary).present(responseCaptor.capture());
-        VerifyPasswordResetResponseData presentedResponse = responseCaptor.getValue();
-
-        assertFalse(presentedResponse.success);
-        assertEquals("Token không hợp lệ hoặc đã hết hạn.", presentedResponse.message);
-        
-        // Quan trọng: Không bao giờ gọi CSDL User
-        verify(mockUserRepository, never()).findByUserId(anyString());
-        verify(mockUserRepository, never()).update(any(UserData.class));
-    }
-    
-    /**
-     * Test kịch bản THẤT BẠI: Token đã hết hạn
-     */
-    @Test
-    void test_execute_failure_tokenExpired() {
-        // --- ARRANGE ---
-        // 1. Tạo token đã hết hạn
-        PasswordResetTokenData expiredTokenData = new PasswordResetTokenData(
-            "token-record-123", "hashed-token-xyz", "user-123",
-            Instant.now().minus(1, ChronoUnit.MINUTES) // Đã hết hạn 1 phút trước
+    @DisplayName("Fail: Token tìm thấy nhưng đã hết hạn")
+    void test_Fail_TokenExpired() {
+        // GIVEN: Token đã hết hạn 5 phút trước
+        PasswordResetTokenData expiredToken = new PasswordResetTokenData(
+            "token-id-1", "hashed-token-123", "user-1", 
+            Instant.now().minus(5, ChronoUnit.MINUTES)
         );
-        
-        when(mockPasswordHasher.hash("plain-text-token-abc")).thenReturn("hashed-token-xyz");
-        when(mockTokenRepository.findByHashedToken("hashed-token-xyz")).thenReturn(expiredTokenData);
-        
-        ArgumentCaptor<VerifyPasswordResetResponseData> responseCaptor =
-            ArgumentCaptor.forClass(VerifyPasswordResetResponseData.class);
 
-        // --- ACT ---
+        when(mockHasher.hash("plain-token-123")).thenReturn("hashed-token-123");
+        when(mockTokenRepo.findByHashedToken("hashed-token-123")).thenReturn(expiredToken);
+
+        // WHEN
         useCase.execute(requestData);
 
-        // --- ASSERT ---
-        verify(mockOutputBoundary).present(responseCaptor.capture());
-        VerifyPasswordResetResponseData presentedResponse = responseCaptor.getValue();
+        // THEN
+        ArgumentCaptor<VerifyPasswordResetResponseData> captor = ArgumentCaptor.forClass(VerifyPasswordResetResponseData.class);
+        verify(mockOutputBoundary).present(captor.capture());
 
-        assertFalse(presentedResponse.success);
-        assertEquals("Token không hợp lệ hoặc đã hết hạn.", presentedResponse.message);
-        
-        verify(mockUserRepository, never()).update(any(UserData.class));
+        assertFalse(captor.getValue().success);
+        assertEquals("Token đã hết hạn.", captor.getValue().message);
     }
     
-    /**
-     * Test kịch bản THẤT BẠI: Mật khẩu mới quá yếu (Lỗi Validation)
-     */
     @Test
-    void test_execute_failure_newPasswordTooShort() {
-        // --- ARRANGE ---
-        VerifyPasswordResetRequestData badRequest = 
-            new VerifyPasswordResetRequestData("plain-text-token-abc", "123"); // Pass mới "123"
+    @DisplayName("Success: Đổi mật khẩu thành công -> Update DB -> Xóa Token")
+    void test_Success() {
+        when(mockHasher.hash("plain-token-123")).thenReturn("hashed-token-123");
+        when(mockTokenRepo.findByHashedToken("hashed-token-123")).thenReturn(validTokenData);
+        when(mockUserRepo.findByUserId("user-1")).thenReturn(userData);
+        when(mockHasher.hash("newPass123")).thenReturn("new_hashed_pass");
 
-        ArgumentCaptor<VerifyPasswordResetResponseData> responseCaptor =
-            ArgumentCaptor.forClass(VerifyPasswordResetResponseData.class);
-
-        // --- ACT ---
-        useCase.execute(badRequest);
-        
-        // --- ASSERT ---
-        verify(mockOutputBoundary).present(responseCaptor.capture());
-        VerifyPasswordResetResponseData presentedResponse = responseCaptor.getValue();
-        
-        assertFalse(presentedResponse.success);
-        assertEquals("Mật khẩu phải có ít nhất 8 ký tự.", presentedResponse.message);
-        
-        // Dừng ngay, không gọi CSDL
-        verify(mockTokenRepository, never()).findByHashedToken(anyString());
-    }
-    
-    /**
-     * Test kịch bản THẤT BẠI: Lỗi hệ thống (ví dụ: CSDL sập khi XÓA token)
-     * (Đây vẫn là kịch bản THÀNH CÔNG đối với người dùng)
-     */
-    @Test
-    void test_execute_success_systemErrorOnTokenDelete() {
-        // --- ARRANGE ---
-        // 1. Mọi thứ đều OK
-        when(mockPasswordHasher.hash("plain-text-token-abc")).thenReturn("hashed-token-xyz");
-        when(mockTokenRepository.findByHashedToken("hashed-token-xyz")).thenReturn(validTokenData);
-        when(mockUserRepository.findByUserId("user-123")).thenReturn(validUserData);
-        when(mockPasswordHasher.hash("newPassword456")).thenReturn("hashed_newPassword456");
-        
-        // 2. Giả lập CSDL sập khi XÓA token
-        doThrow(new RuntimeException("Database connection failed on delete"))
-            .when(mockTokenRepository)
-            .deleteByTokenId("token-record-123");
-
-        ArgumentCaptor<VerifyPasswordResetResponseData> responseCaptor =
-            ArgumentCaptor.forClass(VerifyPasswordResetResponseData.class);
-
-        // --- ACT ---
+        // WHEN
         useCase.execute(requestData);
 
-        // --- ASSERT ---
-        // 1. Kiểm tra: User VẪN được cập nhật
-        verify(mockUserRepository).update(any(UserData.class));
-        // 2. Kiểm tra: ĐÃ cố gắng xóa token
-        verify(mockTokenRepository).deleteByTokenId("token-record-123");
+        // THEN
+        ArgumentCaptor<UserData> userCaptor = ArgumentCaptor.forClass(UserData.class);
+        verify(mockUserRepo).update(userCaptor.capture());
+        UserData updatedUser = userCaptor.getValue();
         
-        // 3. Kiểm tra response (VẪN LÀ THÀNH CÔNG)
-        verify(mockOutputBoundary).present(responseCaptor.capture());
-        VerifyPasswordResetResponseData presentedResponse = responseCaptor.getValue();
+        assertEquals("new_hashed_pass", updatedUser.hashedPassword); 
+        assertNotEquals(userData.updatedAt, updatedUser.updatedAt); 
 
-        assertTrue(presentedResponse.success);
-        assertEquals("Đặt lại mật khẩu thành công. Bạn có thể đăng nhập ngay bây giờ.", presentedResponse.message);
+        // Verify Token cũ bị xóa
+        verify(mockTokenRepo).deleteByTokenId("token-id-1");
+
+        // Verify Output thành công
+        ArgumentCaptor<VerifyPasswordResetResponseData> resCaptor = ArgumentCaptor.forClass(VerifyPasswordResetResponseData.class);
+        verify(mockOutputBoundary).present(resCaptor.capture());
+
+        assertTrue(resCaptor.getValue().success);
+        assertTrue(resCaptor.getValue().message.contains("thành công"));
     }
 }

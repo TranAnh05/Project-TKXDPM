@@ -14,8 +14,8 @@ import cgx.com.usecase.ManageProduct.DeleteDevice.DeleteDeviceOutputBoundary;
 import cgx.com.usecase.ManageProduct.DeleteDevice.DeleteDeviceRequestData;
 import cgx.com.usecase.ManageProduct.DeleteDevice.DeleteDeviceResponseData;
 import cgx.com.usecase.ManageProduct.DeleteDevice.DeleteLaptopUseCase;
+import cgx.com.usecase.ManageUser.AuthPrincipal;
 import cgx.com.usecase.ManageUser.IAuthTokenValidator;
-import cgx.com.usecase.ManageUser.ViewUserProfile.AuthPrincipal;
 
 import java.math.BigDecimal;
 

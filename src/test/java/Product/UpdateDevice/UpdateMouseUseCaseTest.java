@@ -9,8 +9,8 @@ import cgx.com.usecase.ManageProduct.UpdateProduct.UpdateDeviceOutputBoundary;
 import cgx.com.usecase.ManageProduct.UpdateProduct.UpdateDeviceResponseData;
 import cgx.com.usecase.ManageProduct.UpdateProduct.UpdateMouseRequestData;
 import cgx.com.usecase.ManageProduct.UpdateProduct.UpdateMouseUseCase;
+import cgx.com.usecase.ManageUser.AuthPrincipal;
 import cgx.com.usecase.ManageUser.IAuthTokenValidator;
-import cgx.com.usecase.ManageUser.ViewUserProfile.AuthPrincipal;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

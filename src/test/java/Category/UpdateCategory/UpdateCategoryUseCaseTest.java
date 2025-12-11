@@ -14,8 +14,8 @@ import cgx.com.usecase.ManageCategory.AddNewCategory.AddCategoryResponseData;
 import cgx.com.usecase.ManageCategory.UpdateCategory.UpdateCategoryOutputBoundary;
 import cgx.com.usecase.ManageCategory.UpdateCategory.UpdateCategoryRequestData;
 import cgx.com.usecase.ManageCategory.UpdateCategory.UpdateCategoryUseCase;
+import cgx.com.usecase.ManageUser.AuthPrincipal;
 import cgx.com.usecase.ManageUser.IAuthTokenValidator;
-import cgx.com.usecase.ManageUser.ViewUserProfile.AuthPrincipal;
 
 import java.time.Instant;
 

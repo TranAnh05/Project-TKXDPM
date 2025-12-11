@@ -5,29 +5,34 @@ import java.time.Instant;
 import cgx.com.Entities.AccountStatus;
 import cgx.com.Entities.User;
 import cgx.com.Entities.UserRole;
+import cgx.com.usecase.ManageUser.AuthPrincipal;
 import cgx.com.usecase.ManageUser.IAuthTokenValidator;
+import cgx.com.usecase.ManageUser.IEmailService;
 import cgx.com.usecase.ManageUser.IPasswordHasher;
 import cgx.com.usecase.ManageUser.IUserIdGenerator;
 import cgx.com.usecase.ManageUser.IUserRepository;
 import cgx.com.usecase.ManageUser.UserData;
-import cgx.com.usecase.ManageUser.ViewUserProfile.AuthPrincipal;
 
 public class AdminCreateUserUseCase implements AdminCreateUserInputBoundary{
-	protected final IAuthTokenValidator tokenValidator;
-    protected final IUserRepository userRepository;
-    protected final IPasswordHasher passwordHasher;
-    protected final IUserIdGenerator userIdGenerator;
-    protected final AdminCreateUserOutputBoundary outputBoundary;
+	private final IAuthTokenValidator tokenValidator;
+	private final IUserRepository userRepository;
+	private final IPasswordHasher passwordHasher;
+	private final IUserIdGenerator userIdGenerator;
+	private final IEmailService emailService;
+	private final AdminCreateUserOutputBoundary outputBoundary;
+    
 	
     public AdminCreateUserUseCase(IAuthTokenValidator tokenValidator,
             IUserRepository userRepository,
             IPasswordHasher passwordHasher,
             IUserIdGenerator userIdGenerator,
+            IEmailService emailService,
             AdminCreateUserOutputBoundary outputBoundary) {
 		this.tokenValidator = tokenValidator;
 		this.userRepository = userRepository;
 		this.passwordHasher = passwordHasher;
 		this.userIdGenerator = userIdGenerator;
+		this.emailService = emailService;
 		this.outputBoundary = outputBoundary;
 	}
     
@@ -36,54 +41,48 @@ public class AdminCreateUserUseCase implements AdminCreateUserInputBoundary{
 		AdminCreateUserResponseData output = new AdminCreateUserResponseData();
 
         try {
-            // 1. Kiểm tra input (Token)
-            if (input.authToken == null || input.authToken.trim().isEmpty()) {
-                throw new SecurityException("Auth Token không được để trống.");
-            }
-
-            // 2. Xác thực Token & Phân quyền (Authorization)
+            // Xác thực Token
             AuthPrincipal adminPrincipal = tokenValidator.validate(input.authToken);
-            if (adminPrincipal.role != UserRole.ADMIN) {
-                throw new SecurityException("Không có quyền truy cập.");
-            }
-
-            // 3. Validate dữ liệu người dùng mới (dùng Entity)
+            
+            // Kiểm tra dữ liệu đầu vào
+            User.validateIsAdmin(adminPrincipal.role);
+            
             User.validateEmail(input.email);
             User.validateName(input.firstName, input.lastName);
+            User.validatePhoneNumber(input.phoneNumber);
             User.validatePassword(input.password);
-            UserRole newUserRole = User.validateRole(input.role); // Chuyển String -> Enum
-            AccountStatus newUserStatus = User.validateStatus(input.status); // Chuyển String -> Enum
+            UserRole newUserRole = User.validateRole(input.role); 
+            AccountStatus newUserStatus = User.validateStatus(input.status); 
 
-            // 4. Kiểm tra nghiệp vụ (Tầng 3 - Chung)
             if (userRepository.findByEmail(input.email) != null) {
                 throw new IllegalArgumentException("Email này đã tồn tại.");
             }
 
-            // 5. Tạo Entity (Layer 4)
             String newUserId = userIdGenerator.generate();
             String newHashedPassword = passwordHasher.hash(input.password);
             
-            // Dùng constructor của Entity để tạo User với Role/Status cụ thể
             User userEntity = new User(
                 newUserId,
                 input.email,
                 newHashedPassword,
                 input.firstName,
                 input.lastName,
-                null, // phoneNumber (có thể thêm sau)
-                newUserRole,    // <-- Role do Admin chỉ định
-                newUserStatus,  // <-- Status do Admin chỉ định
+                input.phoneNumber,
+                newUserRole,    
+                newUserStatus,  
                 Instant.now(),
                 Instant.now()
             );
 
-            // 6. Map Entity sang DTO (Layer 3)
             UserData dataToSave = mapEntityToData(userEntity);
-
-            // 7. LƯU VÀO CSDL (Tầng 3 - Chung)
             UserData savedData = userRepository.save(dataToSave);
             
-            // 8. Báo cáo thành công (Chung)
+            emailService.sendAccountCreatedEmail(
+                    savedData.email, 
+                    savedData.firstName, 	
+                    input.password 
+                );
+            
             output.success = true;
             output.message = "Tạo tài khoản thành công!";
             output.createdUserId = savedData.userId;
@@ -93,20 +92,17 @@ public class AdminCreateUserUseCase implements AdminCreateUserInputBoundary{
             output.status = savedData.status;
 
         } catch (IllegalArgumentException e) {
-            // 9. BẮT LỖI VALIDATION (T4) HOẶC LỖI NGHIỆP VỤ (T3)
             output.success = false;
             output.message = e.getMessage();
         } catch (SecurityException e) {
-            // 10. BẮT LỖI BẢO MẬT (T3)
             output.success = false;
             output.message = e.getMessage();
         } catch (Exception e) {
-            // 11. Bắt lỗi hệ thống
+            // Bắt lỗi hệ thống
             output.success = false;
             output.message = "Đã xảy ra lỗi hệ thống không xác định.";
         }
 
-        // 12. Trình bày kết quả (Chung)
         outputBoundary.present(output);
 	}
 	

@@ -15,8 +15,8 @@ import cgx.com.usecase.ManageProduct.SearchDevices.SearchDevicesOutputBoundary;
 import cgx.com.usecase.ManageProduct.SearchDevices.SearchDevicesRequestData;
 import cgx.com.usecase.ManageProduct.SearchDevices.SearchDevicesResponseData;
 import cgx.com.usecase.ManageProduct.SearchDevices.SearchDevicesUseCase;
+import cgx.com.usecase.ManageUser.AuthPrincipal;
 import cgx.com.usecase.ManageUser.IAuthTokenValidator;
-import cgx.com.usecase.ManageUser.ViewUserProfile.AuthPrincipal;
 
 import java.math.BigDecimal;
 import java.util.List;

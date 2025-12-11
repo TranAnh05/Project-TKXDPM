@@ -13,8 +13,8 @@ import cgx.com.usecase.ManageOrder.OrderData;
 import cgx.com.usecase.ManageOrder.OrderItemData;
 import cgx.com.usecase.ManageProduct.DeviceData;
 import cgx.com.usecase.ManageProduct.IDeviceRepository;
+import cgx.com.usecase.ManageUser.AuthPrincipal;
 import cgx.com.usecase.ManageUser.IAuthTokenValidator;
-import cgx.com.usecase.ManageUser.ViewUserProfile.AuthPrincipal;
 
 import java.util.ArrayList;
 import java.util.Map;

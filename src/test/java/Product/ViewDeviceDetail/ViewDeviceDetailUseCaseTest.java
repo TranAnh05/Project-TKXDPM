@@ -14,8 +14,8 @@ import cgx.com.usecase.ManageProduct.ViewDeviceDetail.ViewDeviceDetailOutputBoun
 import cgx.com.usecase.ManageProduct.ViewDeviceDetail.ViewDeviceDetailRequestData;
 import cgx.com.usecase.ManageProduct.ViewDeviceDetail.ViewDeviceDetailResponseData;
 import cgx.com.usecase.ManageProduct.ViewDeviceDetail.ViewDeviceDetailUseCase;
+import cgx.com.usecase.ManageUser.AuthPrincipal;
 import cgx.com.usecase.ManageUser.IAuthTokenValidator;
-import cgx.com.usecase.ManageUser.ViewUserProfile.AuthPrincipal;
 
 import java.math.BigDecimal;
 

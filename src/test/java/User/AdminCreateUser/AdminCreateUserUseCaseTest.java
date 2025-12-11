@@ -5,20 +5,30 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.Instant;
+
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import cgx.com.Entities.AccountStatus;
 import cgx.com.Entities.UserRole;
+import cgx.com.usecase.ManageUser.AuthPrincipal;
 import cgx.com.usecase.ManageUser.IAuthTokenValidator;
+import cgx.com.usecase.ManageUser.IEmailService;
 import cgx.com.usecase.ManageUser.IPasswordHasher;
 import cgx.com.usecase.ManageUser.IUserIdGenerator;
 import cgx.com.usecase.ManageUser.IUserRepository;
@@ -27,174 +37,231 @@ import cgx.com.usecase.ManageUser.AdminCreateNewUser.AdminCreateUserOutputBounda
 import cgx.com.usecase.ManageUser.AdminCreateNewUser.AdminCreateUserRequestData;
 import cgx.com.usecase.ManageUser.AdminCreateNewUser.AdminCreateUserResponseData;
 import cgx.com.usecase.ManageUser.AdminCreateNewUser.AdminCreateUserUseCase;
-import cgx.com.usecase.ManageUser.ViewUserProfile.AuthPrincipal;
 
 @ExtendWith(MockitoExtension.class)
 public class AdminCreateUserUseCaseTest {
-	@Mock private IAuthTokenValidator mockTokenValidator;
-    @Mock private IUserRepository mockUserRepository;
-    @Mock private IPasswordHasher mockPasswordHasher;
-    @Mock private IUserIdGenerator mockUserIdGenerator;
-    @Mock private AdminCreateUserOutputBoundary mockOutputBoundary;
 
-    // 2. Lớp cần test
+    @Mock private IAuthTokenValidator tokenValidator;
+    @Mock private IUserRepository userRepository;
+    @Mock private IPasswordHasher passwordHasher;
+    @Mock private IUserIdGenerator userIdGenerator;
+    @Mock private IEmailService emailService;
+    @Mock private AdminCreateUserOutputBoundary outputBoundary;
+
+    @InjectMocks
     private AdminCreateUserUseCase useCase;
 
-    // 3. Dữ liệu mẫu
-    private AdminCreateUserRequestData requestData;
+    // --- CAPTORS ---
+    @Captor private ArgumentCaptor<AdminCreateUserResponseData> responseCaptor;
+    @Captor private ArgumentCaptor<UserData> userDataCaptor;
+
+    // --- TEST DATA ---
+    private AdminCreateUserRequestData validRequest;
     private AuthPrincipal adminPrincipal;
-    
+    private AuthPrincipal customerPrincipal;
+
+    private final String ADMIN_TOKEN = "admin_token_jwt";
+    private final String NEW_USER_EMAIL = "newuser@example.com";
+    private final String VALID_PASS = "Password123";
+    private final String VALID_PHONE = "0901234567"; 
+
     @BeforeEach
     void setUp() {
-        useCase = new AdminCreateUserUseCase(
-            mockTokenValidator, mockUserRepository, mockPasswordHasher,
-            mockUserIdGenerator, mockOutputBoundary
+        // Setup request chuẩn với Constructor đầy đủ (đã bao gồm phoneNumber)
+        validRequest = new AdminCreateUserRequestData(
+            ADMIN_TOKEN, 
+            NEW_USER_EMAIL, 
+            VALID_PASS, 
+            "Nguyen", 
+            "Van B", 
+            VALID_PHONE, 
+            "CUSTOMER", 
+            "ACTIVE"
         );
 
-        // Yêu cầu tạo một Admin mới
-        requestData = new AdminCreateUserRequestData(
-            "Bearer admin.token",
-            "new.admin@example.com",
-            "password123",
-            "New",
-            "Admin",
-            "ADMIN",   // Chỉ định vai trò
-            "ACTIVE"   // Chỉ định trạng thái
+        adminPrincipal = new AuthPrincipal("admin-id", "admin@sys.com", UserRole.ADMIN);
+        customerPrincipal = new AuthPrincipal("user-id", "user@sys.com", UserRole.CUSTOMER);
+    }
+
+    @Test
+    @DisplayName("Case: Fail - không phải admin")
+    void testExecute_NotAdmin_Fail() {
+        when(tokenValidator.validate(any())).thenReturn(customerPrincipal);
+
+        // WHEN
+        useCase.execute(validRequest);
+
+        // THEN
+        verify(outputBoundary).present(responseCaptor.capture());
+        assertFalse(responseCaptor.getValue().success);
+        assertEquals("Không có quyền truy cập.", responseCaptor.getValue().message);
+    }
+    
+    @Test
+    @DisplayName("Case: Fail - Tên rỗng")
+    void testExecute_EmptyFirstName_Fail() {
+        // GIVEN
+        when(tokenValidator.validate(any())).thenReturn(adminPrincipal);
+        // FirstName để rỗng ""
+        AdminCreateUserRequestData invalidReq = new AdminCreateUserRequestData(
+            ADMIN_TOKEN, NEW_USER_EMAIL, VALID_PASS, "", "Van B", VALID_PHONE, "CUSTOMER", "ACTIVE"
         );
-        
-        // Giả lập Admin thực hiện
-        adminPrincipal = new AuthPrincipal("admin-123", "admin@e.com", UserRole.ADMIN);
+
+        // WHEN
+        useCase.execute(invalidReq);
+
+        // THEN
+        verify(outputBoundary).present(responseCaptor.capture());
+        assertFalse(responseCaptor.getValue().success);
+        assertEquals("Tên không được để trống.", responseCaptor.getValue().message); 
     }
-    
-    /**
-     * Test kịch bản THÀNH CÔNG
-     */
+
     @Test
-    void test_execute_success() {
-        // --- ARRANGE ---
-        // 1. Giả lập Token Admin hợp lệ
-        when(mockTokenValidator.validate("Bearer admin.token")).thenReturn(adminPrincipal);
-        // 2. Giả lập Email là duy nhất
-        when(mockUserRepository.findByEmail("new.admin@example.com")).thenReturn(null);
-        // 3. Giả lập các generator
-        when(mockUserIdGenerator.generate()).thenReturn("new-admin-uuid-456");
-        when(mockPasswordHasher.hash("password123")).thenReturn("hashed_new_password");
-        
-        // 4. "Bắt" (Capture) DTO được gửi đến CSDL
-        ArgumentCaptor<UserData> userDataCaptor = ArgumentCaptor.forClass(UserData.class);
-        when(mockUserRepository.save(userDataCaptor.capture())).thenAnswer(
-            invocation -> invocation.getArgument(0)
+    @DisplayName("Case: Fail - Mật khẩu quá ngắn")
+    void testExecute_ShortPassword_Fail() {
+        // GIVEN
+        when(tokenValidator.validate(any())).thenReturn(adminPrincipal);
+        AdminCreateUserRequestData invalidReq = new AdminCreateUserRequestData(
+            ADMIN_TOKEN, NEW_USER_EMAIL, "123", "Nguyen", "Van B", VALID_PHONE, "CUSTOMER", "ACTIVE"
         );
-        
-        ArgumentCaptor<AdminCreateUserResponseData> responseCaptor = 
-            ArgumentCaptor.forClass(AdminCreateUserResponseData.class);
 
-        // --- ACT ---
-        useCase.execute(requestData);
+        // WHEN
+        useCase.execute(invalidReq);
 
-        // --- ASSERT ---
-        // 1. Kiểm tra các bước
-        verify(mockTokenValidator).validate("Bearer admin.token");
-        verify(mockUserRepository).findByEmail("new.admin@example.com");
-        verify(mockUserIdGenerator).generate();
-        verify(mockPasswordHasher).hash("password123");
-        verify(mockUserRepository).save(any(UserData.class));
-        
-        // 2. Kiểm tra dữ liệu GỬI ĐẾN CSDL
-        UserData capturedData = userDataCaptor.getValue();
-        assertEquals("new-admin-uuid-456", capturedData.userId);
-        assertEquals("new.admin@example.com", capturedData.email);
-        assertEquals(UserRole.ADMIN, capturedData.role, "Role phải là ADMIN (do Admin chỉ định)");
-        assertEquals(AccountStatus.ACTIVE, capturedData.status, "Status phải là ACTIVE (do Admin chỉ định)");
-        
-        // 3. Kiểm tra dữ liệu GỬI ĐẾN PRESENTER
-        verify(mockOutputBoundary).present(responseCaptor.capture());
-        AdminCreateUserResponseData presentedResponse = responseCaptor.getValue();
-
-        assertTrue(presentedResponse.success);
-        assertEquals("Tạo tài khoản thành công!", presentedResponse.message);
-        assertEquals("new-admin-uuid-456", presentedResponse.createdUserId);
-        assertEquals(UserRole.ADMIN, presentedResponse.role);
+        // THEN
+        verify(outputBoundary).present(responseCaptor.capture());
+        assertFalse(responseCaptor.getValue().success);
+        assertEquals("Mật khẩu phải có ít nhất 8 ký tự.", responseCaptor.getValue().message); 
     }
-    
-    /**
-     * Test kịch bản THẤT BẠI: Không phải Admin
-     */
+
     @Test
-    void test_execute_failure_notAdmin() {
-        // --- ARRANGE ---
-        // Giả lập người gọi là Customer
-        AuthPrincipal customerPrincipal = new AuthPrincipal("cust-789", "cust@e.com", UserRole.CUSTOMER);
-        when(mockTokenValidator.validate(anyString())).thenReturn(customerPrincipal);
-            
-        ArgumentCaptor<AdminCreateUserResponseData> responseCaptor = 
-            ArgumentCaptor.forClass(AdminCreateUserResponseData.class);
-
-        // --- ACT ---
-        useCase.execute(requestData);
-        
-        // --- ASSERT ---
-        verify(mockOutputBoundary).present(responseCaptor.capture());
-        AdminCreateUserResponseData presentedResponse = responseCaptor.getValue();
-
-        assertFalse(presentedResponse.success);
-        assertEquals("Không có quyền truy cập.", presentedResponse.message);
-        
-        verify(mockUserRepository, never()).findByEmail(anyString());
-    }
-    
-    /**
-     * Test kịch bản THẤT BẠI: Email đã tồn tại
-     */
-    @Test
-    void test_execute_failure_emailAlreadyExists() {
-        // --- ARRANGE ---
-        when(mockTokenValidator.validate("Bearer admin.token")).thenReturn(adminPrincipal);
-        // 1. Giả lập Email ĐÃ TỒN TẠI
-        when(mockUserRepository.findByEmail("new.admin@example.com")).thenReturn(new UserData());
-            
-        ArgumentCaptor<AdminCreateUserResponseData> responseCaptor = 
-            ArgumentCaptor.forClass(AdminCreateUserResponseData.class);
-
-        // --- ACT ---
-        useCase.execute(requestData);
-        
-        // --- ASSERT ---
-        verify(mockOutputBoundary).present(responseCaptor.capture());
-        AdminCreateUserResponseData presentedResponse = responseCaptor.getValue();
-
-        assertFalse(presentedResponse.success);
-        assertEquals("Email này đã tồn tại.", presentedResponse.message);
-        
-        verify(mockUserRepository, never()).save(any(UserData.class));
-    }
-    
-    /**
-     * Test kịch bản THẤT BẠI: Dữ liệu không hợp lệ (Vai trò không tồn tại)
-     */
-    @Test
-    void test_execute_failure_invalidRole() {
-        // --- ARRANGE ---
-        AdminCreateUserRequestData badRequest = new AdminCreateUserRequestData(
-            "Bearer admin.token", "new.admin@example.com", "password123",
-            "New", "Admin", "SUPER_USER", "ACTIVE" // <-- Vai trò không hợp lệ
+    @DisplayName("Case: Fail - Role không hợp lệ")
+    void testExecute_InvalidRole_Fail() {
+        // GIVEN
+        when(tokenValidator.validate(any())).thenReturn(adminPrincipal);
+        AdminCreateUserRequestData invalidReq = new AdminCreateUserRequestData(
+            ADMIN_TOKEN, NEW_USER_EMAIL, VALID_PASS, "Nguyen", "Van B", VALID_PHONE, "SUPER_ADMIN", "ACTIVE"
         );
-        
-        when(mockTokenValidator.validate("Bearer admin.token")).thenReturn(adminPrincipal);
-            
-        ArgumentCaptor<AdminCreateUserResponseData> responseCaptor = 
-            ArgumentCaptor.forClass(AdminCreateUserResponseData.class);
 
-        // --- ACT ---
-        useCase.execute(badRequest);
-        
-        // --- ASSERT ---
-        verify(mockOutputBoundary).present(responseCaptor.capture());
-        AdminCreateUserResponseData presentedResponse = responseCaptor.getValue();
+        // WHEN
+        useCase.execute(invalidReq);
 
-        assertFalse(presentedResponse.success);
-        assertEquals("Vai trò (Role) không hợp lệ: SUPER_USER", presentedResponse.message);
+        // THEN
+        verify(outputBoundary).present(responseCaptor.capture());
+        assertFalse(responseCaptor.getValue().success);
+        assertTrue(responseCaptor.getValue().message.contains("Vai trò (Role) không hợp lệ"));
+    }
+
+    @Test
+    @DisplayName("Case: Fail - Status không tồn tại")
+    void testExecute_InvalidStatus_Fail() {
+        // GIVEN
+        when(tokenValidator.validate(any())).thenReturn(adminPrincipal);
+        // Status sai
+        AdminCreateUserRequestData invalidReq = new AdminCreateUserRequestData(
+            ADMIN_TOKEN, NEW_USER_EMAIL, VALID_PASS, "Nguyen", "Van B", VALID_PHONE, "CUSTOMER", "SLEEPING"
+        );
+
+        // WHEN
+        useCase.execute(invalidReq);
+
+        // THEN
+        verify(outputBoundary).present(responseCaptor.capture());
+        assertFalse(responseCaptor.getValue().success);
+        assertTrue(responseCaptor.getValue().message.contains("Trạng thái (Status) không hợp lệ"));
+    }
+
+    @Test
+    @DisplayName("Case: Fail -Email không đúng định dạng")
+    void testExecute_InvalidEmail_Fail() {
+        // GIVEN
+        when(tokenValidator.validate(any())).thenReturn(adminPrincipal);
         
-        verify(mockUserRepository, never()).findByEmail(anyString());
+        AdminCreateUserRequestData invalidReq = new AdminCreateUserRequestData(
+            ADMIN_TOKEN, "invalid-email", VALID_PASS, "A", "B", VALID_PHONE, "CUSTOMER", "ACTIVE"
+        );
+
+        // WHEN
+        useCase.execute(invalidReq);
+
+        // THEN
+        verify(outputBoundary).present(responseCaptor.capture());
+        assertTrue(responseCaptor.getValue().message.contains("Email không đúng định dạng"));
+    }
+    
+    @Test
+    @DisplayName("Case: Fail - SĐT không đúng định dạng")
+    void testExecute_InvalidPhone_Fail() {
+        // GIVEN
+        when(tokenValidator.validate(any())).thenReturn(adminPrincipal);
+        
+        AdminCreateUserRequestData invalidReq = new AdminCreateUserRequestData(
+            ADMIN_TOKEN, NEW_USER_EMAIL, VALID_PASS, "A", "B", "123abc456", "CUSTOMER", "ACTIVE"
+        );
+
+        // WHEN
+        useCase.execute(invalidReq);
+
+        // THEN
+        verify(outputBoundary).present(responseCaptor.capture());
+        assertTrue(responseCaptor.getValue().message.contains("Số điện thoại không đúng định dạng"));
+    }
+
+    @Test
+    @DisplayName("Case: Fail - Trùng email")
+    void testExecute_DuplicateEmail_Fail() {
+        // GIVEN
+        when(tokenValidator.validate(any())).thenReturn(adminPrincipal);
+        when(userRepository.findByEmail(NEW_USER_EMAIL)).thenReturn(new UserData(null, null, null, null, null, null, null, null, null, null));
+
+        // WHEN
+        useCase.execute(validRequest);
+
+        // THEN
+        verify(outputBoundary).present(responseCaptor.capture());
+        assertEquals("Email này đã tồn tại.", responseCaptor.getValue().message);
+        verify(emailService, never()).sendAccountCreatedEmail(any(), any(), any());
+    }
+
+
+    @Test
+    @DisplayName("Case: Success - Create User & Send Email")
+    void testExecute_Success() {
+        // 1. ARRANGE
+        when(tokenValidator.validate(any())).thenReturn(adminPrincipal);
+        when(userRepository.findByEmail(any())).thenReturn(null);
+        when(userIdGenerator.generate()).thenReturn("user-001");
+        when(passwordHasher.hash(VALID_PASS)).thenReturn("hashed_pass_123");
+        
+        UserData savedData = new UserData(
+            "user-001", NEW_USER_EMAIL, "hashed_pass_123", "Nguyen", "Van B", VALID_PHONE, 
+            UserRole.CUSTOMER, AccountStatus.ACTIVE, Instant.now(), Instant.now()
+        );
+        when(userRepository.save(any(UserData.class))).thenReturn(savedData);
+
+        // 2. ACT
+        useCase.execute(validRequest);
+
+        // 3. ASSERT
+        verify(outputBoundary).present(responseCaptor.capture());
+        AdminCreateUserResponseData res = responseCaptor.getValue();
+
+        // Check Output
+        assertTrue(res.success);
+        assertEquals("Tạo tài khoản thành công!", res.message);
+        assertEquals("user-001", res.createdUserId);
+        assertEquals("Nguyen Van B", res.fullName);
+
+        // Check Data gửi xuống Repository
+        verify(userRepository).save(userDataCaptor.capture());
+        UserData dbData = userDataCaptor.getValue();
+        assertEquals("hashed_pass_123", dbData.hashedPassword); 
+        assertEquals(VALID_PHONE, dbData.phoneNumber); 
+
+        verify(emailService, times(1)).sendAccountCreatedEmail(
+            eq(NEW_USER_EMAIL), 
+            eq("Nguyen"), 
+            eq(VALID_PASS) 
+        );
     }
 }

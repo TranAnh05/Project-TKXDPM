@@ -13,10 +13,26 @@ public interface IEmailService {
     void sendPasswordResetEmail(String toEmail, String userName, String plainTextToken);
     
     /**
-     * [MỚI] Gửi email xác thực tài khoản sau khi đăng ký.
+     * Gửi email xác thực tài khoản sau khi đăng ký.
      * @param toEmail Email người nhận
      * @param userName Tên người dùng
      * @param verificationToken Mã/Link xác thực
      */
     void sendVerificationEmail(String toEmail, String userName, String verificationToken);
+    
+    /**
+     * Gửi email cảnh báo khi mật khẩu thay đổi thành công.
+     * @param toEmail Email người nhận
+     * @param userName Tên người dùng
+     */
+    void sendPasswordChangeAlert(String toEmail, String userName);
+    
+    /**
+     * Gửi email chào mừng khi Admin tạo tài khoản thủ công.
+     * Thường chứa thông tin đăng nhập ban đầu.
+     * @param toEmail Email người nhận
+     * @param userName Tên người nhận
+     * @param initialPassword Mật khẩu khởi tạo (để user đăng nhập lần đầu)
+     */
+    void sendAccountCreatedEmail(String toEmail, String userName, String initialPassword);
 }
