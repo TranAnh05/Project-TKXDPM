@@ -152,8 +152,8 @@ public class User {
     public void updateProfile(String firstName, String lastName, String phoneNumber) {
         this.firstName = firstName;
         this.lastName = lastName;
-        this.phoneNumber = (phoneNumber == null || phoneNumber.trim().isEmpty()) ? null : phoneNumber.trim();
-        this.touch(); // Cập nhật thời gian
+        this.phoneNumber = phoneNumber;
+        this.touch(); 
     }
     
     public void touch() {

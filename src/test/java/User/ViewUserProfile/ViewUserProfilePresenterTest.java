@@ -23,9 +23,6 @@ public class ViewUserProfilePresenterTest {
         responseData = new ViewUserProfileResponseData();
     }
     
-    /**
-     * Test kịch bản Presenter nhận dữ liệu THÀNH CÔNG (có số điện thoại)
-     */
     @Test
     void test_present_successCase_withPhone() {
         // --- ARRANGE ---
@@ -55,9 +52,6 @@ public class ViewUserProfilePresenterTest {
     }
     
 
-    /**
-     * Test kịch bản Presenter nhận dữ liệu THẤT BẠI
-     */
     @Test
     void test_present_failureCase() {
         // --- ARRANGE ---

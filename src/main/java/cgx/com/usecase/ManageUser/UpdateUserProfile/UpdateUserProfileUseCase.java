@@ -2,18 +2,19 @@ package cgx.com.usecase.ManageUser.UpdateUserProfile;
 
 import java.time.Instant;
 
+import cgx.com.Entities.User;
 import cgx.com.usecase.ManageUser.AuthPrincipal;
 import cgx.com.usecase.ManageUser.IAuthTokenValidator;
 import cgx.com.usecase.ManageUser.IUserRepository;
 import cgx.com.usecase.ManageUser.UserData;
 import cgx.com.usecase.ManageUser.ViewUserProfile.ViewUserProfileResponseData;
 
-public abstract class AbstractUpdateUserProfileUseCase implements UpdateUserProfileInputBoundary{
+public class UpdateUserProfileUseCase implements UpdateUserProfileInputBoundary{
 	protected final IAuthTokenValidator tokenValidator;
     protected final IUserRepository userRepository;
     protected final UpdateUserProfileOutputBoundary outputBoundary;
 
-    public AbstractUpdateUserProfileUseCase(IAuthTokenValidator tokenValidator,
+    public UpdateUserProfileUseCase(IAuthTokenValidator tokenValidator,
                                             IUserRepository userRepository,
                                             UpdateUserProfileOutputBoundary outputBoundary) {
         this.tokenValidator = tokenValidator;
@@ -23,37 +24,22 @@ public abstract class AbstractUpdateUserProfileUseCase implements UpdateUserProf
     
     @Override
     public final void execute(UpdateUserProfileRequestData input) {
-        // Dùng chung Response DTO với 'ViewProfile'
         ViewUserProfileResponseData output = new ViewUserProfileResponseData();
 
         try {
-            // 1. Kiểm tra input (Chung)
-            if (input.authToken == null || input.authToken.trim().isEmpty()) {
-                throw new SecurityException("Auth Token không được để trống.");
-            }
-
-            // 2. Xác thực Token (Chung)
             AuthPrincipal principal = tokenValidator.validate(input.authToken);
             
-            // 3. Lấy User Data hiện tại từ CSDL (Chung)
-            UserData userData = userRepository.findByUserId(principal.userId);
-            if (userData == null) {
-                throw new SecurityException("Không tìm thấy người dùng.");
-            }
-
-            // 4. Validate dữ liệu mới (Riêng - Concrete)
-            // Lớp Con sẽ validate các trường input mới
-            validateSpecificUpdates(input);
-
-            // 5. Áp dụng thay đổi (Riêng - Concrete)
-            // Lớp Con sẽ thay đổi DTO
-            applyUpdatesToData(userData, input);
+            User.validateName(input.firstName, input.lastName);
+    	    User.validatePhoneNumber(input.phoneNumber);
             
-            // 6. Cập nhật thời gian và Lưu CSDL (Chung)
-            userData.updatedAt = Instant.now();
-            UserData savedData = userRepository.update(userData);
+            UserData userData = userRepository.findByUserId(principal.userId);
 
-            // 7. Báo cáo thành công (Chung)
+            User userEntity = mapToEntity(userData);
+            userEntity.updateProfile(input.firstName, input.lastName, input.phoneNumber);
+    	    
+            UserData userToSave = mapToData(userEntity);
+            UserData savedData = userRepository.update(userToSave);
+
             output.success = true;
             output.message = "Cập nhật hồ sơ thành công.";
             output.userId = savedData.userId;
@@ -63,24 +49,48 @@ public abstract class AbstractUpdateUserProfileUseCase implements UpdateUserProf
             output.phoneNumber = savedData.phoneNumber;
 
         } catch (IllegalArgumentException e) {
-            // 8. BẮT LỖI VALIDATION (T4)
             output.success = false;
             output.message = e.getMessage();
         } catch (SecurityException e) {
-            // 9. BẮT LỖI NGHIỆP VỤ / BẢO MẬT (T3)
             output.success = false;
             output.message = e.getMessage();
         } catch (Exception e) {
-            // 10. Bắt lỗi hệ thống
             output.success = false;
             output.message = "Đã xảy ra lỗi hệ thống không xác định.";
         }
 
-        // 11. Trình bày kết quả (Chung)
         outputBoundary.present(output);
     }
 
-	protected abstract void applyUpdatesToData(UserData userData, UpdateUserProfileRequestData input);
+    private UserData mapToData(User user) {
+		return new UserData(
+	            user.getUserId(),
+	            user.getEmail(),
+	            user.getHashedPassword(),
+	            user.getFirstName(),
+	            user.getLastName(),
+	            user.getPhoneNumber(),
+	            user.getRole(),
+	            user.getStatus(),
+	            user.getCreatedAt(),
+	            user.getUpdatedAt()
+	        );
+	}
+    
+	private User mapToEntity(UserData user) {
+		return new User(
+				user.userId,
+				user.email,
+				user.hashedPassword,
+				user.firstName,
+				user.lastName,
+				user.phoneNumber,
+				user.role,
+				user.status,
+				user.createdAt,
+				user.updatedAt
+		);
+	}
 
-	protected abstract void validateSpecificUpdates(UpdateUserProfileRequestData input);
+
 }

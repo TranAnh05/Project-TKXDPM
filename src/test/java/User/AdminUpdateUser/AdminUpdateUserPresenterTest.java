@@ -14,7 +14,6 @@ import cgx.com.Entities.UserRole;
 import cgx.com.adapters.ManageUser.AdminUpdateUser.AdminUpdateUserPresenter;
 import cgx.com.adapters.ManageUser.AdminUpdateUser.AdminUpdateUserViewModel;
 import cgx.com.usecase.ManageUser.AdminUpdateUser.AdminUpdateUserResponseData;
-import cgx.com.usecase.ManageUser.ViewUserProfile.ViewUserProfileResponseData;
 
 public class AdminUpdateUserPresenterTest {
 	private AdminUpdateUserPresenter presenter;
