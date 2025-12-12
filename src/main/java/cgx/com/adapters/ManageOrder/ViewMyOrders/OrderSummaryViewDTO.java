@@ -5,5 +5,5 @@ public class OrderSummaryViewDTO {
     public String totalAmount;
     public String status;
     public String createdAt;
-    public int itemCount; // Số lượng sản phẩm trong đơn (để hiển thị kiểu "3 items")
+    public int itemCount;
 }

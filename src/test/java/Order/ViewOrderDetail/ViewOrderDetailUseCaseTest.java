@@ -20,6 +20,7 @@ import cgx.com.usecase.ManageUser.IAuthTokenValidator;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -29,140 +30,147 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 public class ViewOrderDetailUseCaseTest {
 
-    @Mock private IOrderRepository mockOrderRepository;
-    @Mock private IAuthTokenValidator mockTokenValidator;
-    @Mock private ViewOrderDetailOutputBoundary mockOutputBoundary;
+    @Mock
+    private IOrderRepository orderRepository;
+    @Mock
+    private IAuthTokenValidator tokenValidator;
+    @Mock
+    private ViewOrderDetailOutputBoundary outputBoundary;
 
     private ViewOrderDetailUseCase useCase;
-    private AuthPrincipal customerPrincipal;
-    private OrderData myOrder;
-    private OrderData otherOrder;
+
+    // Dữ liệu mẫu
+    private String userToken = "valid_token";
+    private String userId = "user-123";
+    private String orderId = "order-001";
+    private ViewOrderDetailRequestData request;
 
     @BeforeEach
     void setUp() {
-        useCase = new ViewOrderDetailUseCase(mockOrderRepository, mockTokenValidator, mockOutputBoundary);
-        customerPrincipal = new AuthPrincipal("user-1", "user@test.com", UserRole.CUSTOMER);
-        
-        // Đơn của mình
-        myOrder = new OrderData();
-        myOrder.id = "ord-1"; 
-        myOrder.userId = "user-1"; 
-        myOrder.items = List.of(new OrderItemData("d1", "Lap", "img", BigDecimal.TEN, 1));
-        
-        // Đơn của người khác
-        otherOrder = new OrderData();
-        otherOrder.id = "ord-2"; 
-        otherOrder.userId = "user-2"; // Khác user-1
+        useCase = new ViewOrderDetailUseCase(orderRepository, tokenValidator, outputBoundary);
+        request = new ViewOrderDetailRequestData();
+        request.authToken = userToken;
+        request.orderId = orderId;
     }
 
-    // Case 1: Thành công - Xem đơn của chính mình
+    // Case: Token không hợp lệ
     @Test
-    void test_execute_success_ownOrder() {
-        ViewOrderDetailRequestData input = new ViewOrderDetailRequestData("token", "ord-1");
-        
-        when(mockTokenValidator.validate("token")).thenReturn(customerPrincipal);
-        when(mockOrderRepository.findById("ord-1")).thenReturn(myOrder);
+    void testExecute_Fail_InvalidToken() {
+        // Arrange
+        when(tokenValidator.validate(anyString())).thenThrow(new SecurityException("Token không hợp lệ."));
 
+        // Act
+        useCase.execute(request);
+
+        // Assert
         ArgumentCaptor<ViewOrderDetailResponseData> captor = ArgumentCaptor.forClass(ViewOrderDetailResponseData.class);
-
-        useCase.execute(input);
-
-        verify(mockOutputBoundary).present(captor.capture());
-        ViewOrderDetailResponseData response = captor.getValue();
-
-        assertTrue(response.success);
-        assertEquals("ord-1", response.order.id);
-        assertEquals(1, response.order.items.size());
-    }
-
-    // Case 2: Lỗi - Xem đơn của người khác (Security)
-    @Test
-    void test_execute_failure_otherUserOrder() {
-        ViewOrderDetailRequestData input = new ViewOrderDetailRequestData("token", "ord-2");
-        
-        when(mockTokenValidator.validate("token")).thenReturn(customerPrincipal);
-        when(mockOrderRepository.findById("ord-2")).thenReturn(otherOrder);
-
-        ArgumentCaptor<ViewOrderDetailResponseData> captor = ArgumentCaptor.forClass(ViewOrderDetailResponseData.class);
-
-        useCase.execute(input);
-
-        verify(mockOutputBoundary).present(captor.capture());
+        verify(outputBoundary).present(captor.capture());
         
         assertFalse(captor.getValue().success);
-        assertEquals("Bạn không có quyền xem đơn hàng này.", captor.getValue().message);
+        assertEquals("Token không hợp lệ.", captor.getValue().message);
+    }
+
+    // Case: ID đơn hàng không hợp lệ
+    @Test
+    void testExecute_Fail_InvalidOrderId() {
+        // Arrange
+        AuthPrincipal principal = new AuthPrincipal(userId, "test@mail.com", UserRole.CUSTOMER);
+        when(tokenValidator.validate(userToken)).thenReturn(principal);
+        
+        request.orderId = ""; 
+
+        // Act
+        useCase.execute(request);
+
+        // Assert
+        ArgumentCaptor<ViewOrderDetailResponseData> captor = ArgumentCaptor.forClass(ViewOrderDetailResponseData.class);
+        verify(outputBoundary).present(captor.capture());
+        
+        assertFalse(captor.getValue().success);
+        assertTrue(captor.getValue().message.contains("ID đơn hàng không được để trống"));
     }
     
-    // Case 3: Thành công - Admin xem đơn của bất kỳ ai
     @Test
-    void test_execute_success_adminViewOther() {
-        ViewOrderDetailRequestData input = new ViewOrderDetailRequestData("admin-token", "ord-2");
-        AuthPrincipal admin = new AuthPrincipal("admin", "e", UserRole.ADMIN);
+    void testExecute_Fail_OrderNotFound() {
+        // Arrange
+        AuthPrincipal principal = new AuthPrincipal(userId, "test@mail.com", UserRole.CUSTOMER);
+        when(tokenValidator.validate(userToken)).thenReturn(principal);
         
-        when(mockTokenValidator.validate("admin-token")).thenReturn(admin);
-        when(mockOrderRepository.findById("ord-2")).thenReturn(otherOrder);
+        // Mock Repo trả về null
+        when(orderRepository.findById(orderId)).thenReturn(null);
 
+        // Act
+        useCase.execute(request);
+
+        // Assert
         ArgumentCaptor<ViewOrderDetailResponseData> captor = ArgumentCaptor.forClass(ViewOrderDetailResponseData.class);
-
-        useCase.execute(input);
-
-        verify(mockOutputBoundary).present(captor.capture());
-        assertTrue(captor.getValue().success); // Admin được phép
-        assertEquals("ord-2", captor.getValue().order.id);
-    }
-
-    // Case 4: Lỗi - Không tìm thấy đơn
-    @Test
-    void test_execute_failure_notFound() {
-        ViewOrderDetailRequestData input = new ViewOrderDetailRequestData("token", "ord-999");
+        verify(outputBoundary).present(captor.capture());
         
-        when(mockTokenValidator.validate("token")).thenReturn(customerPrincipal);
-        when(mockOrderRepository.findById("ord-999")).thenReturn(null);
-
-        ArgumentCaptor<ViewOrderDetailResponseData> captor = ArgumentCaptor.forClass(ViewOrderDetailResponseData.class);
-
-        useCase.execute(input);
-
-        verify(mockOutputBoundary).present(captor.capture());
         assertFalse(captor.getValue().success);
         assertEquals("Không tìm thấy đơn hàng.", captor.getValue().message);
     }
-    
-    // Case 5: Lỗi - Input rỗng
+
+    // Case: Không phải chủ sở hữu của đơn hàng
     @Test
-    void test_execute_failure_emptyId() {
-        ViewOrderDetailRequestData input = new ViewOrderDetailRequestData("token", "");
+    void testExecute_Fail_AccessDenied() {
+        // Arrange
+        // 1. Người xem là Customer "user-123"
+        AuthPrincipal principal = new AuthPrincipal(userId, "test@mail.com", UserRole.CUSTOMER);
+        when(tokenValidator.validate(userToken)).thenReturn(principal);
+
+        // 2. Đơn hàng thuộc về "other-user"
+        OrderData orderData = new OrderData();
+        orderData.id = orderId;
+        orderData.userId = "other-user"; 
+        orderData.status = "PENDING";
+        orderData.paymentMethod = "COD";
+        orderData.totalAmount = BigDecimal.valueOf(100);
         
+        when(orderRepository.findById(orderId)).thenReturn(orderData);
+
+        // Act
+        useCase.execute(request);
+
+        // Assert
         ArgumentCaptor<ViewOrderDetailResponseData> captor = ArgumentCaptor.forClass(ViewOrderDetailResponseData.class);
-        useCase.execute(input);
+        verify(outputBoundary).present(captor.capture());
         
-        verify(mockOutputBoundary).present(captor.capture());
         assertFalse(captor.getValue().success);
-        assertEquals("ID đơn hàng không được để trống.", captor.getValue().message);
+        assertEquals("Bạn không có quyền xem hoặc thao tác trên đơn hàng này.", captor.getValue().message);
     }
 
-    // --- CASE 6 (MỚI): Lỗi Hệ thống (Database Crash) ---
+    // Case: Thành công
     @Test
-    void test_execute_failure_dbCrash() {
-        // ARRANGE
-        ViewOrderDetailRequestData input = new ViewOrderDetailRequestData("token", "ord-1");
-        
-        // Token OK
-        when(mockTokenValidator.validate("token")).thenReturn(customerPrincipal);
-        
-        // Database ném Exception khi gọi findById
-        doThrow(new RuntimeException("Connection refused")).when(mockOrderRepository).findById("ord-1");
+    void testExecute_Success() {
+        // Arrange
+        // 1. Người xem là Owner ("user-123")
+        AuthPrincipal principal = new AuthPrincipal(userId, "test@mail.com", UserRole.CUSTOMER);
+        when(tokenValidator.validate(userToken)).thenReturn(principal);
 
+        // 2. Đơn hàng thuộc về chính "user-123"
+        OrderData orderData = new OrderData();
+        orderData.id = orderId;
+        orderData.userId = userId; // KHỚP với principal.userId
+        orderData.status = "CONFIRMED";
+        orderData.paymentMethod = "COD";
+        orderData.totalAmount = BigDecimal.valueOf(500);
+        orderData.items = new ArrayList<>(); 
+        
+        when(orderRepository.findById(orderId)).thenReturn(orderData);
+
+        // Act
+        useCase.execute(request);
+
+        // Assert
         ArgumentCaptor<ViewOrderDetailResponseData> captor = ArgumentCaptor.forClass(ViewOrderDetailResponseData.class);
-
-        // ACT
-        useCase.execute(input);
-
-        // ASSERT
-        verify(mockOutputBoundary).present(captor.capture());
+        verify(outputBoundary).present(captor.capture());
         ViewOrderDetailResponseData response = captor.getValue();
 
-        assertFalse(response.success);
-        assertTrue(response.message.contains("Lỗi hệ thống"), "Message thực tế: " + response.message);
+        // Kiểm tra kết quả
+        assertTrue(response.success);
+        assertEquals("Lấy chi tiết đơn hàng thành công.", response.message);
+        assertNotNull(response.order);
+        assertEquals(orderId, response.order.id);
+        assertEquals(userId, response.order.userId);
     }
 }

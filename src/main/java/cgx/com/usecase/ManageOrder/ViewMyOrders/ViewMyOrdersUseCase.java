@@ -26,21 +26,10 @@ public class ViewMyOrdersUseCase implements ViewMyOrdersInputBoundary {
         ViewMyOrdersResponseData output = new ViewMyOrdersResponseData();
 
         try {
-            // 1. Validate Auth
-            if (input.authToken == null || input.authToken.trim().isEmpty()) {
-                throw new SecurityException("Auth Token không được để trống.");
-            }
-            
-            // 2. Lấy User ID từ Token
             AuthPrincipal principal = tokenValidator.validate(input.authToken);
             
-            // (Tùy chọn: Chặn Admin nếu muốn Admin dùng API khác, 
-            // nhưng thường Admin cũng có thể mua hàng nên cho phép)
-            
-            // 3. Lấy danh sách đơn hàng
             List<OrderData> orders = orderRepository.findByUserId(principal.userId);
 
-            // 4. Success
             output.success = true;
             output.message = "Lấy danh sách đơn hàng thành công.";
             output.orders = orders;

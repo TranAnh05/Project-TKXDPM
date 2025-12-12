@@ -7,6 +7,7 @@ import cgx.com.Entities.Order;
 import cgx.com.Entities.OrderItem;
 import cgx.com.Entities.OrderStatus;
 import cgx.com.Entities.PaymentMethod;
+import cgx.com.Entities.User;
 import cgx.com.Entities.UserRole;
 import cgx.com.usecase.ManageOrder.IOrderRepository;
 import cgx.com.usecase.ManageOrder.OrderData;
@@ -20,9 +21,9 @@ import cgx.com.usecase.ManageUser.IAuthTokenValidator;
 public class UpdateOrderStatusUseCase implements UpdateOrderStatusInputBoundary {
 
     private final IOrderRepository orderRepository;
-    private final IDeviceRepository deviceRepository; // Cần để hoàn kho nếu Admin hủy
+    private final IDeviceRepository deviceRepository; 
     private final IAuthTokenValidator tokenValidator;
-    private final IDeviceMapper deviceMapper; // Cần để map Device khi hoàn kho
+    private final IDeviceMapper deviceMapper; 
     private final UpdateOrderStatusOutputBoundary outputBoundary;
 
     public UpdateOrderStatusUseCase(IOrderRepository orderRepository,
@@ -42,53 +43,33 @@ public class UpdateOrderStatusUseCase implements UpdateOrderStatusInputBoundary 
         UpdateOrderStatusResponseData output = new UpdateOrderStatusResponseData();
 
         try {
-            // 1. Validate Auth (Admin Only)
-            if (input.authToken == null || input.authToken.trim().isEmpty()) {
-                throw new SecurityException("Auth Token không được để trống.");
-            }
             AuthPrincipal principal = tokenValidator.validate(input.authToken);
-            if (principal.role != UserRole.ADMIN) {
-                throw new SecurityException("Không có quyền truy cập (Yêu cầu Admin).");
-            }
+            User.validateIsAdmin(principal.role);
 
-            // 2. Validate Input
             Order.validateId(input.orderId);
-            
-            // Validate Status Enum
-            OrderStatus newStatus;
-            try {
-                newStatus = OrderStatus.valueOf(input.newStatus);
-            } catch (IllegalArgumentException e) {
-                throw new IllegalArgumentException("Trạng thái không hợp lệ: " + input.newStatus);
-            }
+            Order.validateOrderStatus(input.newStatus);
+            OrderStatus newStatus = Order.convertToOrderStatus(input.newStatus);
 
-            // 3. Tìm đơn hàng
+            // Tìm đơn hàng
             OrderData orderData = orderRepository.findById(input.orderId);
             if (orderData == null) {
                 throw new IllegalArgumentException("Không tìm thấy đơn hàng.");
             }
-
-            // 4. Rehydrate Order Entity
+            
             Order orderEntity = mapDataToOrder(orderData);
-
-            // 5. Thực hiện Logic Nghiệp vụ trên Entity
-            // Entity sẽ tự kiểm tra quy tắc chuyển đổi trạng thái (State Machine)
-            // Nếu vi phạm, Entity sẽ ném IllegalStateException hoặc IllegalArgumentException
+            
             orderEntity.updateStatus(newStatus);
 
-            // 6. Xử lý Side-effect: Hoàn kho nếu Hủy đơn
-            // (Đây là việc điều phối của Use Case, Entity không làm được vì không có Repo)
+            // Hoàn kho nếu hủy đơn
             if (newStatus == OrderStatus.CANCELLED) {
                 restockItems(orderEntity);
             }
 
-            // 7. Map ngược lại DTO để lưu
             orderData.status = orderEntity.getStatus().name();
             orderData.updatedAt = orderEntity.getUpdatedAt();
             
             orderRepository.save(orderData);
 
-            // 8. Success
             output.success = true;
             output.message = "Cập nhật trạng thái thành công.";
             output.orderId = orderData.id;
@@ -105,20 +86,19 @@ public class UpdateOrderStatusUseCase implements UpdateOrderStatusInputBoundary 
         outputBoundary.present(output);
     }
 
-    // Helper Hoàn kho (Copy từ CancelOrderUseCase hoặc tách ra Shared Service)
-    // Vì đây là 2 UseCase riêng biệt, việc copy code private là chấp nhận được để độc lập (Decoupling)
+    // Duyệt qua từng loại thiết bị trong đơn hàng bị hủy để hoàn kho
     private void restockItems(Order order) {
         for (OrderItem item : order.getItems()) {
             DeviceData deviceData = deviceRepository.findById(item.getDeviceId());
             if (deviceData != null) {
                 ComputerDevice deviceEntity = deviceMapper.toEntity(deviceData);
+                // Hoàn kho
                 deviceEntity.plusStock(item.getQuantity());
                 deviceRepository.save(deviceMapper.toDTO(deviceEntity));
             }
         }
     }
 
-    // Helper Rehydrate (Copy từ CancelOrderUseCase)
     private Order mapDataToOrder(OrderData data) {
         Order order = new Order(data.id, data.userId, data.shippingAddress, OrderStatus.valueOf(data.status), PaymentMethod.valueOf(data.paymentMethod), data.totalAmount);
         if (data.items != null) {

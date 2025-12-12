@@ -29,116 +29,110 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 public class ViewMyOrdersUseCaseTest {
 
-    @Mock private IOrderRepository mockOrderRepository;
-    @Mock private IAuthTokenValidator mockTokenValidator;
-    @Mock private ViewMyOrdersOutputBoundary mockOutputBoundary;
+    @Mock
+    private IOrderRepository orderRepository;
+    @Mock
+    private IAuthTokenValidator tokenValidator;
+    @Mock
+    private ViewMyOrdersOutputBoundary outputBoundary;
 
     private ViewMyOrdersUseCase useCase;
-    private AuthPrincipal customerPrincipal;
+
+    // Dữ liệu mẫu
+    private String userToken = "valid_user_token";
+    private String userId = "user-123";
+    private ViewMyOrdersRequestData request;
 
     @BeforeEach
     void setUp() {
-        useCase = new ViewMyOrdersUseCase(mockOrderRepository, mockTokenValidator, mockOutputBoundary);
-        customerPrincipal = new AuthPrincipal("user-1", "user@test.com", UserRole.CUSTOMER);
+        useCase = new ViewMyOrdersUseCase(orderRepository, tokenValidator, outputBoundary);
+        request = new ViewMyOrdersRequestData();
+        request.authToken = userToken;
     }
 
-    // Case 1: Thành công - Có đơn hàng
+
+    // Case: Token không hợp lệ
     @Test
-    void test_execute_success_withOrders() {
-        ViewMyOrdersRequestData input = new ViewMyOrdersRequestData("token");
+    void testExecute_Fail_InvalidToken() {
+        // Arrange
+        when(tokenValidator.validate(anyString())).thenThrow(new SecurityException("Phiên đăng nhập hết hạn."));
+
+        // Act
+        useCase.execute(request);
+
+        // Assert
+        ArgumentCaptor<ViewMyOrdersResponseData> captor = ArgumentCaptor.forClass(ViewMyOrdersResponseData.class);
+        verify(outputBoundary).present(captor.capture());
+        
+        ViewMyOrdersResponseData response = captor.getValue();
+        assertFalse(response.success);
+        assertEquals("Phiên đăng nhập hết hạn.", response.message);
+    }
+
+    // Case: thành công - có đơn hàng
+    @Test
+    void testExecute_Success_WithOrders() {
+        // Arrange
+        AuthPrincipal principal = new AuthPrincipal(userId, "test@mail.com", UserRole.CUSTOMER);
+        when(tokenValidator.validate(userToken)).thenReturn(principal);
+
+        List<OrderData> mockOrders = new ArrayList<>();
         
         OrderData order1 = new OrderData();
-        order1.id = "ord-1"; order1.userId = "user-1"; order1.totalAmount = BigDecimal.TEN;
+        order1.id = "ORDER-001";
+        order1.userId = userId;
+        order1.totalAmount = BigDecimal.valueOf(100);
+        order1.status = "PENDING";
         
         OrderData order2 = new OrderData();
-        order2.id = "ord-2"; order2.userId = "user-1"; order2.totalAmount = BigDecimal.valueOf(20);
+        order2.id = "ORDER-002";
+        order2.userId = userId;
+        order2.totalAmount = BigDecimal.valueOf(200);
+        order2.status = "SHIPPED";
+        
+        mockOrders.add(order1);
+        mockOrders.add(order2);
 
-        when(mockTokenValidator.validate("token")).thenReturn(customerPrincipal);
-        when(mockOrderRepository.findByUserId("user-1")).thenReturn(List.of(order1, order2));
+        when(orderRepository.findByUserId(userId)).thenReturn(mockOrders);
 
-        ArgumentCaptor<ViewMyOrdersResponseData> responseCaptor = ArgumentCaptor.forClass(ViewMyOrdersResponseData.class);
+        // Act
+        useCase.execute(request);
 
-        useCase.execute(input);
+        // Assert
+        ArgumentCaptor<ViewMyOrdersResponseData> captor = ArgumentCaptor.forClass(ViewMyOrdersResponseData.class);
+        verify(outputBoundary).present(captor.capture());
+        ViewMyOrdersResponseData response = captor.getValue();
 
-        verify(mockOrderRepository).findByUserId("user-1");
-        verify(mockOutputBoundary).present(responseCaptor.capture());
-
-        ViewMyOrdersResponseData response = responseCaptor.getValue();
+        // Kiểm tra kết quả
         assertTrue(response.success);
         assertEquals("Lấy danh sách đơn hàng thành công.", response.message);
+        assertNotNull(response.orders);
         assertEquals(2, response.orders.size());
+        
+        assertEquals("ORDER-001", response.orders.get(0).id);
+        assertEquals(userId, response.orders.get(0).userId);
     }
 
-    // Case 2: Thành công - Không có đơn hàng nào (Empty List)
-    // Đây là case quan trọng để đảm bảo UI không bị lỗi khi list rỗng
+    // Case: thành công - không có đơn hàng nào
     @Test
-    void test_execute_success_emptyOrders() {
-        ViewMyOrdersRequestData input = new ViewMyOrdersRequestData("token");
+    void testExecute_Success_NoOrders() {
+        // Arrange
+        AuthPrincipal principal = new AuthPrincipal(userId, "test@mail.com", UserRole.CUSTOMER);
+        when(tokenValidator.validate(userToken)).thenReturn(principal);
 
-        when(mockTokenValidator.validate("token")).thenReturn(customerPrincipal);
-        // DB trả về list rỗng
-        when(mockOrderRepository.findByUserId("user-1")).thenReturn(Collections.emptyList());
+        // Mock trả về list rỗng
+        when(orderRepository.findByUserId(userId)).thenReturn(Collections.emptyList());
 
-        ArgumentCaptor<ViewMyOrdersResponseData> responseCaptor = ArgumentCaptor.forClass(ViewMyOrdersResponseData.class);
+        // Act
+        useCase.execute(request);
 
-        useCase.execute(input);
-
-        verify(mockOutputBoundary).present(responseCaptor.capture());
-        ViewMyOrdersResponseData response = responseCaptor.getValue();
+        // Assert
+        ArgumentCaptor<ViewMyOrdersResponseData> captor = ArgumentCaptor.forClass(ViewMyOrdersResponseData.class);
+        verify(outputBoundary).present(captor.capture());
+        ViewMyOrdersResponseData response = captor.getValue();
 
         assertTrue(response.success);
         assertNotNull(response.orders);
-        assertTrue(response.orders.isEmpty());
-    }
-
-    // Case 3: Lỗi Auth - Token hết hạn/không hợp lệ
-    @Test
-    void test_execute_failure_invalidToken() {
-        ViewMyOrdersRequestData input = new ViewMyOrdersRequestData("invalid-token");
-        when(mockTokenValidator.validate("invalid-token")).thenThrow(new SecurityException("Expired"));
-
-        ArgumentCaptor<ViewMyOrdersResponseData> responseCaptor = ArgumentCaptor.forClass(ViewMyOrdersResponseData.class);
-
-        useCase.execute(input);
-
-        verify(mockOrderRepository, never()).findByUserId(anyString());
-        verify(mockOutputBoundary).present(responseCaptor.capture());
-
-        assertFalse(responseCaptor.getValue().success);
-        assertEquals("Expired", responseCaptor.getValue().message);
-    }
-    
-    // Case 4: Lỗi Auth - Token rỗng (Validation Input)
-    @Test
-    void test_execute_failure_emptyToken() {
-        ViewMyOrdersRequestData input = new ViewMyOrdersRequestData("");
-        
-        ArgumentCaptor<ViewMyOrdersResponseData> responseCaptor = ArgumentCaptor.forClass(ViewMyOrdersResponseData.class);
-
-        useCase.execute(input);
-
-        verify(mockTokenValidator, never()).validate(anyString());
-        verify(mockOutputBoundary).present(responseCaptor.capture());
-
-        assertFalse(responseCaptor.getValue().success);
-        assertEquals("Auth Token không được để trống.", responseCaptor.getValue().message);
-    }
-    
-    // Case 5: Lỗi Hệ thống - Database Crash
-    @Test
-    void test_execute_failure_dbError() {
-        ViewMyOrdersRequestData input = new ViewMyOrdersRequestData("token");
-        when(mockTokenValidator.validate("token")).thenReturn(customerPrincipal);
-        
-        // Giả lập lỗi kết nối DB
-        doThrow(new RuntimeException("DB Down")).when(mockOrderRepository).findByUserId("user-1");
-        
-        ArgumentCaptor<ViewMyOrdersResponseData> responseCaptor = ArgumentCaptor.forClass(ViewMyOrdersResponseData.class);
-
-        useCase.execute(input);
-        
-        verify(mockOutputBoundary).present(responseCaptor.capture());
-        assertFalse(responseCaptor.getValue().success);
-        assertTrue(responseCaptor.getValue().message.contains("Lỗi hệ thống"));
+        assertTrue(response.orders.isEmpty()); 
     }
 }

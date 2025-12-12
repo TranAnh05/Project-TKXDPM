@@ -1,9 +1,13 @@
 package cgx.com.usecase.ManageOrder.ViewOrderDetail;
 
 import cgx.com.Entities.Order;
+import cgx.com.Entities.OrderItem;
+import cgx.com.Entities.OrderStatus;
+import cgx.com.Entities.PaymentMethod;
 import cgx.com.Entities.UserRole;
 import cgx.com.usecase.ManageOrder.IOrderRepository;
 import cgx.com.usecase.ManageOrder.OrderData;
+import cgx.com.usecase.ManageOrder.OrderItemData;
 import cgx.com.usecase.ManageUser.AuthPrincipal;
 import cgx.com.usecase.ManageUser.IAuthTokenValidator;
 
@@ -26,31 +30,20 @@ public class ViewOrderDetailUseCase implements ViewOrderDetailInputBoundary {
         ViewOrderDetailResponseData output = new ViewOrderDetailResponseData();
 
         try {
-            // 1. Validate Auth
-            if (input.authToken == null || input.authToken.trim().isEmpty()) {
-                throw new SecurityException("Auth Token không được để trống.");
-            }
+        	AuthPrincipal principal = tokenValidator.validate(input.authToken);
             
             Order.validateId(input.orderId);
-
-            // 2. Lấy thông tin người dùng
-            AuthPrincipal principal = tokenValidator.validate(input.authToken);
-
-            // 3. Tìm đơn hàng
+            
             OrderData orderData = orderRepository.findById(input.orderId);
+            
             if (orderData == null) {
                 throw new IllegalArgumentException("Không tìm thấy đơn hàng.");
             }
+            
+            Order orderEntity = mapToEntity(orderData);
+            
+            orderEntity.validateAccess(principal.userId, principal.role);
 
-            // 4. Kiểm tra quyền truy cập (Bảo mật)
-            // Nếu là Admin: Được xem hết
-            // Nếu là Customer: Chỉ xem được đơn của chính mình
-            if (principal.role != UserRole.ADMIN && !principal.userId.equals(orderData.userId)) {
-                // Trả về thông báo chung để bảo mật, hoặc báo lỗi quyền
-                throw new SecurityException("Bạn không có quyền xem đơn hàng này.");
-            }
-
-            // 5. Success
             output.success = true;
             output.message = "Lấy chi tiết đơn hàng thành công.";
             output.order = orderData;
@@ -67,5 +60,26 @@ public class ViewOrderDetailUseCase implements ViewOrderDetailInputBoundary {
         }
 
         outputBoundary.present(output);
+    }
+
+	private Order mapToEntity(OrderData data) {
+		Order order = new Order(
+	            data.id,
+	            data.userId,
+	            data.shippingAddress,
+	            OrderStatus.valueOf(data.status),
+	            PaymentMethod.valueOf(data.paymentMethod),
+	            data.totalAmount
+	        );
+	        
+        if (data.items != null) {
+            for (OrderItemData itemData : data.items) {
+                order.addItem(new OrderItem(
+                    itemData.deviceId, itemData.deviceName, itemData.thumbnail, 
+                    itemData.unitPrice, itemData.quantity
+                ));
+            }
+        }
+        return order;
     }
 }

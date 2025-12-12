@@ -8,7 +8,7 @@ import java.util.Map;
 
 public class Order {
     private String id;
-    private String userId; // Người mua
+    private String userId; 
     private BigDecimal totalAmount;
     private OrderStatus status;
     private String shippingAddress;
@@ -23,7 +23,7 @@ public class Order {
         this.userId = userId;
         this.shippingAddress = shippingAddress;
         this.paymentMethod = paymentMethod;
-        this.status = OrderStatus.PENDING; // Mặc định là chờ xử lý
+        this.status = OrderStatus.PENDING;
         this.items = new ArrayList<>();
         this.totalAmount = BigDecimal.ZERO;
         this.createdAt = Instant.now();
@@ -47,31 +47,27 @@ public class Order {
         }
     }
     
-    
-    public static void validateOrderInfo(String shippingAddress, String userId, Map<String, Integer> items, String paymentMethod) {
+    public static void validateOrderInfo(String shippingAddress, Map<String, Integer> items) {
         if (shippingAddress == null || shippingAddress.trim().isEmpty()) {
             throw new IllegalArgumentException("Địa chỉ giao hàng không được để trống.");
-        }
-        
-        if (userId == null || userId.trim().isEmpty()) {
-             // UseCase đảm bảo userId có (từ token), nhưng Entity vẫn nên check để chắc chắn
-             throw new IllegalArgumentException("Người dùng không hợp lệ.");
         }
         
         if (items == null || items.isEmpty()) {
             throw new IllegalArgumentException("Giỏ hàng không được để trống.");
         }
-        
-        if(paymentMethod == null) {
-        	throw new IllegalArgumentException("Phương thức thanh toán không được để trống.");
-        }
-        
-        try {
-            // Cố gắng ép kiểu String sang Enum
-            PaymentMethod.valueOf(paymentMethod); 
+    }
+    
+    public static void validateOrderStatus(String orderStatus) {
+    	if(orderStatus == null || orderStatus.isEmpty()) {
+    		throw new IllegalArgumentException("Trạng thái đơn hàng không được để trống.");
+    	}
+    }
+    
+    public static OrderStatus convertToOrderStatus(String orderStatus) {
+    	try {
+            return OrderStatus.valueOf(orderStatus); 
         } catch (IllegalArgumentException e) {
-            // Nếu Java không tìm thấy Enum tương ứng, nó ném lỗi -> Ta bắt lại và báo lỗi nghiệp vụ
-        	throw new IllegalArgumentException("Phương thức thanh toán không hợp lệ: " + paymentMethod);
+        	throw new IllegalArgumentException("Trạng thái đơn hàng không hợp lệ: " + orderStatus);
         }
     }
     
@@ -89,8 +85,6 @@ public class Order {
         }
     }
     
-    // --- Domain Logic ---
-
     public void addItem(OrderItem item) {
         this.items.add(item);
         recalculateTotal();
@@ -118,17 +112,12 @@ public class Order {
     }
     
     public void updateStatus(OrderStatus newStatus) {
-        if (this.status == newStatus) {
-            throw new IllegalArgumentException("Đơn hàng đã ở trạng thái này rồi.");
-        }
-
-        // Logic Hủy đơn
+        // Nghiệp vụ cho hủy đơn
         if (newStatus == OrderStatus.CANCELLED) {
             if (this.status == OrderStatus.SHIPPED || this.status == OrderStatus.DELIVERED) {
                 throw new IllegalStateException("Không thể hủy đơn hàng đã được xử lý hoặc đang giao.");
             }
         } 
-        // Logic các trạng thái khác (Không cho phép sửa đơn đã kết thúc)
         else {
             if (this.status == OrderStatus.CANCELLED || this.status == OrderStatus.DELIVERED) {
                 throw new IllegalStateException("Đơn hàng đã kết thúc, không thể cập nhật trạng thái.");
@@ -148,6 +137,16 @@ public class Order {
     public void changePaymentMethod(PaymentMethod newMethod) {
         if (!newMethod.equals(this.getPaymentMethod())) {
         	this.setPaymentMethod(newMethod);
+        }
+    }
+    
+    public void validateAccess(String requesterId, UserRole requesterRole) {
+        if (requesterRole == UserRole.ADMIN) {
+            return;
+        }
+        
+        if (!this.userId.equals(requesterId)) {
+            throw new SecurityException("Bạn không có quyền xem hoặc thao tác trên đơn hàng này.");
         }
     }
     

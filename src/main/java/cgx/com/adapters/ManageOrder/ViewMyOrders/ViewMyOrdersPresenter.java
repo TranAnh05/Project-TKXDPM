@@ -32,7 +32,6 @@ public class ViewMyOrdersPresenter implements ViewMyOrdersOutputBoundary {
     private OrderSummaryViewDTO mapToViewDTO(OrderData data) {
         OrderSummaryViewDTO dto = new OrderSummaryViewDTO();
         dto.orderId = data.id;
-        // Format tiền tệ nên xử lý ở Frontend, Backend trả về số dạng String chuẩn
         dto.totalAmount = data.totalAmount != null ? data.totalAmount.toPlainString() : "0";
         dto.status = data.status;
         dto.createdAt = data.createdAt != null ? data.createdAt.toString() : "";

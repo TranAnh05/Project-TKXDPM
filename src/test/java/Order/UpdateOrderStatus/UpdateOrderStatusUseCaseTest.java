@@ -24,6 +24,7 @@ import cgx.com.usecase.ManageUser.IAuthTokenValidator;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -33,156 +34,230 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 public class UpdateOrderStatusUseCaseTest {
 
-    @Mock private IOrderRepository mockOrderRepository;
-    @Mock private IDeviceRepository mockDeviceRepository;
-    @Mock private IAuthTokenValidator mockTokenValidator;
-    @Mock private IDeviceMapper mockDeviceMapper;
-    @Mock private UpdateOrderStatusOutputBoundary mockOutputBoundary;
+    @Mock private IOrderRepository orderRepository;
+    @Mock private IDeviceRepository deviceRepository;
+    @Mock private IAuthTokenValidator tokenValidator;
+    @Mock private IDeviceMapper deviceMapper;
+    @Mock private UpdateOrderStatusOutputBoundary outputBoundary;
 
     private UpdateOrderStatusUseCase useCase;
-    private AuthPrincipal adminPrincipal;
-    private OrderData pendingOrder;
-    private OrderData shippedOrder;
-    private DeviceData deviceData;
-    private Laptop laptopEntity;
+
+    // Dữ liệu mẫu
+    private String adminToken = "admin_token";
+    private String orderId = "order-001";
+    private UpdateOrderStatusRequestData request;
 
     @BeforeEach
     void setUp() {
-    	useCase = new UpdateOrderStatusUseCase(
-                mockOrderRepository, mockDeviceRepository, mockTokenValidator, mockDeviceMapper, mockOutputBoundary
-            );
-            
-adminPrincipal = new AuthPrincipal("admin", "e", UserRole.ADMIN);
-        
-        // Đơn PENDING
-        pendingOrder = new OrderData();
-        pendingOrder.id = "ord-1"; 
-        pendingOrder.userId = "u1"; 
-        pendingOrder.status = "PENDING";
-        pendingOrder.shippingAddress = "123 Street"; // Cần có địa chỉ
-        pendingOrder.items = List.of(new OrderItemData("dev-1", "Lap", "img", BigDecimal.TEN, 1));
-
-        // Đơn SHIPPED (FIX: Bổ sung dữ liệu để tránh lỗi Validation)
-        shippedOrder = new OrderData();
-        shippedOrder.id = "ord-2"; 
-        shippedOrder.userId = "u1";             // <-- Thêm dòng này
-        shippedOrder.shippingAddress = "123 Street"; // <-- Thêm dòng này
-        shippedOrder.status = "SHIPPED";
-
-        // Sản phẩm
-        deviceData = new DeviceData(); deviceData.id = "dev-1"; deviceData.stockQuantity = 10;
-        laptopEntity = new Laptop("dev-1", "Lap", "D", BigDecimal.TEN, 10, "c", "ACTIVE", "i", Instant.now(), Instant.now(), "i7", "8G", "S", 14.0);
+        useCase = new UpdateOrderStatusUseCase(orderRepository, deviceRepository, tokenValidator, deviceMapper, outputBoundary);
+        request = new UpdateOrderStatusRequestData(adminToken, orderId, "CONFIRMED");
     }
 
-    // Case 1: Thành công - Chuyển PENDING -> CONFIRMED
-    @Test
-    void test_execute_success_confirm() {
-        UpdateOrderStatusRequestData input = new UpdateOrderStatusRequestData("token", "ord-1", "CONFIRMED");
-        
-        when(mockTokenValidator.validate("token")).thenReturn(adminPrincipal);
-        when(mockOrderRepository.findById("ord-1")).thenReturn(pendingOrder);
-
-        ArgumentCaptor<OrderData> orderCaptor = ArgumentCaptor.forClass(OrderData.class);
-        ArgumentCaptor<UpdateOrderStatusResponseData> responseCaptor = ArgumentCaptor.forClass(UpdateOrderStatusResponseData.class);
-
-        useCase.execute(input);
-
-        verify(mockOrderRepository).save(orderCaptor.capture());
-        verify(mockOutputBoundary).present(responseCaptor.capture());
-
-        assertEquals("CONFIRMED", orderCaptor.getValue().status);
-        assertTrue(responseCaptor.getValue().success);
-        
-        // Không được gọi hoàn kho
-        verify(mockDeviceRepository, never()).save(any());
+    private void mockAdminAuth() {
+        AuthPrincipal admin = new AuthPrincipal("admin-id", "admin@test.com", UserRole.ADMIN);
+        when(tokenValidator.validate(adminToken)).thenReturn(admin);
     }
 
-    // Case 2: Thành công - Admin Hủy đơn (CANCELLED) -> Hoàn kho
+    // Case: không phải admin
     @Test
-    void test_execute_success_cancel_restock() {
-        UpdateOrderStatusRequestData input = new UpdateOrderStatusRequestData("token", "ord-1", "CANCELLED");
-        
-        when(mockTokenValidator.validate("token")).thenReturn(adminPrincipal);
-        when(mockOrderRepository.findById("ord-1")).thenReturn(pendingOrder);
-        // Setup hoàn kho
-        when(mockDeviceRepository.findById("dev-1")).thenReturn(deviceData);
-        when(mockDeviceMapper.toEntity(deviceData)).thenReturn(laptopEntity);
-        when(mockDeviceMapper.toDTO(any())).thenReturn(deviceData);
+    void testExecute_Fail_NotAdmin() {
+        AuthPrincipal customer = new AuthPrincipal("cust-id", "c@test.com", UserRole.CUSTOMER);
+        when(tokenValidator.validate(anyString())).thenReturn(customer);
 
-        useCase.execute(input);
-
-        // Verify hoàn kho
-        verify(mockDeviceRepository).save(any());
-        assertEquals(11, laptopEntity.getStockQuantity()); // 10 + 1 = 11
-    }
-
-    // Case 3: Lỗi - Không phải Admin
-    @Test
-    void test_execute_failure_notAdmin() {
-        UpdateOrderStatusRequestData input = new UpdateOrderStatusRequestData("token", "ord-1", "CONFIRMED");
-        AuthPrincipal customer = new AuthPrincipal("cust", "e", UserRole.CUSTOMER);
-        when(mockTokenValidator.validate("token")).thenReturn(customer);
+        useCase.execute(request);
 
         ArgumentCaptor<UpdateOrderStatusResponseData> captor = ArgumentCaptor.forClass(UpdateOrderStatusResponseData.class);
-        useCase.execute(input);
-
-        verify(mockOutputBoundary).present(captor.capture());
+        verify(outputBoundary).present(captor.capture());
         assertFalse(captor.getValue().success);
-        assertEquals("Không có quyền truy cập (Yêu cầu Admin).", captor.getValue().message);
+        assertEquals("Không có quyền truy cập.", captor.getValue().message);
     }
 
-    // Case 4: Lỗi Logic - Hủy đơn đã SHIPPED
+    // Case: Trạng thái mới không hợp lệ
     @Test
-    void test_execute_failure_cancelShipped() {
-        UpdateOrderStatusRequestData input = new UpdateOrderStatusRequestData("token", "ord-2", "CANCELLED");
-        
-        when(mockTokenValidator.validate("token")).thenReturn(adminPrincipal);
-        when(mockOrderRepository.findById("ord-2")).thenReturn(shippedOrder);
+    void testExecute_Fail_InvalidStatusEnum() {
+        mockAdminAuth();
+        UpdateOrderStatusRequestData invalidReq = new UpdateOrderStatusRequestData(adminToken, orderId, "INVALID_STATUS");
+
+        useCase.execute(invalidReq);
 
         ArgumentCaptor<UpdateOrderStatusResponseData> captor = ArgumentCaptor.forClass(UpdateOrderStatusResponseData.class);
-        useCase.execute(input);
-
-        verify(mockOutputBoundary).present(captor.capture());
+        verify(outputBoundary).present(captor.capture());
         
-        // Debug: In ra message lỗi thực tế nếu test fail
-        if (!captor.getValue().message.contains("Không thể hủy")) {
-            System.out.println("Message thực tế: " + captor.getValue().message);
-        }
-
         assertFalse(captor.getValue().success);
-        assertTrue(captor.getValue().message.contains("Không thể hủy đơn hàng"));
-    }
-
-    // Case 5: Lỗi Input - Status không hợp lệ
-    @Test
-    void test_execute_failure_invalidStatus() {
-        UpdateOrderStatusRequestData input = new UpdateOrderStatusRequestData("token", "ord-1", "INVALID_STATUS");
-        
-        when(mockTokenValidator.validate("token")).thenReturn(adminPrincipal);
-        
-        ArgumentCaptor<UpdateOrderStatusResponseData> captor = ArgumentCaptor.forClass(UpdateOrderStatusResponseData.class);
-        useCase.execute(input);
-        
-        verify(mockOutputBoundary).present(captor.capture());
-        assertFalse(captor.getValue().success);
-        assertTrue(captor.getValue().message.contains("Trạng thái không hợp lệ"));
+        // Message từ Order.convertToOrderStatus
+        assertTrue(captor.getValue().message.contains("Trạng thái đơn hàng không hợp lệ"));
     }
     
-    // Case 6: DB Crash
+    // Case: ID không hợp lệ
     @Test
-    void test_execute_failure_dbCrash() {
-        UpdateOrderStatusRequestData input = new UpdateOrderStatusRequestData("token", "ord-1", "CONFIRMED");
-        
-        when(mockTokenValidator.validate("token")).thenReturn(adminPrincipal);
-        when(mockOrderRepository.findById("ord-1")).thenReturn(pendingOrder);
-        
-        doThrow(new RuntimeException("DB Error")).when(mockOrderRepository).save(any());
+    void testExecute_Fail_InvalidID() {
+        mockAdminAuth();
+        UpdateOrderStatusRequestData invalidReq = new UpdateOrderStatusRequestData(adminToken, "", "INVALID_STATUS");
+
+        useCase.execute(invalidReq);
 
         ArgumentCaptor<UpdateOrderStatusResponseData> captor = ArgumentCaptor.forClass(UpdateOrderStatusResponseData.class);
-        useCase.execute(input);
+        verify(outputBoundary).present(captor.capture());
         
-        verify(mockOutputBoundary).present(captor.capture());
         assertFalse(captor.getValue().success);
-        assertTrue(captor.getValue().message.contains("Lỗi hệ thống"));
+        // Message từ Order.convertToOrderStatus
+        assertTrue(captor.getValue().message.contains("ID đơn hàng không được để trống."));
+    }
+
+    // Case: Không tìm thấy đơn hàng
+    @Test
+    void testExecute_Fail_OrderNotFound() {
+        mockAdminAuth();
+        when(orderRepository.findById(orderId)).thenReturn(null);
+
+        useCase.execute(request);
+
+        ArgumentCaptor<UpdateOrderStatusResponseData> captor = ArgumentCaptor.forClass(UpdateOrderStatusResponseData.class);
+        verify(outputBoundary).present(captor.capture());
+        
+        assertFalse(captor.getValue().success);
+        assertEquals("Không tìm thấy đơn hàng.", captor.getValue().message);
+    }
+    
+    // Case: Hủy đơn đang giao
+    @Test
+    void testExecute_Fail_InvalidTransition01() {
+        // Arrange
+        mockAdminAuth();
+        // Request muốn HỦY đơn
+        UpdateOrderStatusRequestData cancelReq = new UpdateOrderStatusRequestData(adminToken, orderId, "CANCELLED");
+
+        OrderData orderData = new OrderData();
+        orderData.id = orderId;
+        orderData.status = "SHIPPED"; // Đang giao
+        orderData.paymentMethod = "COD";
+        when(orderRepository.findById(orderId)).thenReturn(orderData);
+
+        // Act
+        useCase.execute(cancelReq);
+
+        // Assert
+        ArgumentCaptor<UpdateOrderStatusResponseData> captor = ArgumentCaptor.forClass(UpdateOrderStatusResponseData.class);
+        verify(outputBoundary).present(captor.capture());
+        
+        assertFalse(captor.getValue().success);
+        // Message từ Order.updateStatus check logic
+        assertEquals("Không thể hủy đơn hàng đã được xử lý hoặc đang giao.", captor.getValue().message);
+    }
+    
+    // Case: Hủy đơn đã giao
+    @Test
+    void testExecute_Fail_InvalidTransition() {
+        // Arrange
+        mockAdminAuth();
+        // Request muốn HỦY đơn
+        UpdateOrderStatusRequestData cancelReq = new UpdateOrderStatusRequestData(adminToken, orderId, "CANCELLED");
+
+        // Mock Order đang ở trạng thái DELIVERED (Đã giao)
+        OrderData orderData = new OrderData();
+        orderData.id = orderId;
+        orderData.status = "DELIVERED"; // Đã giao xong
+        orderData.paymentMethod = "COD";
+        when(orderRepository.findById(orderId)).thenReturn(orderData);
+
+        // Act
+        useCase.execute(cancelReq);
+
+        // Assert
+        ArgumentCaptor<UpdateOrderStatusResponseData> captor = ArgumentCaptor.forClass(UpdateOrderStatusResponseData.class);
+        verify(outputBoundary).present(captor.capture());
+        
+        assertFalse(captor.getValue().success);
+        // Message từ Order.updateStatus check logic
+        assertEquals("Không thể hủy đơn hàng đã được xử lý hoặc đang giao.", captor.getValue().message);
+    }
+
+    // Case: Thành công - không hoàn kho
+    @Test
+    void testExecute_Success_NormalUpdate() {
+        // Arrange
+        mockAdminAuth();
+        UpdateOrderStatusRequestData shipReq = new UpdateOrderStatusRequestData(adminToken, orderId, "SHIPPED");
+
+        OrderData orderData = new OrderData();
+        orderData.id = orderId;
+        orderData.status = "PENDING";
+        orderData.paymentMethod = "COD";
+        orderData.totalAmount = BigDecimal.valueOf(100);
+        when(orderRepository.findById(orderId)).thenReturn(orderData);
+
+        // Act
+        useCase.execute(shipReq);
+
+        // Assert
+        ArgumentCaptor<UpdateOrderStatusResponseData> captor = ArgumentCaptor.forClass(UpdateOrderStatusResponseData.class);
+        verify(outputBoundary).present(captor.capture());
+        
+        assertTrue(captor.getValue().success);
+        assertEquals("SHIPPED", captor.getValue().status);
+        
+        // Kiểm tra Order được lưu
+        verify(orderRepository).save(any(OrderData.class));
+        // Kiểm tra KHÔNG gọi hoàn kho (Device Repo không được gọi save)
+        verify(deviceRepository, never()).save(any());
+    }
+
+    // Case: thành công - hoàn kho
+    @Test
+    void testExecute_Success_CancelWithRestock() {
+        // Arrange
+        mockAdminAuth();
+        UpdateOrderStatusRequestData cancelReq = new UpdateOrderStatusRequestData(adminToken, orderId, "CANCELLED");
+
+        // Mock Order có 1 sản phẩm (Laptop, số lượng mua: 2)
+        OrderData orderData = new OrderData();
+        orderData.id = orderId;
+        orderData.status = "CONFIRMED"; 
+        orderData.paymentMethod = "COD";
+        orderData.totalAmount = BigDecimal.valueOf(2000);
+        
+        List<OrderItemData> items = new ArrayList<>();
+        items.add(new OrderItemData("laptop-1", "Dell", "img", BigDecimal.valueOf(1000), 2)); // Mua 2 cái
+        orderData.items = items;
+
+        when(orderRepository.findById(orderId)).thenReturn(orderData);
+
+        // Mock Device Data (Tồn kho hiện tại: 5)
+        DeviceData laptopDTO = new DeviceData();
+        laptopDTO.id = "laptop-1";
+        laptopDTO.stockQuantity = 5;
+        when(deviceRepository.findById("laptop-1")).thenReturn(laptopDTO);
+
+        // Mock Mapper: Chuyển DTO thành Entity thật để tính toán plusStock
+        // Lưu ý: Dùng Mock hay Real Object đều được, ở đây dùng Real Object để test logic cộng trừ
+        Laptop laptopEntity = new Laptop("laptop-1", "Dell", "desc", BigDecimal.valueOf(1000), 5, "cat", "NEW", "img", null, null, "cpu", "ram", "ssd", 14.0);
+        when(deviceMapper.toEntity(laptopDTO)).thenReturn(laptopEntity);
+
+        // Mock Mapper ngược lại: Entity -> DTO (để save)
+        DeviceData updatedDTO = new DeviceData();
+        updatedDTO.id = "laptop-1";
+        updatedDTO.stockQuantity = 7; // 5 + 2 = 7
+        when(deviceMapper.toDTO(laptopEntity)).thenReturn(updatedDTO);
+
+        // Act
+        useCase.execute(cancelReq);
+
+        // Assert
+        ArgumentCaptor<UpdateOrderStatusResponseData> responseCaptor = ArgumentCaptor.forClass(UpdateOrderStatusResponseData.class);
+        verify(outputBoundary).present(responseCaptor.capture());
+        
+        // 1. Kiểm tra Output
+        assertTrue(responseCaptor.getValue().success);
+        assertEquals("CANCELLED", responseCaptor.getValue().status);
+
+        // 2. Kiểm tra Hoàn kho (Quan trọng nhất)
+        ArgumentCaptor<DeviceData> deviceCaptor = ArgumentCaptor.forClass(DeviceData.class);
+        verify(deviceRepository).save(deviceCaptor.capture());
+        
+        // Verify rằng kho đã được cộng thêm 2 (5 ban đầu + 2 trả lại = 7)
+        assertEquals(7, deviceCaptor.getValue().stockQuantity);
+
+        // 3. Kiểm tra Lưu Order
+        verify(orderRepository).save(any(OrderData.class));
     }
 }

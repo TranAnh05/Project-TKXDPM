@@ -47,50 +47,51 @@ public class PlaceOrderUseCase implements PlaceOrderInputBoundary {
         PlaceOrderResponseData output = new PlaceOrderResponseData();
 
         try {
-            // 1. Validate Auth & Input Sơ bộ (Null check)
-            if (input.authToken == null) throw new SecurityException("Auth Token không được để trống.");
             AuthPrincipal principal = tokenValidator.validate(input.authToken);
 
-            // 2. Khởi tạo Order (Entity sẽ tự validate address, userId)
+            // Kiểm tra dữ liệu đầu vào
+            Order.validateOrderInfo(input.shippingAddress, input.cartItems);
+            
+            // Tạo ID
             String orderId = idGenerator.generate();
-            // NẾU address rỗng -> Entity ném IllegalArgumentException -> Catch bên dưới
-            Order.validateOrderInfo(input.shippingAddress, principal.userId, input.cartItems, input.paymentMethod);
+            
+            // Khởi tạo đơn hàng
             Order orderEntity = new Order(orderId, principal.userId, input.shippingAddress, PaymentMethod.valueOf(input.paymentMethod));
 
+            // Lặp qua các mặt hàng trong giỏ hàng
             for (Map.Entry<String, Integer> entry : input.cartItems.entrySet()) {
                 String deviceId = entry.getKey();
                 Integer quantity = entry.getValue();
 
-                // 3a. Lấy DTO từ DB
+                // Lấy DTO từ DB
                 DeviceData deviceData = deviceRepository.findById(deviceId);
                 if (deviceData == null) {
                     throw new IllegalArgumentException("Sản phẩm không tồn tại: " + deviceId);
                 }
 
-                // 3b. Tái tạo Device Entity (Mapper tự xử lý OCP)
+                // Chuyển DTO sang entity theo loại thiết bị
                 ComputerDevice deviceEntity = deviceMapper.toEntity(deviceData);
                 
-                // 3c. Trừ tồn kho (Entity Device tự validate số lượng âm)
-                // Lấy tồn kho hiện tại trừ đi số lượng mua
+                // Kiểm tra tồn kho
                 deviceEntity.validateStock(quantity);
+                // Trừ tồn kho
                 deviceEntity.minusStock(quantity);
 
-                // 3d. Thêm vào Order Entity
+                // Thêm mặt hàng vào giỏ hàng
                 orderEntity.addItem(new OrderItem(
                     deviceEntity.getId(), deviceEntity.getName(), deviceEntity.getThumbnail(),
                     deviceEntity.getPrice(), quantity
                 ));
 
-                // 3e. Lưu Device đã trừ kho
+                // Lưu Device đã trừ kho
                 DeviceData updatedDeviceData = deviceMapper.toDTO(deviceEntity);
                 deviceRepository.save(updatedDeviceData);
             }
 
-            // 4. Lưu Order
+            // Lưu Order
             OrderData orderData = mapOrderToData(orderEntity);
             orderRepository.save(orderData);
 
-            // 5. Success
             output.success = true;
             output.message = "Đặt hàng thành công!";
             output.orderId = orderEntity.getId();
