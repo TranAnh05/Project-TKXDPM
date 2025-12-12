@@ -3,11 +3,11 @@ package cgx.com.usecase.ManageCategory.AddNewCategory;
 import cgx.com.Entities.Category;
 import cgx.com.Entities.User;
 import cgx.com.Entities.UserRole;
+import cgx.com.usecase.Interface_Common.AuthPrincipal;
+import cgx.com.usecase.Interface_Common.IAuthTokenValidator;
 import cgx.com.usecase.ManageCategory.CategoryData;
 import cgx.com.usecase.ManageCategory.ICategoryIdGenerator;
 import cgx.com.usecase.ManageCategory.ICategoryRepository;
-import cgx.com.usecase.ManageUser.AuthPrincipal;
-import cgx.com.usecase.ManageUser.IAuthTokenValidator;
 import cgx.com.usecase.ManageUser.IUserRepository;
 
 public class AddCategoryUseCase implements AddCategoryInputBoundary{

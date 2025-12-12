@@ -24,10 +24,10 @@ import cgx.com.usecase.Cart.AddToCart.AddToCartOutputBoundary;
 import cgx.com.usecase.Cart.AddToCart.AddToCartRequestData;
 import cgx.com.usecase.Cart.AddToCart.AddToCartResponseData;
 import cgx.com.usecase.Cart.AddToCart.AddToCartUseCase;
+import cgx.com.usecase.Interface_Common.AuthPrincipal;
+import cgx.com.usecase.Interface_Common.IAuthTokenValidator;
 import cgx.com.usecase.ManageProduct.DeviceData;
 import cgx.com.usecase.ManageProduct.IDeviceRepository;
-import cgx.com.usecase.ManageUser.AuthPrincipal;
-import cgx.com.usecase.ManageUser.IAuthTokenValidator;
 
 @ExtendWith(MockitoExtension.class)
 public class AddToCartUseCaseTest {

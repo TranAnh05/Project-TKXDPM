@@ -8,6 +8,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import cgx.com.Entities.UserRole;
+import cgx.com.usecase.Interface_Common.AuthPrincipal;
+import cgx.com.usecase.Interface_Common.IAuthTokenValidator;
 import cgx.com.usecase.ManageProduct.DeviceData;
 import cgx.com.usecase.ManageProduct.IDeviceRepository;
 import cgx.com.usecase.ManageProduct.SearchDevices.DeviceSearchCriteria;
@@ -15,8 +17,6 @@ import cgx.com.usecase.ManageProduct.SearchDevices.SearchDevicesOutputBoundary;
 import cgx.com.usecase.ManageProduct.SearchDevices.SearchDevicesRequestData;
 import cgx.com.usecase.ManageProduct.SearchDevices.SearchDevicesResponseData;
 import cgx.com.usecase.ManageProduct.SearchDevices.SearchDevicesUseCase;
-import cgx.com.usecase.ManageUser.AuthPrincipal;
-import cgx.com.usecase.ManageUser.IAuthTokenValidator;
 
 import java.math.BigDecimal;
 import java.util.List;

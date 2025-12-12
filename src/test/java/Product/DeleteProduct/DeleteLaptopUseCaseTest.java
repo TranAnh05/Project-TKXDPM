@@ -8,14 +8,14 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import cgx.com.Entities.UserRole;
+import cgx.com.usecase.Interface_Common.AuthPrincipal;
+import cgx.com.usecase.Interface_Common.IAuthTokenValidator;
 import cgx.com.usecase.ManageProduct.DeviceData;
 import cgx.com.usecase.ManageProduct.IDeviceRepository;
 import cgx.com.usecase.ManageProduct.DeleteDevice.DeleteDeviceOutputBoundary;
 import cgx.com.usecase.ManageProduct.DeleteDevice.DeleteDeviceRequestData;
 import cgx.com.usecase.ManageProduct.DeleteDevice.DeleteDeviceResponseData;
 import cgx.com.usecase.ManageProduct.DeleteDevice.DeleteLaptopUseCase;
-import cgx.com.usecase.ManageUser.AuthPrincipal;
-import cgx.com.usecase.ManageUser.IAuthTokenValidator;
 
 import java.math.BigDecimal;
 

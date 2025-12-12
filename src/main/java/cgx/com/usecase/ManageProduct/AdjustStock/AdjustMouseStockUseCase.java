@@ -2,9 +2,9 @@ package cgx.com.usecase.ManageProduct.AdjustStock;
 
 import cgx.com.Entities.ComputerDevice;
 import cgx.com.Entities.Mouse;
+import cgx.com.usecase.Interface_Common.IAuthTokenValidator;
 import cgx.com.usecase.ManageProduct.DeviceData;
 import cgx.com.usecase.ManageProduct.IDeviceRepository;
-import cgx.com.usecase.ManageUser.IAuthTokenValidator;
 
 /**
  * Use Case Cụ thể: Điều chỉnh tồn kho Mouse.

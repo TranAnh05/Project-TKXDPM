@@ -21,8 +21,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import cgx.com.Entities.AccountStatus;
 import cgx.com.Entities.UserRole;
-import cgx.com.usecase.ManageUser.IAuthTokenGenerator;
-import cgx.com.usecase.ManageUser.IPasswordHasher;
+import cgx.com.usecase.Interface_Common.IAuthTokenGenerator;
+import cgx.com.usecase.Interface_Common.IPasswordHasher;
 import cgx.com.usecase.ManageUser.IUserRepository;
 import cgx.com.usecase.ManageUser.UserData;
 import cgx.com.usecase.ManageUser.AuthenticateUser.AuthenticateUserOutputBoundary;

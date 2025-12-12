@@ -30,9 +30,9 @@ import cgx.com.usecase.ManageCategory.AddNewCategory.AddCategoryOutputBoundary;
 import cgx.com.usecase.ManageCategory.AddNewCategory.AddCategoryRequestData;
 import cgx.com.usecase.ManageCategory.AddNewCategory.AddCategoryResponseData;
 import cgx.com.usecase.ManageCategory.AddNewCategory.AddCategoryUseCase;
-import cgx.com.usecase.ManageUser.AuthPrincipal;
-import cgx.com.usecase.ManageUser.IAuthTokenValidator;
 import cgx.com.usecase.ManageUser.IUserRepository;
+import cgx.com.usecase.Interface_Common.AuthPrincipal;
+import cgx.com.usecase.Interface_Common.IAuthTokenValidator;
 import cgx.com.usecase.ManageCategory.*;
 import cgx.com.usecase.ManageCategory.AddNewCategory.*;
 

@@ -11,6 +11,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import cgx.com.Entities.ComputerDevice;
 import cgx.com.Entities.Laptop;
 import cgx.com.Entities.UserRole;
+import cgx.com.usecase.Interface_Common.AuthPrincipal;
+import cgx.com.usecase.Interface_Common.IAuthTokenValidator;
 import cgx.com.usecase.ManageOrder.IOrderIdGenerator;
 import cgx.com.usecase.ManageOrder.IOrderRepository;
 import cgx.com.usecase.ManageOrder.OrderData;
@@ -21,8 +23,6 @@ import cgx.com.usecase.ManageOrder.PlaceOrder.PlaceOrderResponseData;
 import cgx.com.usecase.ManageOrder.PlaceOrder.PlaceOrderUseCase;
 import cgx.com.usecase.ManageProduct.DeviceData;
 import cgx.com.usecase.ManageProduct.IDeviceRepository;
-import cgx.com.usecase.ManageUser.AuthPrincipal;
-import cgx.com.usecase.ManageUser.IAuthTokenValidator;
 
 import java.math.BigDecimal;
 import java.time.Instant;

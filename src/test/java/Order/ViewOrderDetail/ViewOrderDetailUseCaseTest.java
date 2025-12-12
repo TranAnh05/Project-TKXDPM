@@ -11,6 +11,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import cgx.com.Entities.AccountStatus;
 import cgx.com.Entities.UserRole;
+import cgx.com.usecase.Interface_Common.AuthPrincipal;
+import cgx.com.usecase.Interface_Common.IAuthTokenValidator;
 import cgx.com.usecase.ManageOrder.IOrderRepository;
 import cgx.com.usecase.ManageOrder.OrderData;
 import cgx.com.usecase.ManageOrder.OrderItemData;
@@ -20,8 +22,6 @@ import cgx.com.usecase.ManageOrder.ViewOrderDetail.ViewOrderDetailOutputBoundary
 import cgx.com.usecase.ManageOrder.ViewOrderDetail.ViewOrderDetailRequestData;
 import cgx.com.usecase.ManageOrder.ViewOrderDetail.ViewOrderDetailResponseData;
 import cgx.com.usecase.ManageOrder.ViewOrderDetail.ViewOrderDetailUseCase;
-import cgx.com.usecase.ManageUser.AuthPrincipal;
-import cgx.com.usecase.ManageUser.IAuthTokenValidator;
 import cgx.com.usecase.ManageUser.IUserRepository;
 import cgx.com.usecase.ManageUser.UserData;
 

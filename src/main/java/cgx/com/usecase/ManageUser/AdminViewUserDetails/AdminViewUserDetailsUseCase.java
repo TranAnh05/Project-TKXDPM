@@ -2,8 +2,8 @@ package cgx.com.usecase.ManageUser.AdminViewUserDetails;
 
 import cgx.com.Entities.User;
 import cgx.com.Entities.UserRole;
-import cgx.com.usecase.ManageUser.AuthPrincipal;
-import cgx.com.usecase.ManageUser.IAuthTokenValidator;
+import cgx.com.usecase.Interface_Common.AuthPrincipal;
+import cgx.com.usecase.Interface_Common.IAuthTokenValidator;
 import cgx.com.usecase.ManageUser.IUserRepository;
 import cgx.com.usecase.ManageUser.UserData;
 import cgx.com.usecase.ManageUser.AdminUpdateUser.AdminUpdateUserResponseData;

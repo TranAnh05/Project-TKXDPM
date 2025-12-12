@@ -3,10 +3,10 @@ package cgx.com.usecase.ManageUser.VerifyPasswordReset;
 import java.time.Instant;
 
 import cgx.com.Entities.User;
-import cgx.com.usecase.ManageUser.IPasswordHasher;
-import cgx.com.usecase.ManageUser.IPasswordResetTokenRepository;
+import cgx.com.usecase.Interface_Common.IPasswordHasher;
+import cgx.com.usecase.Interface_Common.IPasswordResetTokenRepository;
+import cgx.com.usecase.Interface_Common.PasswordResetTokenData;
 import cgx.com.usecase.ManageUser.IUserRepository;
-import cgx.com.usecase.ManageUser.PasswordResetTokenData;
 import cgx.com.usecase.ManageUser.UserData;
 
 public abstract class AbstractVerifyPasswordResetUseCase<T extends BaseVerifyResetRequestData> implements VerifyPasswordResetInputBoundary<T>{

@@ -1,11 +1,11 @@
 package cgx.com.usecase.ManageUser.RequestPasswordReset;
 
 import cgx.com.Entities.User;
-import cgx.com.usecase.ManageUser.IEmailService;
-import cgx.com.usecase.ManageUser.IPasswordHasher;
-import cgx.com.usecase.ManageUser.IPasswordResetTokenIdGenerator;
-import cgx.com.usecase.ManageUser.IPasswordResetTokenRepository;
-import cgx.com.usecase.ManageUser.ISecureTokenGenerator;
+import cgx.com.usecase.Interface_Common.IEmailService;
+import cgx.com.usecase.Interface_Common.IPasswordHasher;
+import cgx.com.usecase.Interface_Common.IPasswordResetTokenIdGenerator;
+import cgx.com.usecase.Interface_Common.IPasswordResetTokenRepository;
+import cgx.com.usecase.Interface_Common.ISecureTokenGenerator;
 import cgx.com.usecase.ManageUser.IUserRepository;
 import cgx.com.usecase.ManageUser.UserData;
 

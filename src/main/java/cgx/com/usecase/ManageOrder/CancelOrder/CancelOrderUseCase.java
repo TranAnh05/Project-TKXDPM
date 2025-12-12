@@ -7,14 +7,14 @@ import cgx.com.Entities.OrderStatus;
 import cgx.com.Entities.PaymentMethod;
 import cgx.com.Entities.User;
 import cgx.com.Entities.UserRole;
+import cgx.com.usecase.Interface_Common.AuthPrincipal;
+import cgx.com.usecase.Interface_Common.IAuthTokenValidator;
 import cgx.com.usecase.ManageOrder.IOrderRepository;
 import cgx.com.usecase.ManageOrder.OrderData;
 import cgx.com.usecase.ManageOrder.OrderItemData;
 import cgx.com.usecase.ManageOrder.PlaceOrder.IDeviceMapper;
 import cgx.com.usecase.ManageProduct.DeviceData;
 import cgx.com.usecase.ManageProduct.IDeviceRepository;
-import cgx.com.usecase.ManageUser.AuthPrincipal;
-import cgx.com.usecase.ManageUser.IAuthTokenValidator;
 import cgx.com.usecase.ManageUser.IUserRepository;
 import cgx.com.usecase.ManageUser.UserData;
 

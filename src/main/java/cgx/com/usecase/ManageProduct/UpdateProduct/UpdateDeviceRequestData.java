@@ -3,15 +3,15 @@ package cgx.com.usecase.ManageProduct.UpdateProduct;
 import java.math.BigDecimal;
 
 public class UpdateDeviceRequestData {
-	public final String authToken;
-    public final String id; // ID sản phẩm cần sửa
-    public final String name;
-    public final String description;
-    public final BigDecimal price;
-    public final int stockQuantity;
-    public final String categoryId;
-    public final String thumbnail;
-    public final String status; // Có thể cập nhật trạng thái (ACTIVE/OUT_OF_STOCK)
+	public String authToken;
+    public String id; 
+    public String name;
+    public String description;
+    public BigDecimal price;
+    public int stockQuantity;
+    public String categoryId;
+    public String thumbnail;
+    public String status; 
 
     public UpdateDeviceRequestData(String authToken, String id, String name, String description, 
                                    BigDecimal price, int stockQuantity, String categoryId, 

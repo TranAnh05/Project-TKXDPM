@@ -8,14 +8,14 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import cgx.com.Entities.UserRole;
+import cgx.com.usecase.Interface_Common.AuthPrincipal;
+import cgx.com.usecase.Interface_Common.IAuthTokenValidator;
 import cgx.com.usecase.ManageProduct.DeviceData;
 import cgx.com.usecase.ManageProduct.IDeviceRepository;
 import cgx.com.usecase.ManageProduct.AdjustStock.AdjustMouseStockUseCase;
 import cgx.com.usecase.ManageProduct.AdjustStock.AdjustStockOutputBoundary;
 import cgx.com.usecase.ManageProduct.AdjustStock.AdjustStockRequestData;
 import cgx.com.usecase.ManageProduct.AdjustStock.AdjustStockResponseData;
-import cgx.com.usecase.ManageUser.AuthPrincipal;
-import cgx.com.usecase.ManageUser.IAuthTokenValidator;
 
 import java.math.BigDecimal;
 

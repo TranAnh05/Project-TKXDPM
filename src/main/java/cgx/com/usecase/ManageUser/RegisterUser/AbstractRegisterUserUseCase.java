@@ -4,14 +4,14 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
 import cgx.com.Entities.User;
-import cgx.com.usecase.ManageUser.IEmailService;
-import cgx.com.usecase.ManageUser.IPasswordHasher;
-import cgx.com.usecase.ManageUser.ISecureTokenGenerator;
+import cgx.com.usecase.Interface_Common.IEmailService;
+import cgx.com.usecase.Interface_Common.IPasswordHasher;
+import cgx.com.usecase.Interface_Common.ISecureTokenGenerator;
+import cgx.com.usecase.Interface_Common.IVerificationTokenRepository;
+import cgx.com.usecase.Interface_Common.VerificationTokenData;
 import cgx.com.usecase.ManageUser.IUserIdGenerator;
 import cgx.com.usecase.ManageUser.IUserRepository;
-import cgx.com.usecase.ManageUser.IVerificationTokenRepository;
 import cgx.com.usecase.ManageUser.UserData;
-import cgx.com.usecase.ManageUser.VerificationTokenData;
 
 /**
  * Lớp Use Case TRỪU TƯỢNG (Abstract) cho việc Đăng ký Người dùng.

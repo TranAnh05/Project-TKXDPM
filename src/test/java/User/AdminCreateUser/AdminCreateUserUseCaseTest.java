@@ -26,10 +26,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import cgx.com.Entities.AccountStatus;
 import cgx.com.Entities.UserRole;
-import cgx.com.usecase.ManageUser.AuthPrincipal;
-import cgx.com.usecase.ManageUser.IAuthTokenValidator;
-import cgx.com.usecase.ManageUser.IEmailService;
-import cgx.com.usecase.ManageUser.IPasswordHasher;
+import cgx.com.usecase.Interface_Common.AuthPrincipal;
+import cgx.com.usecase.Interface_Common.IAuthTokenValidator;
+import cgx.com.usecase.Interface_Common.IEmailService;
+import cgx.com.usecase.Interface_Common.IPasswordHasher;
 import cgx.com.usecase.ManageUser.IUserIdGenerator;
 import cgx.com.usecase.ManageUser.IUserRepository;
 import cgx.com.usecase.ManageUser.UserData;

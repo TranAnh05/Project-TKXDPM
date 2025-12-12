@@ -4,10 +4,10 @@ import java.time.Instant;
 
 import cgx.com.Entities.ComputerDevice;
 import cgx.com.Entities.Laptop;
+import cgx.com.usecase.Interface_Common.IAuthTokenValidator;
 import cgx.com.usecase.ManageCategory.ICategoryRepository;
 import cgx.com.usecase.ManageProduct.DeviceData;
 import cgx.com.usecase.ManageProduct.IDeviceRepository;
-import cgx.com.usecase.ManageUser.IAuthTokenValidator;
 
 public class UpdateLaptopUseCase extends AbstractUpdateDeviceUseCase<UpdateLaptopRequestData> {
 
@@ -20,9 +20,6 @@ public class UpdateLaptopUseCase extends AbstractUpdateDeviceUseCase<UpdateLapto
 
     @Override
     protected ComputerDevice rehydrateEntity(DeviceData data) {
-        // Chỉ tái tạo nếu data có đủ trường của Laptop (ví dụ CPU không null)
-        if (data.cpu == null) return null; // Không phải Laptop
-        
         return new Laptop(
             data.id, data.name, data.description, data.price, data.stockQuantity,
             data.categoryId, data.status, data.thumbnail, data.createdAt, data.updatedAt,
@@ -47,7 +44,7 @@ public class UpdateLaptopUseCase extends AbstractUpdateDeviceUseCase<UpdateLapto
             input.status,
             input.thumbnail,
             oldEntity.getCreatedAt(),
-            Instant.now(), // Update time
+            Instant.now(), 
             input.cpu,
             input.ram,
             input.storage,

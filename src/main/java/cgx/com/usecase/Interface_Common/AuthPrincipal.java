@@ -1,4 +1,4 @@
-package cgx.com.usecase.ManageUser;
+package cgx.com.usecase.Interface_Common;
 
 import cgx.com.Entities.UserRole;
 

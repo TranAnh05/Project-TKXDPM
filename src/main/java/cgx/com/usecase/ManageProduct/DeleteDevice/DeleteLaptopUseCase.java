@@ -2,9 +2,9 @@ package cgx.com.usecase.ManageProduct.DeleteDevice;
 
 import cgx.com.Entities.ComputerDevice;
 import cgx.com.Entities.Laptop;
+import cgx.com.usecase.Interface_Common.IAuthTokenValidator;
 import cgx.com.usecase.ManageProduct.DeviceData;
 import cgx.com.usecase.ManageProduct.IDeviceRepository;
-import cgx.com.usecase.ManageUser.IAuthTokenValidator;
 
 public class DeleteLaptopUseCase extends AbstractDeleteDeviceUseCase {
 

@@ -4,10 +4,10 @@ import java.time.Instant;
 
 import cgx.com.Entities.ComputerDevice;
 import cgx.com.Entities.Mouse;
+import cgx.com.usecase.Interface_Common.IAuthTokenValidator;
 import cgx.com.usecase.ManageCategory.ICategoryRepository;
 import cgx.com.usecase.ManageProduct.DeviceData;
 import cgx.com.usecase.ManageProduct.IDeviceRepository;
-import cgx.com.usecase.ManageUser.IAuthTokenValidator;
 
 public class UpdateMouseUseCase extends AbstractUpdateDeviceUseCase<UpdateMouseRequestData> {
 
@@ -20,8 +20,6 @@ public class UpdateMouseUseCase extends AbstractUpdateDeviceUseCase<UpdateMouseR
 
     @Override
     protected ComputerDevice rehydrateEntity(DeviceData data) {
-        if (data.dpi == null) return null; // Không phải Mouse
-        
         return new Mouse(
             data.id, data.name, data.description, data.price, data.stockQuantity,
             data.categoryId, data.status, data.thumbnail, data.createdAt, data.updatedAt,

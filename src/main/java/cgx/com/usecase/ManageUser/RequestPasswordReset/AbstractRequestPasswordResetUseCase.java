@@ -3,12 +3,12 @@ package cgx.com.usecase.ManageUser.RequestPasswordReset;
 import java.time.Duration;
 
 import cgx.com.Entities.PasswordResetToken;
-import cgx.com.usecase.ManageUser.IPasswordHasher;
-import cgx.com.usecase.ManageUser.IPasswordResetTokenIdGenerator;
-import cgx.com.usecase.ManageUser.IPasswordResetTokenRepository;
-import cgx.com.usecase.ManageUser.ISecureTokenGenerator;
+import cgx.com.usecase.Interface_Common.IPasswordHasher;
+import cgx.com.usecase.Interface_Common.IPasswordResetTokenIdGenerator;
+import cgx.com.usecase.Interface_Common.IPasswordResetTokenRepository;
+import cgx.com.usecase.Interface_Common.ISecureTokenGenerator;
+import cgx.com.usecase.Interface_Common.PasswordResetTokenData;
 import cgx.com.usecase.ManageUser.IUserRepository;
-import cgx.com.usecase.ManageUser.PasswordResetTokenData;
 import cgx.com.usecase.ManageUser.UserData;
 
 public abstract class AbstractRequestPasswordResetUseCase<T extends ResetRequestData> implements RequestPasswordResetInputBoundary<T>{

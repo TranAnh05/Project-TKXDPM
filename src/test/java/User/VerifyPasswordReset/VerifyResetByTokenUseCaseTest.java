@@ -24,10 +24,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import cgx.com.Entities.AccountStatus;
 import cgx.com.Entities.UserRole;
-import cgx.com.usecase.ManageUser.IPasswordHasher;
-import cgx.com.usecase.ManageUser.IPasswordResetTokenRepository;
+import cgx.com.usecase.Interface_Common.IPasswordHasher;
+import cgx.com.usecase.Interface_Common.IPasswordResetTokenRepository;
+import cgx.com.usecase.Interface_Common.PasswordResetTokenData;
 import cgx.com.usecase.ManageUser.IUserRepository;
-import cgx.com.usecase.ManageUser.PasswordResetTokenData;
 import cgx.com.usecase.ManageUser.UserData;
 import cgx.com.usecase.ManageUser.VerifyPasswordReset.VerifyPasswordResetOutputBoundary;
 import cgx.com.usecase.ManageUser.VerifyPasswordReset.VerifyPasswordResetRequestData;

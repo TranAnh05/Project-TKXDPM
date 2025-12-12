@@ -2,10 +2,10 @@ package cgx.com.usecase.ManageOrder.ViewMyOrders;
 
 import java.util.List;
 
+import cgx.com.usecase.Interface_Common.AuthPrincipal;
+import cgx.com.usecase.Interface_Common.IAuthTokenValidator;
 import cgx.com.usecase.ManageOrder.IOrderRepository;
 import cgx.com.usecase.ManageOrder.OrderData;
-import cgx.com.usecase.ManageUser.AuthPrincipal;
-import cgx.com.usecase.ManageUser.IAuthTokenValidator;
 
 public class ViewMyOrdersUseCase implements ViewMyOrdersInputBoundary {
 

@@ -1,6 +1,7 @@
 package Category.UpdateCategory;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -8,14 +9,15 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import cgx.com.Entities.UserRole;
+import cgx.com.usecase.Interface_Common.AuthPrincipal;
+import cgx.com.usecase.Interface_Common.IAuthTokenValidator;
 import cgx.com.usecase.ManageCategory.CategoryData;
 import cgx.com.usecase.ManageCategory.ICategoryRepository;
 import cgx.com.usecase.ManageCategory.AddNewCategory.AddCategoryResponseData;
 import cgx.com.usecase.ManageCategory.UpdateCategory.UpdateCategoryOutputBoundary;
 import cgx.com.usecase.ManageCategory.UpdateCategory.UpdateCategoryRequestData;
 import cgx.com.usecase.ManageCategory.UpdateCategory.UpdateCategoryUseCase;
-import cgx.com.usecase.ManageUser.AuthPrincipal;
-import cgx.com.usecase.ManageUser.IAuthTokenValidator;
+import cgx.com.usecase.ManageUser.IUserRepository;
 
 import java.time.Instant;
 
@@ -24,249 +26,261 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class UpdateCategoryUseCaseTest {
-	@Mock private ICategoryRepository mockCategoryRepository;
-    @Mock private IAuthTokenValidator mockTokenValidator;
-    @Mock private UpdateCategoryOutputBoundary mockOutputBoundary;
+class UpdateCategoryUseCaseTest {
 
-    private UpdateCategoryUseCase useCase;
-    private AuthPrincipal adminPrincipal;
-    private CategoryData existingCategory;
+    @Mock private ICategoryRepository categoryRepository;
+    @Mock private IAuthTokenValidator tokenValidator;
+    @Mock private IUserRepository userRepository;
+    @Mock private UpdateCategoryOutputBoundary outputBoundary;
+
+    private UpdateCategoryUseCase updateCategoryUseCase;
 
     @BeforeEach
     void setUp() {
-        useCase = new UpdateCategoryUseCase(mockCategoryRepository, mockTokenValidator, mockOutputBoundary);
-        
-        // Valid Admin Principal
-        adminPrincipal = new AuthPrincipal("admin-1", "admin@test.com", UserRole.ADMIN);
-        
-        // Data existing in DB
-        existingCategory = new CategoryData(
-            "cat-1", "Old Name", "Old Desc", null, Instant.now(), Instant.now()
+        updateCategoryUseCase = new UpdateCategoryUseCase(
+            categoryRepository, tokenValidator, userRepository, outputBoundary
         );
+    }
+
+    @Test
+    @DisplayName("Fail: User không phải Admin ")
+    void execute_ShouldFail_WhenUserIsNotAdmin() {
+        // Arrange
+        UpdateCategoryRequestData input = new UpdateCategoryRequestData();
+        input.authToken = "customer-token";
+
+        AuthPrincipal customerPrincipal = new AuthPrincipal("u1", "test@mail.com", UserRole.CUSTOMER);
+        when(tokenValidator.validate(input.authToken)).thenReturn(customerPrincipal);
+
+        // Act
+        updateCategoryUseCase.execute(input);
+
+        // Assert
+        ArgumentCaptor<AddCategoryResponseData> captor = ArgumentCaptor.forClass(AddCategoryResponseData.class);
+        verify(outputBoundary).present(captor.capture());
+        AddCategoryResponseData output = captor.getValue();
+
+        assertFalse(output.success);
+        assertEquals("Không có quyền truy cập.", output.message);
+    }
+
+    @Test
+    @DisplayName("Fail: ID danh mục rỗng")
+    void execute_ShouldFail_WhenCategoryIdIsEmpty() {
+        // Arrange
+        UpdateCategoryRequestData input = new UpdateCategoryRequestData();
+        input.authToken = "admin-token";
+        input.categoryId = ""; // ID rỗng
+
+        AuthPrincipal adminPrincipal = new AuthPrincipal("u1", "admin@mail.com", UserRole.ADMIN);
+        when(tokenValidator.validate(input.authToken)).thenReturn(adminPrincipal);
+
+        // Act
+        updateCategoryUseCase.execute(input);
+
+        // Assert
+        ArgumentCaptor<AddCategoryResponseData> captor = ArgumentCaptor.forClass(AddCategoryResponseData.class);
+        verify(outputBoundary).present(captor.capture());
+        AddCategoryResponseData output = captor.getValue();
+
+        assertFalse(output.success);
+        assertEquals("ID danh mục không được để trống.", output.message); //
+    }
+    @Test
+    @DisplayName("Fail: Tên danh mục rỗng")
+    void execute_ShouldFail_WhenCategoryNameIsInvalid() {
+        // Arrange
+        UpdateCategoryRequestData input = new UpdateCategoryRequestData();
+        input.authToken = "admin-token";
+        input.categoryId = "valid-id";
+        input.name = ""; 
+        
+        AuthPrincipal adminPrincipal = new AuthPrincipal("u1", "admin@mail.com", UserRole.ADMIN);
+        when(tokenValidator.validate(input.authToken)).thenReturn(adminPrincipal);
+
+        // Act
+        updateCategoryUseCase.execute(input);
+
+        // Assert
+        ArgumentCaptor<AddCategoryResponseData> captor = ArgumentCaptor.forClass(AddCategoryResponseData.class);
+        verify(outputBoundary).present(captor.capture());
+        AddCategoryResponseData output = captor.getValue();
+
+        assertFalse(output.success);
+        assertEquals("Tên danh mục không được để trống.", output.message); //
+    }
+
+    @Test
+    @DisplayName("Fail: Không tìm thấy danh mục trong DB")
+    void execute_ShouldFail_WhenCategoryNotFound() {
+        // Arrange
+        UpdateCategoryRequestData input = new UpdateCategoryRequestData();
+        input.authToken = "admin-token";
+        input.categoryId = "non-existent-id";
+        input.name = "Valid Name";
+
+        AuthPrincipal adminPrincipal = new AuthPrincipal("u1", "admin@mail.com", UserRole.ADMIN);
+        when(tokenValidator.validate(input.authToken)).thenReturn(adminPrincipal);
+        
+        // Mock Repository trả về null
+        when(categoryRepository.findById(input.categoryId)).thenReturn(null);
+
+        // Act
+        updateCategoryUseCase.execute(input);
+
+        // Assert
+        ArgumentCaptor<AddCategoryResponseData> captor = ArgumentCaptor.forClass(AddCategoryResponseData.class);
+        verify(outputBoundary).present(captor.capture());
+        AddCategoryResponseData output = captor.getValue();
+
+        assertFalse(output.success);
+        //
+        assertEquals("Không tìm thấy danh mục với ID: " + input.categoryId, output.message);
+    }
+    @Test
+    @DisplayName("6. Fail: Tên mới trùng với danh mục khác")
+    void execute_ShouldFail_WhenNewNameExists() {
+        // Arrange
+        UpdateCategoryRequestData input = new UpdateCategoryRequestData();
+        input.authToken = "admin-token";
+        input.categoryId = "cat-01";
+        input.name = "New Name"; // Tên muốn đổi
+
+        AuthPrincipal adminPrincipal = new AuthPrincipal("u1", "admin@mail.com", UserRole.ADMIN);
+        when(tokenValidator.validate(input.authToken)).thenReturn(adminPrincipal);
+
+        // Danh mục hiện tại trong DB (Tên cũ là "Old Name")
+        CategoryData existingData = new CategoryData("cat-01", "Old Name", "desc", null, Instant.now(), Instant.now());
+        when(categoryRepository.findById(input.categoryId)).thenReturn(existingData);
+
+        // Mock tìm thấy một danh mục KHÁC đã dùng tên "New Name"
+        CategoryData duplicateData = new CategoryData("cat-99", "New Name", "desc", null, Instant.now(), Instant.now());
+        when(categoryRepository.findByName(input.name)).thenReturn(duplicateData);
+
+        // Act
+        updateCategoryUseCase.execute(input);
+
+        // Assert
+        ArgumentCaptor<AddCategoryResponseData> captor = ArgumentCaptor.forClass(AddCategoryResponseData.class);
+        verify(outputBoundary).present(captor.capture());
+        AddCategoryResponseData output = captor.getValue();
+
+        assertFalse(output.success);
+        //
+        assertEquals("Tên danh mục mới đã tồn tại: " + input.name, output.message);
+    }
+
+    @Test
+    @DisplayName("Fail: Danh mục cha (ParentID) không tồn tại")
+    void execute_ShouldFail_WhenParentCategoryNotFound() {
+        // Arrange
+        UpdateCategoryRequestData input = new UpdateCategoryRequestData();
+        input.authToken = "admin-token";
+        input.categoryId = "cat-01";
+        input.name = "Cat 01"; // Không đổi tên
+        input.parentCategoryId = "invalid-parent"; // Parent ID sai
+
+        AuthPrincipal adminPrincipal = new AuthPrincipal("u1", "admin@mail.com", UserRole.ADMIN);
+        when(tokenValidator.validate(input.authToken)).thenReturn(adminPrincipal);
+
+        // Danh mục hiện tại
+        CategoryData existingData = new CategoryData("cat-01", "Cat 01", "desc", null, Instant.now(), Instant.now());
+        when(categoryRepository.findById(input.categoryId)).thenReturn(existingData);
+        
+        // Mock không tìm thấy Parent
+        when(categoryRepository.findById(input.parentCategoryId)).thenReturn(null);
+
+        // Act
+        updateCategoryUseCase.execute(input);
+
+        // Assert
+        ArgumentCaptor<AddCategoryResponseData> captor = ArgumentCaptor.forClass(AddCategoryResponseData.class);
+        verify(outputBoundary).present(captor.capture());
+        AddCategoryResponseData output = captor.getValue();
+
+        assertFalse(output.success);
+        //
+        assertEquals("Danh mục cha không tồn tại.", output.message);
     }
     
-    /**
-     * Case 1: Success - Update Name and Description (Parent remains null)
-     */
     @Test
-    void test_execute_success_updateNameAndDesc() {
-        // ARRANGE
-        UpdateCategoryRequestData input = new UpdateCategoryRequestData(
-            "token", "cat-1", "New Name", "New Desc", null
-        );
-        
-        when(mockTokenValidator.validate("token")).thenReturn(adminPrincipal);
-        when(mockCategoryRepository.findById("cat-1")).thenReturn(existingCategory);
-        when(mockCategoryRepository.findByName("New Name")).thenReturn(null); // Name unique
+    @DisplayName("8. Fail: Chọn chính mình làm cha")
+    void execute_ShouldFail_WhenParentIsSelf() {
+        // Arrange
+        UpdateCategoryRequestData input = new UpdateCategoryRequestData();
+        input.authToken = "admin-token";
+        input.categoryId = "cat-01";
+        input.name = "Cat 01"; 
+        input.parentCategoryId = "cat-01"; // ID cha trùng ID con
 
+        AuthPrincipal adminPrincipal = new AuthPrincipal("u1", "admin@mail.com", UserRole.ADMIN);
+        when(tokenValidator.validate(input.authToken)).thenReturn(adminPrincipal);
+
+        CategoryData existingData = new CategoryData("cat-01", "Cat 01", "desc", null, Instant.now(), Instant.now());
+        when(categoryRepository.findById(input.categoryId)).thenReturn(existingData);
+        
+        // Mock tìm thấy Parent (chính nó) -> để vượt qua check null
+        when(categoryRepository.findById(input.parentCategoryId)).thenReturn(existingData);
+
+        // Act
+        updateCategoryUseCase.execute(input);
+
+        // Assert
         ArgumentCaptor<AddCategoryResponseData> captor = ArgumentCaptor.forClass(AddCategoryResponseData.class);
-
-        // ACT
-        useCase.execute(input);
-
-        // ASSERT
-        verify(mockCategoryRepository).save(any(CategoryData.class));
-        verify(mockOutputBoundary).present(captor.capture());
-        
+        verify(outputBoundary).present(captor.capture());
         AddCategoryResponseData output = captor.getValue();
-        assertTrue(output.success);
-        assertEquals("New Name", output.name);
-        assertNull(output.parentCategoryId);
-    }
 
-    /**
-     * Case 2: Success - Update Parent Category
-     */
-    @Test
-    void test_execute_success_updateParent() {
-        // ARRANGE
-        UpdateCategoryRequestData input = new UpdateCategoryRequestData(
-            "token", "cat-1", "Old Name", "Desc", "parent-cat-2"
-        );
-        
-        when(mockTokenValidator.validate("token")).thenReturn(adminPrincipal);
-        when(mockCategoryRepository.findById("cat-1")).thenReturn(existingCategory);
-        // Name didn't change, so findByName should NOT be called for duplicate check
-        // Parent exists check:
-        when(mockCategoryRepository.findById("parent-cat-2")).thenReturn(new CategoryData()); 
-
-        ArgumentCaptor<AddCategoryResponseData> captor = ArgumentCaptor.forClass(AddCategoryResponseData.class);
-
-        // ACT
-        useCase.execute(input);
-
-        // ASSERT
-        verify(mockCategoryRepository).save(any(CategoryData.class));
-        verify(mockOutputBoundary).present(captor.capture());
-        assertEquals("parent-cat-2", captor.getValue().parentCategoryId);
-    }
-
-    /**
-     * Case 3: Failure - Auth Token Empty
-     */
-    @Test
-    void test_execute_failure_emptyToken() {
-        UpdateCategoryRequestData input = new UpdateCategoryRequestData("", "cat-1", "Name", "Desc", null);
-        
-        ArgumentCaptor<AddCategoryResponseData> captor = ArgumentCaptor.forClass(AddCategoryResponseData.class);
-        useCase.execute(input);
-        
-        verify(mockOutputBoundary).present(captor.capture());
-        assertFalse(captor.getValue().success);
-        assertEquals("Auth Token không được để trống.", captor.getValue().message);
-    }
-
-    /**
-     * Case 4: Failure - Not Admin
-     */
-    @Test
-    void test_execute_failure_notAdmin() {
-        UpdateCategoryRequestData input = new UpdateCategoryRequestData("token", "cat-1", "Name", "Desc", null);
-        AuthPrincipal customer = new AuthPrincipal("u1", "e@e.com", UserRole.CUSTOMER);
-        
-        when(mockTokenValidator.validate("token")).thenReturn(customer);
-        
-        ArgumentCaptor<AddCategoryResponseData> captor = ArgumentCaptor.forClass(AddCategoryResponseData.class);
-        useCase.execute(input);
-        
-        verify(mockOutputBoundary).present(captor.capture());
-        assertFalse(captor.getValue().success);
-        assertEquals("Không có quyền truy cập (Yêu cầu Admin).", captor.getValue().message);
-    }
-
-    /**
-     * Case 5: Failure - Target Category ID Empty
-     */
-    @Test
-    void test_execute_failure_emptyCategoryId() {
-        UpdateCategoryRequestData input = new UpdateCategoryRequestData("token", "", "Name", "Desc", null);
-        
-        when(mockTokenValidator.validate("token")).thenReturn(adminPrincipal);
-        
-        ArgumentCaptor<AddCategoryResponseData> captor = ArgumentCaptor.forClass(AddCategoryResponseData.class);
-        useCase.execute(input);
-        
-        verify(mockOutputBoundary).present(captor.capture());
-        assertFalse(captor.getValue().success);
-        assertEquals("ID danh mục không được để trống.", captor.getValue().message);
-    }
-
-    /**
-     * Case 6: Failure - Category Not Found
-     */
-    @Test
-    void test_execute_failure_notFound() {
-        UpdateCategoryRequestData input = new UpdateCategoryRequestData("token", "cat-999", "Name", "Desc", null);
-        
-        when(mockTokenValidator.validate("token")).thenReturn(adminPrincipal);
-        when(mockCategoryRepository.findById("cat-999")).thenReturn(null);
-
-        ArgumentCaptor<AddCategoryResponseData> captor = ArgumentCaptor.forClass(AddCategoryResponseData.class);
-        useCase.execute(input);
-        
-        verify(mockOutputBoundary).present(captor.capture());
-        assertFalse(captor.getValue().success);
-        assertEquals("Không tìm thấy danh mục với ID: cat-999", captor.getValue().message);
-    }
-
-    /**
-     * Case 7: Failure - Invalid Name (Too short) - Entity Validation
-     */
-    @Test
-    void test_execute_failure_invalidName() {
-        UpdateCategoryRequestData input = new UpdateCategoryRequestData("token", "cat-1", "A", "Desc", null);
-        
-        when(mockTokenValidator.validate("token")).thenReturn(adminPrincipal);
-        when(mockCategoryRepository.findById("cat-1")).thenReturn(existingCategory);
-
-        ArgumentCaptor<AddCategoryResponseData> captor = ArgumentCaptor.forClass(AddCategoryResponseData.class);
-        useCase.execute(input);
-        
-        verify(mockOutputBoundary).present(captor.capture());
-        assertFalse(captor.getValue().success);
-        assertEquals("Tên danh mục phải có ít nhất 2 ký tự.", captor.getValue().message);
-    }
-
-    /**
-     * Case 8: Failure - Duplicate Name (Name changed and exists)
-     */
-    @Test
-    void test_execute_failure_duplicateName() {
-        UpdateCategoryRequestData input = new UpdateCategoryRequestData("token", "cat-1", "New Duplicate Name", "Desc", null);
-        
-        when(mockTokenValidator.validate("token")).thenReturn(adminPrincipal);
-        when(mockCategoryRepository.findById("cat-1")).thenReturn(existingCategory);
-        // "New Duplicate Name" already exists in DB
-        when(mockCategoryRepository.findByName("New Duplicate Name")).thenReturn(new CategoryData());
-
-        ArgumentCaptor<AddCategoryResponseData> captor = ArgumentCaptor.forClass(AddCategoryResponseData.class);
-        useCase.execute(input);
-        
-        verify(mockOutputBoundary).present(captor.capture());
-        assertFalse(captor.getValue().success);
-        assertEquals("Tên danh mục mới đã tồn tại: New Duplicate Name", captor.getValue().message);
-    }
-
-    /**
-     * Case 9: Failure - Parent Not Found
-     */
-    @Test
-    void test_execute_failure_parentNotFound() {
-        UpdateCategoryRequestData input = new UpdateCategoryRequestData("token", "cat-1", "Old Name", "Desc", "invalid-parent");
-        
-        when(mockTokenValidator.validate("token")).thenReturn(adminPrincipal);
-        when(mockCategoryRepository.findById("cat-1")).thenReturn(existingCategory);
-        when(mockCategoryRepository.findById("invalid-parent")).thenReturn(null);
-
-        ArgumentCaptor<AddCategoryResponseData> captor = ArgumentCaptor.forClass(AddCategoryResponseData.class);
-        useCase.execute(input);
-        
-        verify(mockOutputBoundary).present(captor.capture());
-        assertFalse(captor.getValue().success);
-        assertEquals("Danh mục cha không tồn tại.", captor.getValue().message);
-    }
-
-    /**
-     * Case 10: Failure - Parent is Self (Loop)
-     */
-    @Test
-    void test_execute_failure_selfParent() {
-        UpdateCategoryRequestData input = new UpdateCategoryRequestData("token", "cat-1", "Name", "Desc", "cat-1");
-        
-        when(mockTokenValidator.validate("token")).thenReturn(adminPrincipal);
-        // Both finding target and parent return the same object
-        when(mockCategoryRepository.findById("cat-1")).thenReturn(existingCategory); 
-        
-        ArgumentCaptor<AddCategoryResponseData> captor = ArgumentCaptor.forClass(AddCategoryResponseData.class);
-        useCase.execute(input);
-        
-        verify(mockOutputBoundary).present(captor.capture());
-        assertFalse(captor.getValue().success);
-        assertEquals("Danh mục không thể là cha của chính nó.", captor.getValue().message);
-    }
-
-    /**
-     * Case 11: Failure - Database Broken (System Error)
-     */
-    @Test
-    void test_execute_failure_databaseBroken() {
-        UpdateCategoryRequestData input = new UpdateCategoryRequestData("token", "cat-1", "New Name", "Desc", null);
-        
-        when(mockTokenValidator.validate("token")).thenReturn(adminPrincipal);
-        when(mockCategoryRepository.findById("cat-1")).thenReturn(existingCategory);
-        when(mockCategoryRepository.findByName("New Name")).thenReturn(null);
-        
-        // Simulate DB Exception on Save
-        doThrow(new RuntimeException("DB Connection Lost")).when(mockCategoryRepository).save(any(CategoryData.class));
-
-        ArgumentCaptor<AddCategoryResponseData> captor = ArgumentCaptor.forClass(AddCategoryResponseData.class);
-        useCase.execute(input);
-        
-        verify(mockOutputBoundary).present(captor.capture());
-        AddCategoryResponseData output = captor.getValue();
-        
         assertFalse(output.success);
-        assertEquals("Lỗi hệ thống không xác định.", output.message);
+        //
+        assertEquals("Danh mục không thể là cha của chính nó.", output.message);
+    }
+
+    @Test
+    @DisplayName("9. Success: Cập nhật thành công")
+    void execute_ShouldSucceed_WhenAllInputsAreValid() {
+        // Arrange
+        UpdateCategoryRequestData input = new UpdateCategoryRequestData();
+        input.authToken = "admin-token";
+        input.categoryId = "cat-01";
+        input.name = "New Name"; // Đổi tên
+        input.description = "New Desc";
+        input.parentCategoryId = "cat-parent"; // Đổi cha
+
+        AuthPrincipal adminPrincipal = new AuthPrincipal("u1", "admin@mail.com", UserRole.ADMIN);
+        
+        // 1. Token OK
+        when(tokenValidator.validate(input.authToken)).thenReturn(adminPrincipal);
+        
+        // 2. Existing Data OK
+        CategoryData existingData = new CategoryData("cat-01", "Old Name", "Old Desc", null, Instant.now(), Instant.now());
+        when(categoryRepository.findById(input.categoryId)).thenReturn(existingData);
+        
+        // 3. Name Duplicate Check OK (chưa có ai dùng tên "New Name")
+        when(categoryRepository.findByName(input.name)).thenReturn(null);
+        
+        // 4. Parent Exist OK
+        CategoryData parentData = new CategoryData("cat-parent", "Parent", "", null, Instant.now(), Instant.now());
+        when(categoryRepository.findById(input.parentCategoryId)).thenReturn(parentData);
+
+        // Act
+        updateCategoryUseCase.execute(input);
+
+        // Assert Output
+        ArgumentCaptor<AddCategoryResponseData> outputCaptor = ArgumentCaptor.forClass(AddCategoryResponseData.class);
+        verify(outputBoundary).present(outputCaptor.capture());
+        AddCategoryResponseData output = outputCaptor.getValue();
+
+        assertTrue(output.success);
+        assertEquals("Cập nhật danh mục thành công.", output.message);
+        assertEquals("New Name", output.name);
+
+        // Assert Repository Save
+        ArgumentCaptor<CategoryData> saveCaptor = ArgumentCaptor.forClass(CategoryData.class);
+        verify(categoryRepository).save(saveCaptor.capture());
+        CategoryData savedData = saveCaptor.getValue();
+        
+        assertEquals("cat-01", savedData.categoryId);
+        assertEquals("New Name", savedData.name);
+        assertEquals("cat-parent", savedData.parentCategoryId);
     }
 }

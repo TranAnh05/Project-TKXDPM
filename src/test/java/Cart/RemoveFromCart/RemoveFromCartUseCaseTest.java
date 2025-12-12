@@ -25,10 +25,10 @@ import cgx.com.usecase.Cart.RemoveFromCart.RemoveFromCartOutputBoundary;
 import cgx.com.usecase.Cart.RemoveFromCart.RemoveFromCartRequestData;
 import cgx.com.usecase.Cart.RemoveFromCart.RemoveFromCartResponseData;
 import cgx.com.usecase.Cart.RemoveFromCart.RemoveFromCartUseCase;
+import cgx.com.usecase.Interface_Common.AuthPrincipal;
+import cgx.com.usecase.Interface_Common.IAuthTokenValidator;
 import cgx.com.usecase.ManageProduct.DeviceData;
 import cgx.com.usecase.ManageProduct.IDeviceRepository;
-import cgx.com.usecase.ManageUser.AuthPrincipal;
-import cgx.com.usecase.ManageUser.IAuthTokenValidator;
 
 @ExtendWith(MockitoExtension.class)
 public class RemoveFromCartUseCaseTest {

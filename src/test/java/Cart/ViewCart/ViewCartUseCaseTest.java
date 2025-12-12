@@ -27,11 +27,11 @@ import cgx.com.usecase.Cart.ViewCart.ViewCartOutputBoundary;
 import cgx.com.usecase.Cart.ViewCart.ViewCartRequestData;
 import cgx.com.usecase.Cart.ViewCart.ViewCartResponseData;
 import cgx.com.usecase.Cart.ViewCart.ViewCartUseCase;
+import cgx.com.usecase.Interface_Common.AuthPrincipal;
+import cgx.com.usecase.Interface_Common.IAuthTokenValidator;
 import cgx.com.usecase.ManageOrder.PlaceOrder.IDeviceMapper;
 import cgx.com.usecase.ManageProduct.DeviceData;
 import cgx.com.usecase.ManageProduct.IDeviceRepository;
-import cgx.com.usecase.ManageUser.AuthPrincipal;
-import cgx.com.usecase.ManageUser.IAuthTokenValidator;
 
 @ExtendWith(MockitoExtension.class)
 public class ViewCartUseCaseTest {

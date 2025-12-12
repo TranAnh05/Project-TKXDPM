@@ -13,8 +13,8 @@ public abstract class ComputerDevice {
     private String description = "";
     private BigDecimal price;
     private int stockQuantity;
-    private String categoryId; // Liên kết với nhóm Product Type
-    private String status;     // "ACTIVE", "OUT_OF_STOCK"
+    private String categoryId; 
+    private String status;     
     private String thumbnail;
     private Instant createdAt;
     private Instant updatedAt;
@@ -40,8 +40,9 @@ public abstract class ComputerDevice {
     }
     
     // --- Validation Chung ---
-    public static void validateCommonInfo(String name, BigDecimal price, int stockQuantity) {
+    public static void validateCommonInfo(String name, String des, BigDecimal price, int stockQuantity) {
         if (name == null || name.trim().isEmpty()) throw new IllegalArgumentException("Tên sản phẩm không được để trống.");
+        if (des == null || des.trim().isEmpty()) throw new IllegalArgumentException("Mô tả sản phẩm không được để trống.");
         if (price == null || price.compareTo(BigDecimal.ZERO) < 0) throw new IllegalArgumentException("Giá bán không hợp lệ.");
         if (stockQuantity < 0) throw new IllegalArgumentException("Số lượng tồn kho không được âm.");
     }
@@ -51,6 +52,18 @@ public abstract class ComputerDevice {
     	if(currentStock < quantity) {
     		throw new IllegalArgumentException("Sản phẩm " + this.getName() + " không đủ hàng.");
     	}
+    }
+    
+    public static void validateNewStatus(String status) {
+    	if(status == null || status.trim().isEmpty()) {
+    		throw new IllegalArgumentException("Trạng thái sản phẩm không được để trống.");
+    	}
+    	
+    	try {
+            ProductAvailability.valueOf(status); 
+        } catch (IllegalArgumentException e) {
+        	throw new IllegalArgumentException("Trạng thái sản phẩm không hợp lệ: " + status);
+        }
     }
     
     public static void validateStatus(String status) {

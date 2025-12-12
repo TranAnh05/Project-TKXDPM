@@ -1,4 +1,4 @@
-package cgx.com.usecase.ManageUser;
+package cgx.com.usecase.Interface_Common;
 
 /**
  * Interface cho dịch vụ tạo một chuỗi Token

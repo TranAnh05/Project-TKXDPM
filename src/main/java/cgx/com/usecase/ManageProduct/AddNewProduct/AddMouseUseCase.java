@@ -4,10 +4,11 @@ import java.time.Instant;
 
 import cgx.com.Entities.ComputerDevice;
 import cgx.com.Entities.Mouse;
+import cgx.com.usecase.Interface_Common.IAuthTokenValidator;
 import cgx.com.usecase.ManageCategory.ICategoryRepository;
 import cgx.com.usecase.ManageProduct.DeviceData;
 import cgx.com.usecase.ManageProduct.IDeviceRepository;
-import cgx.com.usecase.ManageUser.IAuthTokenValidator;
+import cgx.com.usecase.ManageProduct.IProductIdGenerator;
 import cgx.com.usecase.ManageUser.IUserIdGenerator;
 
 public class AddMouseUseCase extends AbstractAddDeviceUseCase<AddMouseRequestData> {
@@ -15,7 +16,7 @@ public class AddMouseUseCase extends AbstractAddDeviceUseCase<AddMouseRequestDat
     public AddMouseUseCase(IDeviceRepository deviceRepository,
                            ICategoryRepository categoryRepository,
                            IAuthTokenValidator tokenValidator,
-                           IUserIdGenerator idGenerator,
+                           IProductIdGenerator idGenerator,
                            AddDeviceOutputBoundary outputBoundary) {
         super(deviceRepository, categoryRepository, tokenValidator, idGenerator, outputBoundary);
     }
@@ -29,14 +30,13 @@ public class AddMouseUseCase extends AbstractAddDeviceUseCase<AddMouseRequestDat
     protected ComputerDevice createEntity(AddMouseRequestData input, String newId) {
         return new Mouse(
             newId, input.name, input.description, input.price, input.stockQuantity, 
-            input.categoryId, "ACTIVE", input.thumbnail, Instant.now(), Instant.now(),
+            input.categoryId, "AVAILABLE", input.thumbnail, Instant.now(), Instant.now(),
             input.dpi, input.isWireless, input.buttonCount
         );
     }
 
     @Override
     protected void mapSpecificDataToDTO(ComputerDevice entity, DeviceData data) {
-        // Cast an toàn
         if (entity instanceof Mouse) {
             Mouse m = (Mouse) entity;
             data.dpi = m.getDpi();

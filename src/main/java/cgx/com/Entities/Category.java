@@ -30,6 +30,12 @@ public class Category {
     }
 
     // --- VALIDATION LOGIC ---
+    
+    public static void validateID(String Id) {
+    	 if (Id == null || Id.trim().isEmpty()) {
+             throw new IllegalArgumentException("ID danh mục không được để trống.");
+         }
+    }
 
     public static void validateName(String name) {
         if (name == null || name.trim().isEmpty()) {
@@ -37,6 +43,12 @@ public class Category {
         }
         if (name.length() < 2) {
             throw new IllegalArgumentException("Tên danh mục phải có ít nhất 2 ký tự.");
+        }
+    }
+    
+    public void validateNotSelfParent(String newParentId) {
+    	if (newParentId.equals(this.getCategoryId())) {
+            throw new IllegalArgumentException("Danh mục không thể là cha của chính nó.");
         }
     }
 

@@ -11,10 +11,10 @@ import cgx.com.Entities.ComputerDevice;
 import cgx.com.usecase.Cart.CartData;
 import cgx.com.usecase.Cart.CartItemData;
 import cgx.com.usecase.Cart.ICartRepository;
+import cgx.com.usecase.Interface_Common.AuthPrincipal;
+import cgx.com.usecase.Interface_Common.IAuthTokenValidator;
 import cgx.com.usecase.ManageProduct.DeviceData;
 import cgx.com.usecase.ManageProduct.IDeviceRepository;
-import cgx.com.usecase.ManageUser.AuthPrincipal;
-import cgx.com.usecase.ManageUser.IAuthTokenValidator;
 
 public class AddToCartUseCase implements AddToCartInputBoundary {
 

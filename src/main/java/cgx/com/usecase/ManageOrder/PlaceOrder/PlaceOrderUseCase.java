@@ -7,14 +7,14 @@ import cgx.com.Entities.Mouse;
 import cgx.com.Entities.Order;
 import cgx.com.Entities.OrderItem;
 import cgx.com.Entities.PaymentMethod;
+import cgx.com.usecase.Interface_Common.AuthPrincipal;
+import cgx.com.usecase.Interface_Common.IAuthTokenValidator;
 import cgx.com.usecase.ManageOrder.IOrderIdGenerator;
 import cgx.com.usecase.ManageOrder.IOrderRepository;
 import cgx.com.usecase.ManageOrder.OrderData;
 import cgx.com.usecase.ManageOrder.OrderItemData;
 import cgx.com.usecase.ManageProduct.DeviceData;
 import cgx.com.usecase.ManageProduct.IDeviceRepository;
-import cgx.com.usecase.ManageUser.AuthPrincipal;
-import cgx.com.usecase.ManageUser.IAuthTokenValidator;
 
 import java.util.ArrayList;
 import java.util.Map;

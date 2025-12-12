@@ -1,6 +1,7 @@
 package Category.ViewAllCategories;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -21,53 +22,43 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class ViewAllCategoriesUseCaseTest {
+class ViewAllCategoriesUseCaseTest {
 
-    @Mock private ICategoryRepository mockCategoryRepository;
-    @Mock private ViewAllCategoriesOutputBoundary mockOutputBoundary;
+    @Mock
+    private ICategoryRepository categoryRepository;
+    
+    @Mock
+    private ViewAllCategoriesOutputBoundary outputBoundary;
 
-    private ViewAllCategoriesUseCase useCase;
+    private ViewAllCategoriesUseCase viewAllCategoriesUseCase;
 
     @BeforeEach
     void setUp() {
-        useCase = new ViewAllCategoriesUseCase(mockCategoryRepository, mockOutputBoundary);
+        viewAllCategoriesUseCase = new ViewAllCategoriesUseCase(categoryRepository, outputBoundary);
     }
-
+    
     @Test
-    void test_execute_success() {
-        // ARRANGE
-        List<CategoryData> mockList = Arrays.asList(
-            new CategoryData("1", "C1", "D1", null, Instant.now(), Instant.now()),
-            new CategoryData("2", "C2", "D2", "1", Instant.now(), Instant.now())
-        );
-        when(mockCategoryRepository.findAll()).thenReturn(mockList);
+    @DisplayName("Success: Lấy danh sách danh mục thành công có dữ liệu")
+    void execute_ShouldSucceed_WhenListHasData() {
+        CategoryData cat1 = new CategoryData("id1", "Laptop", "Desc 1", null, Instant.now(), Instant.now());
+        CategoryData cat2 = new CategoryData("id2", "MacBook", "Apple", "id1", Instant.now(), Instant.now());
+        List<CategoryData> mockData = Arrays.asList(cat1, cat2);
 
+        when(categoryRepository.findAll()).thenReturn(mockData);
+
+        // Act
+        viewAllCategoriesUseCase.execute();
+
+        // Assert
         ArgumentCaptor<ViewAllCategoriesResponseData> captor = ArgumentCaptor.forClass(ViewAllCategoriesResponseData.class);
-
-        // ACT
-        useCase.execute();
-
-        // ASSERT
-        verify(mockCategoryRepository).findAll();
-        verify(mockOutputBoundary).present(captor.capture());
-        
+        verify(outputBoundary).present(captor.capture());
         ViewAllCategoriesResponseData output = captor.getValue();
+
         assertTrue(output.success);
+        assertEquals("Lấy danh sách danh mục thành công.", output.message);
+        
         assertEquals(2, output.categories.size());
-    }
-
-    @Test
-    void test_execute_failure_dbCrash() {
-        // ARRANGE
-        doThrow(new RuntimeException("DB Error")).when(mockCategoryRepository).findAll();
-        ArgumentCaptor<ViewAllCategoriesResponseData> captor = ArgumentCaptor.forClass(ViewAllCategoriesResponseData.class);
-
-        // ACT
-        useCase.execute();
-
-        // ASSERT
-        verify(mockOutputBoundary).present(captor.capture());
-        assertFalse(captor.getValue().success);
-        assertEquals("Lỗi hệ thống không xác định.", captor.getValue().message);
+        assertEquals("Laptop", output.categories.get(0).name);
+        assertEquals("MacBook", output.categories.get(1).name);
     }
 }

@@ -2,10 +2,10 @@ package cgx.com.usecase.ManageProduct.ViewDeviceDetail;
 
 import cgx.com.Entities.ComputerDevice;
 import cgx.com.Entities.UserRole;
+import cgx.com.usecase.Interface_Common.AuthPrincipal;
+import cgx.com.usecase.Interface_Common.IAuthTokenValidator;
 import cgx.com.usecase.ManageProduct.DeviceData;
 import cgx.com.usecase.ManageProduct.IDeviceRepository;
-import cgx.com.usecase.ManageUser.AuthPrincipal;
-import cgx.com.usecase.ManageUser.IAuthTokenValidator;
 
 public class ViewDeviceDetailUseCase implements ViewDeviceDetailInputBoundary {
 

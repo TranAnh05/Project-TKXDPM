@@ -5,10 +5,10 @@ import java.time.Instant;
 import cgx.com.Entities.AccountStatus;
 import cgx.com.Entities.User;
 import cgx.com.Entities.VerificationToken;
+import cgx.com.usecase.Interface_Common.IVerificationTokenRepository;
+import cgx.com.usecase.Interface_Common.VerificationTokenData;
 import cgx.com.usecase.ManageUser.IUserRepository;
-import cgx.com.usecase.ManageUser.IVerificationTokenRepository;
 import cgx.com.usecase.ManageUser.UserData;
-import cgx.com.usecase.ManageUser.VerificationTokenData;
 
 public class VerifyEmailUseCase implements VerifyEmailInputBoundary {
 

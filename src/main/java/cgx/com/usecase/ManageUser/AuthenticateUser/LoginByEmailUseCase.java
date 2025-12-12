@@ -1,8 +1,8 @@
 package cgx.com.usecase.ManageUser.AuthenticateUser;
 
 import cgx.com.Entities.User;
-import cgx.com.usecase.ManageUser.IAuthTokenGenerator;
-import cgx.com.usecase.ManageUser.IPasswordHasher;
+import cgx.com.usecase.Interface_Common.IAuthTokenGenerator;
+import cgx.com.usecase.Interface_Common.IPasswordHasher;
 import cgx.com.usecase.ManageUser.IUserRepository;
 import cgx.com.usecase.ManageUser.UserData;
 
