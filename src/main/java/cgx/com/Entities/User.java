@@ -171,6 +171,16 @@ public class User {
         this.status = AccountStatus.DELETED;
         this.touch();
     }
+    
+    public void validateAccess(String requesterId, UserRole requesterRole) {
+        if (requesterRole == UserRole.ADMIN) {
+            return;
+        }
+        
+        if (!this.userId.equals(requesterId)) {
+            throw new SecurityException("Bạn không có quyền xem hoặc thao tác trên đơn hàng này.");
+        }
+    }
 
     // (Getters cho tất cả các trường)
     public String getUserId() { return userId; }

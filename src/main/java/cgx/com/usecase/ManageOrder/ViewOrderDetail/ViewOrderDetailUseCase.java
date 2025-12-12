@@ -4,24 +4,30 @@ import cgx.com.Entities.Order;
 import cgx.com.Entities.OrderItem;
 import cgx.com.Entities.OrderStatus;
 import cgx.com.Entities.PaymentMethod;
+import cgx.com.Entities.User;
 import cgx.com.Entities.UserRole;
 import cgx.com.usecase.ManageOrder.IOrderRepository;
 import cgx.com.usecase.ManageOrder.OrderData;
 import cgx.com.usecase.ManageOrder.OrderItemData;
 import cgx.com.usecase.ManageUser.AuthPrincipal;
 import cgx.com.usecase.ManageUser.IAuthTokenValidator;
+import cgx.com.usecase.ManageUser.IUserRepository;
+import cgx.com.usecase.ManageUser.UserData;
 
 public class ViewOrderDetailUseCase implements ViewOrderDetailInputBoundary {
 
     private final IOrderRepository orderRepository;
     private final IAuthTokenValidator tokenValidator;
+    private final IUserRepository userRepository;
     private final ViewOrderDetailOutputBoundary outputBoundary;
 
     public ViewOrderDetailUseCase(IOrderRepository orderRepository,
                                   IAuthTokenValidator tokenValidator,
+                                  IUserRepository userRepository,
                                   ViewOrderDetailOutputBoundary outputBoundary) {
         this.orderRepository = orderRepository;
         this.tokenValidator = tokenValidator;
+        this.userRepository = userRepository;
         this.outputBoundary = outputBoundary;
     }
 
@@ -40,10 +46,10 @@ public class ViewOrderDetailUseCase implements ViewOrderDetailInputBoundary {
                 throw new IllegalArgumentException("Không tìm thấy đơn hàng.");
             }
             
-            Order orderEntity = mapToEntity(orderData);
+            UserData userData = userRepository.findByUserId(orderData.userId);
+            User user = mapToEntity(userData);
+            user.validateAccess(principal.userId, principal.role);
             
-            orderEntity.validateAccess(principal.userId, principal.role);
-
             output.success = true;
             output.message = "Lấy chi tiết đơn hàng thành công.";
             output.order = orderData;
@@ -61,25 +67,19 @@ public class ViewOrderDetailUseCase implements ViewOrderDetailInputBoundary {
 
         outputBoundary.present(output);
     }
-
-	private Order mapToEntity(OrderData data) {
-		Order order = new Order(
-	            data.id,
-	            data.userId,
-	            data.shippingAddress,
-	            OrderStatus.valueOf(data.status),
-	            PaymentMethod.valueOf(data.paymentMethod),
-	            data.totalAmount
-	        );
-	        
-        if (data.items != null) {
-            for (OrderItemData itemData : data.items) {
-                order.addItem(new OrderItem(
-                    itemData.deviceId, itemData.deviceName, itemData.thumbnail, 
-                    itemData.unitPrice, itemData.quantity
-                ));
-            }
-        }
-        return order;
-    }
+    
+    private User mapToEntity(UserData user) {
+    	return new User(
+				user.userId,
+				user.email,
+				user.hashedPassword,
+				user.firstName,
+				user.lastName,
+				user.phoneNumber,
+				user.role,
+				user.status,
+				user.createdAt,
+				user.updatedAt
+		);
+	}
 }

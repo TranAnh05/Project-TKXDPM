@@ -140,16 +140,6 @@ public class Order {
         }
     }
     
-    public void validateAccess(String requesterId, UserRole requesterRole) {
-        if (requesterRole == UserRole.ADMIN) {
-            return;
-        }
-        
-        if (!this.userId.equals(requesterId)) {
-            throw new SecurityException("Bạn không có quyền xem hoặc thao tác trên đơn hàng này.");
-        }
-    }
-    
     // --- Getters ---
     public String getId() { return id; }
     public String getUserId() { return userId; }

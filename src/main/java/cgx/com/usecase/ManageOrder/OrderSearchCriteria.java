@@ -1,4 +1,4 @@
-package cgx.com.usecase.ManageOrder.ManageOrders;
+package cgx.com.usecase.ManageOrder;
 
 public class OrderSearchCriteria {
 	public final String status;   // Lọc theo trạng thái (PENDING, SHIPPED...)

@@ -9,6 +9,15 @@ public class Category {
     private String parentCategoryId;
     private Instant createdAt;
     private Instant updatedAt;
+    
+    public Category(String categoryId, String name, String description, String parentCategoryId) {
+    	 this.categoryId = categoryId;
+         this.name = name;
+         this.description = description;
+         this.parentCategoryId = parentCategoryId;
+         this.createdAt = Instant.now();
+         this.updatedAt = Instant.now();
+    }
 
     public Category(String categoryId, String name, String description, String parentCategoryId, 
                     Instant createdAt, Instant updatedAt) {
@@ -18,14 +27,6 @@ public class Category {
         this.parentCategoryId = parentCategoryId;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
-    }
-
-    /**
-     * Factory method để tạo Category mới.
-     */
-    public static Category create(String categoryId, String name, String description, String parentCategoryId) {
-        Instant now = Instant.now();
-        return new Category(categoryId, name, description, parentCategoryId, now, now);
     }
 
     // --- VALIDATION LOGIC ---

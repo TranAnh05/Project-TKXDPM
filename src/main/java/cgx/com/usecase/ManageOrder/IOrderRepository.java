@@ -2,8 +2,6 @@ package cgx.com.usecase.ManageOrder;
 
 import java.util.List;
 
-import cgx.com.usecase.ManageOrder.ManageOrders.OrderSearchCriteria;
-
 public interface IOrderRepository {
 	void save(OrderData orderData);
 	
