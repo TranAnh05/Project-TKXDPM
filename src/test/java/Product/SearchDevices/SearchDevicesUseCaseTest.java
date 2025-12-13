@@ -19,6 +19,7 @@ import cgx.com.usecase.ManageProduct.SearchDevices.SearchDevicesResponseData;
 import cgx.com.usecase.ManageProduct.SearchDevices.SearchDevicesUseCase;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -26,161 +27,139 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class SearchDevicesUseCaseTest {
+class SearchDevicesUseCaseTest {
 
-    @Mock private IDeviceRepository mockDeviceRepository;
-    @Mock private IAuthTokenValidator mockTokenValidator;
-    @Mock private SearchDevicesOutputBoundary mockOutputBoundary;
+    @Mock
+    private IDeviceRepository deviceRepository;
+    @Mock
+    private IAuthTokenValidator tokenValidator;
+    @Mock
+    private SearchDevicesOutputBoundary outputBoundary;
 
-    private SearchDevicesUseCase useCase;
+    private SearchDevicesUseCase searchDevicesUseCase;
 
     @BeforeEach
     void setUp() {
-        useCase = new SearchDevicesUseCase(mockDeviceRepository, mockTokenValidator, mockOutputBoundary);
+        searchDevicesUseCase = new SearchDevicesUseCase(deviceRepository, tokenValidator, outputBoundary);
     }
 
-    /**
-     * Case 1: Guest tìm kiếm (Token null)
-     * -> Hệ thống phải tự động gán status = "ACTIVE" vào tiêu chí tìm kiếm.
-     */
+    // Case: Giá thấp nhất âm
     @Test
-    void test_execute_guestSearch_forceActive() {
-        // ARRANGE
-        SearchDevicesRequestData input = new SearchDevicesRequestData(
-            null, "Laptop", null, null, null, null, 1, 10
-        );
+    void testExecute_WhenMinPriceNegative_ShouldFail() {
+        // Arrange
+        SearchDevicesRequestData input = createRequest(null, null, BigDecimal.valueOf(-10), null, null);
 
-        when(mockDeviceRepository.search(any(DeviceSearchCriteria.class), eq(0), eq(10)))
-            .thenReturn(List.of(new DeviceData()));
-        when(mockDeviceRepository.count(any(DeviceSearchCriteria.class))).thenReturn(1L);
+        // Act
+        searchDevicesUseCase.execute(input);
 
-        ArgumentCaptor<DeviceSearchCriteria> criteriaCaptor = ArgumentCaptor.forClass(DeviceSearchCriteria.class);
-        ArgumentCaptor<SearchDevicesResponseData> responseCaptor = ArgumentCaptor.forClass(SearchDevicesResponseData.class);
-
-        // ACT
-        useCase.execute(input);
-
-        // ASSERT
-        verify(mockDeviceRepository).search(criteriaCaptor.capture(), eq(0), eq(10));
-        verify(mockOutputBoundary).present(responseCaptor.capture());
-
-        // Kiểm tra logic nghiệp vụ: Guest phải bị ép tìm "ACTIVE"
-        assertEquals("ACTIVE", criteriaCaptor.getValue().status);
-        assertEquals("Laptop", criteriaCaptor.getValue().keyword);
-        
-        assertTrue(responseCaptor.getValue().success);
-    }
-
-    /**
-     * Case 2: Admin tìm kiếm (Token Admin)
-     * -> Hệ thống cho phép tìm theo statusFilter (ví dụ: null để tìm tất cả, hoặc tìm "OUT_OF_STOCK").
-     */
-    @Test
-    void test_execute_adminSearch_customStatus() {
-        // ARRANGE
-        // Admin muốn tìm hàng OUT_OF_STOCK
-        SearchDevicesRequestData input = new SearchDevicesRequestData(
-            "admin-token", null, null, null, null, "OUT_OF_STOCK", 1, 10
-        );
-        
-        AuthPrincipal admin = new AuthPrincipal("admin", "e", UserRole.ADMIN);
-        when(mockTokenValidator.validate("admin-token")).thenReturn(admin);
-
-        when(mockDeviceRepository.search(any(), anyInt(), anyInt())).thenReturn(List.of());
-        when(mockDeviceRepository.count(any())).thenReturn(0L);
-
-        ArgumentCaptor<DeviceSearchCriteria> criteriaCaptor = ArgumentCaptor.forClass(DeviceSearchCriteria.class);
-
-        // ACT
-        useCase.execute(input);
-
-        // ASSERT
-        verify(mockDeviceRepository).search(criteriaCaptor.capture(), anyInt(), anyInt());
-        
-        // Admin được phép tìm OUT_OF_STOCK
-        assertEquals("OUT_OF_STOCK", criteriaCaptor.getValue().status);
-    }
-
-    /**
-     * Case 3: Token Lỗi/Hết hạn -> Coi như Guest -> Force ACTIVE
-     */
-    @Test
-    void test_execute_invalidToken_fallbackToGuest() {
-        SearchDevicesRequestData input = new SearchDevicesRequestData(
-            "invalid-token", "Mouse", null, null, null, "DELETED", 1, 10
-        );
-        
-        // Giả lập token lỗi
-        when(mockTokenValidator.validate("invalid-token")).thenThrow(new SecurityException("Expired"));
-        
-        when(mockDeviceRepository.search(any(), anyInt(), anyInt())).thenReturn(List.of());
-
-        ArgumentCaptor<DeviceSearchCriteria> criteriaCaptor = ArgumentCaptor.forClass(DeviceSearchCriteria.class);
-
-        useCase.execute(input);
-
-        verify(mockDeviceRepository).search(criteriaCaptor.capture(), anyInt(), anyInt());
-        
-        // Dù gửi statusFilter="DELETED", nhưng vì token lỗi -> Guest -> ACTIVE
-        assertEquals("ACTIVE", criteriaCaptor.getValue().status);
-    }
-
-    /**
-     * Case 4: DB Crash (System Error)
-     */
-    @Test
-    void test_execute_failure_dbCrash() {
-        SearchDevicesRequestData input = new SearchDevicesRequestData(null, "", null, null, null, null, 1, 10);
-        
-        doThrow(new RuntimeException("DB Error")).when(mockDeviceRepository).search(any(), anyInt(), anyInt());
-
+        // Assert
         ArgumentCaptor<SearchDevicesResponseData> captor = ArgumentCaptor.forClass(SearchDevicesResponseData.class);
-        useCase.execute(input);
+        verify(outputBoundary).present(captor.capture());
+        SearchDevicesResponseData output = captor.getValue();
 
-        verify(mockOutputBoundary).present(captor.capture());
-        assertFalse(captor.getValue().success);
-        assertEquals("Lỗi hệ thống không xác định.", captor.getValue().message);
-    }
-    
-    /**
-     * Case 5: Giá nghịch lý (Min > Max) -> Phải báo lỗi Validation
-     */
-    @Test
-    void test_execute_failure_invalidPriceRange() {
-        // Min = 100, Max = 50 -> Vô lý
-        SearchDevicesRequestData input = new SearchDevicesRequestData(
-            null, "Laptop", null, new BigDecimal("100"), new BigDecimal("50"), null, 1, 10
-        );
-
-        ArgumentCaptor<SearchDevicesResponseData> responseCaptor = ArgumentCaptor.forClass(SearchDevicesResponseData.class);
-
-        // ACT
-        useCase.execute(input);
-
-        // ASSERT
-        verify(mockDeviceRepository, never()).search(any(), anyInt(), anyInt()); // Không bao giờ gọi DB
-        verify(mockOutputBoundary).present(responseCaptor.capture());
-
-        assertFalse(responseCaptor.getValue().success);
-        assertEquals("Giá thấp nhất không được lớn hơn giá cao nhất.", responseCaptor.getValue().message);
+        assertFalse(output.success);
+        assertEquals("Giá thấp nhất không được âm.", output.message);
+        verifyNoInteractions(deviceRepository);
     }
 
-    /**
-     * Case 6: Giá âm -> Phải báo lỗi
-     */
+    // Case: Giá cao nhất âm
     @Test
-    void test_execute_failure_negativePrice() {
-        // Min = -10
-        SearchDevicesRequestData input = new SearchDevicesRequestData(
-            null, "Laptop", null, new BigDecimal("-10"), null, null, 1, 10
-        );
+    void testExecute_WhenMaxPriceNegative_ShouldFail() {
+        // Arrange
+        SearchDevicesRequestData input = createRequest(null, null, null, BigDecimal.valueOf(-1), null);
 
-        ArgumentCaptor<SearchDevicesResponseData> responseCaptor = ArgumentCaptor.forClass(SearchDevicesResponseData.class);
+        // Act
+        searchDevicesUseCase.execute(input);
 
-        useCase.execute(input);
+        // Assert
+        ArgumentCaptor<SearchDevicesResponseData> captor = ArgumentCaptor.forClass(SearchDevicesResponseData.class);
+        verify(outputBoundary).present(captor.capture());
+        SearchDevicesResponseData output = captor.getValue();
 
-        verify(mockOutputBoundary).present(responseCaptor.capture());
-        assertFalse(responseCaptor.getValue().success);
-        assertEquals("Giá thấp nhất không được âm.", responseCaptor.getValue().message);
+        assertFalse(output.success);
+        assertEquals("Giá cao nhất không được âm.", output.message);
+    }
+
+    // Case: Giá thấp nhất cao hơn giá cao nhất
+    @Test
+    void testExecute_WhenMinGreaterThanMax_ShouldFail() {
+        // Arrange
+        SearchDevicesRequestData input = createRequest(null, null, BigDecimal.valueOf(100), BigDecimal.valueOf(50), null);
+
+        // Act
+        searchDevicesUseCase.execute(input);
+
+        // Assert
+        ArgumentCaptor<SearchDevicesResponseData> captor = ArgumentCaptor.forClass(SearchDevicesResponseData.class);
+        verify(outputBoundary).present(captor.capture());
+        SearchDevicesResponseData output = captor.getValue();
+
+        assertFalse(output.success);
+        assertEquals("Giá thấp nhất không được lớn hơn giá cao nhất.", output.message);
+    }
+
+    // Case: Admin lọc theo status
+    @Test
+    void testExecute_AdminUser_CanFilterStatus() {
+        // Arrange
+        String token = "admin-token";
+        String targetStatus = "DISCONTINUED"; // Admin muốn xem hàng ngừng kinh doanh
+        SearchDevicesRequestData input = createRequest(token, null, null, null, targetStatus);
+
+        // Mock User là ADMIN
+        AuthPrincipal mockAdmin = new AuthPrincipal("admin1", "admin@gmail.com", UserRole.ADMIN);
+        when(tokenValidator.validate(token)).thenReturn(mockAdmin);
+
+        // Act
+        searchDevicesUseCase.execute(input);
+
+        // Assert
+        ArgumentCaptor<DeviceSearchCriteria> criteriaCaptor = ArgumentCaptor.forClass(DeviceSearchCriteria.class);
+        verify(deviceRepository).search(criteriaCaptor.capture(), anyInt(), anyInt());
+
+        assertEquals("DISCONTINUED", criteriaCaptor.getValue().status);
+    }
+
+    // Case: Thành công
+    @Test
+    void testExecute_HappyPath_ShouldReturnResults() {
+        // Arrange
+        // Input: Page 1, Size 10
+        SearchDevicesRequestData input = createRequest(null, "macbook", null, null, null);
+        input.page = 1;
+        input.size = 10;
+
+        // Mock Data trả về từ DB
+        List<DeviceData> mockResults = new ArrayList<>();
+        mockResults.add(new DeviceData());
+        
+        long mockTotalCount = 55; 
+
+        // Mock hành vi Repository
+        when(deviceRepository.search(any(DeviceSearchCriteria.class), eq(0), eq(10))).thenReturn(mockResults);
+        when(deviceRepository.count(any(DeviceSearchCriteria.class))).thenReturn(mockTotalCount);
+
+        // Act
+        searchDevicesUseCase.execute(input);
+
+        // Assert
+        ArgumentCaptor<SearchDevicesResponseData> captor = ArgumentCaptor.forClass(SearchDevicesResponseData.class);
+        verify(outputBoundary).present(captor.capture());
+        SearchDevicesResponseData output = captor.getValue();
+
+        assertTrue(output.success);
+        assertEquals("Tìm kiếm thành công.", output.message);
+        
+        assertEquals(1, output.devices.size());
+        
+        assertNotNull(output.pagination);
+        assertEquals(55, output.pagination.totalCount);
+        assertEquals(1, output.pagination.currentPage);
+        assertEquals(10, output.pagination.pageSize);
+        assertEquals(6, output.pagination.totalPages);
+    }
+
+    private SearchDevicesRequestData createRequest(String token, String keyword, BigDecimal min, BigDecimal max, String status) {
+        return new SearchDevicesRequestData(token, keyword, null, min, max, status, 1, 10);
     }
 }

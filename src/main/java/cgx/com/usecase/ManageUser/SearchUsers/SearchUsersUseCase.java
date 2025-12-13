@@ -5,6 +5,7 @@ import java.util.List;
 import cgx.com.Entities.User;
 import cgx.com.usecase.Interface_Common.AuthPrincipal;
 import cgx.com.usecase.Interface_Common.IAuthTokenValidator;
+import cgx.com.usecase.Interface_Common.PaginationData;
 import cgx.com.usecase.ManageUser.IUserRepository;
 import cgx.com.usecase.ManageUser.UserData;
 

@@ -26,41 +26,14 @@ public class ViewDeviceDetailUseCase implements ViewDeviceDetailInputBoundary {
         ViewDeviceDetailResponseData output = new ViewDeviceDetailResponseData();
 
         try {
-            // 1. Validate Input
         	ComputerDevice.validateId(input.deviceId);
 
-            // 2. Tìm sản phẩm
             DeviceData deviceData = deviceRepository.findById(input.deviceId);
             
-            // 3. Kiểm tra tồn tại
             if (deviceData == null) {
                 throw new IllegalArgumentException("Không tìm thấy sản phẩm.");
             }
-
-            // 4. Kiểm tra quyền xem (Business Rule quan trọng)
-            // Mặc định: Chỉ xem được hàng ACTIVE
-            boolean canView = "ACTIVE".equals(deviceData.status);
-
-            // Nếu không phải ACTIVE, kiểm tra xem có phải Admin không
-            if (!canView) {
-                if (input.authToken != null && !input.authToken.isEmpty()) {
-                    try {
-                        AuthPrincipal principal = tokenValidator.validate(input.authToken);
-                        if (principal.role == UserRole.ADMIN) {
-                            canView = true; // Admin được xem mọi trạng thái
-                        }
-                    } catch (Exception e) {
-                        // Token lỗi hoặc hết hạn -> Coi như Guest -> Không được xem
-                    }
-                }
-            }
-
-            if (!canView) {
-                // Ẩn sản phẩm không Active với người thường
-                throw new IllegalArgumentException("Không tìm thấy sản phẩm."); 
-            }
             
-            // 5. Thành công
             output.success = true;
             output.message = "Lấy thông tin sản phẩm thành công.";
             output.device = deviceData;

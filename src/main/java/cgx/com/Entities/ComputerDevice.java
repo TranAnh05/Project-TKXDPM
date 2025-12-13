@@ -78,39 +78,21 @@ public abstract class ComputerDevice {
         }	
     }
     
-    // --- BUSINESS LOGIC MỚI: Cập nhật tồn kho ---
-    /**
-     * Cập nhật số lượng tồn kho.
-     * Phương thức này đảm bảo quy tắc nghiệp vụ luôn được tuân thủ.
-     */
-    public void updateStock(int newQuantity) {
-        if (newQuantity < 0) {
-            throw new IllegalArgumentException("Số lượng tồn kho không được âm.");
-        }
-        this.stockQuantity = newQuantity;
-        
-        // Logic nghiệp vụ: Nếu hết hàng thì chuyển trạng thái, nếu có hàng thì Active
-        if (this.stockQuantity == 0) {
-            this.status = "OUT_OF_STOCK";
-        } else if ("OUT_OF_STOCK".equals(this.status)) {
-            this.status = "ACTIVE";
-        }
-        
-        this.touch(); // Cập nhật thời gian
-    }
     
     public void minusStock(int quantity) {
     	this.stockQuantity -= quantity;
+    	if (this.stockQuantity == 0 && !this.status.equals(ProductAvailability.DISCONTINUED.name())) {
+            this.status = ProductAvailability.OUT_OF_STOCK.name();
+        }
     }
     
     public void plusStock(int quantity) {
     	this.stockQuantity += quantity;
     }
     
-    // --- LOGIC MỚI: Xóa mềm ---
     public void softDelete() {
-        // Chuyển trạng thái sang DELETED (hoặc INACTIVE tùy quy ước)
-        this.status = "DELETED";
+        this.status = "DISCONTINUED";
+        this.stockQuantity = 0;
         this.touch();
     }
 
@@ -118,10 +100,6 @@ public abstract class ComputerDevice {
         this.updatedAt = Instant.now();
     }
     
-    /**
-     * NGHIỆP VỤ: Kiểm tra khả năng cung ứng
-     * Entity tự trả lời xem nó có đáp ứng được số lượng yêu cầu không.
-     */
     public ProductAvailability checkAvailability(int requestedQuantity) {
         if (this.stockQuantity == 0) {
             return ProductAvailability.OUT_OF_STOCK;

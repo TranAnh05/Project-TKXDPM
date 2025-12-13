@@ -27,5 +27,7 @@ public interface IOrderRepository {
     /**
      * Đếm tổng số đơn hàng theo tiêu chí.
      */
-    long count(OrderSearchCriteria criteria);
+    int count(OrderSearchCriteria criteria);
+    
+    boolean isProductInActiveOrder(String productId);
 }

@@ -4,10 +4,10 @@ import java.util.Collections;
 import java.util.stream.Collectors;
 
 import cgx.com.adapters.ManageUser.SearchUsers.PaginationViewDTO;
+import cgx.com.usecase.Interface_Common.PaginationData;
 import cgx.com.usecase.ManageProduct.DeviceData;
 import cgx.com.usecase.ManageProduct.SearchDevices.SearchDevicesOutputBoundary;
 import cgx.com.usecase.ManageProduct.SearchDevices.SearchDevicesResponseData;
-import cgx.com.usecase.ManageUser.SearchUsers.PaginationData;
 
 public class SearchDevicesPresenter implements SearchDevicesOutputBoundary {
 

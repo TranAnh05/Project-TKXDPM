@@ -4,8 +4,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import cgx.com.usecase.Interface_Common.PaginationData;
 import cgx.com.usecase.ManageUser.UserData;
-import cgx.com.usecase.ManageUser.SearchUsers.PaginationData;
 import cgx.com.usecase.ManageUser.SearchUsers.SearchUsersOutputBoundary;
 import cgx.com.usecase.ManageUser.SearchUsers.SearchUsersResponseData;
 

@@ -19,11 +19,8 @@ public class UpdateDevicePresenter implements UpdateDeviceOutputBoundary {
 
         DeviceViewDTO viewDTO = null;
         if (responseData.success) {
-            viewDTO = new DeviceViewDTO();
-            viewDTO.id = responseData.deviceId;
-            viewDTO.name = ""; // ResponseData chưa trả về name, có thể update sau
+        	viewModel.deviceId = responseData.deviceId;
         }
-        viewModel.updatedDevice = viewDTO;
     }
     
     public UpdateDeviceViewModel getModel() {

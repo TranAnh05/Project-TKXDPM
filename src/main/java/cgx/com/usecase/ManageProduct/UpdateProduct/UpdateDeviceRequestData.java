@@ -2,7 +2,7 @@ package cgx.com.usecase.ManageProduct.UpdateProduct;
 
 import java.math.BigDecimal;
 
-public class UpdateDeviceRequestData {
+public abstract class UpdateDeviceRequestData {
 	public String authToken;
     public String id; 
     public String name;

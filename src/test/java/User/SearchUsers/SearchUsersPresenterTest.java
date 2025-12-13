@@ -15,8 +15,8 @@ import cgx.com.Entities.AccountStatus;
 import cgx.com.Entities.UserRole;
 import cgx.com.adapters.ManageUser.SearchUsers.SearchUsersPresenter;
 import cgx.com.adapters.ManageUser.SearchUsers.SearchUsersViewModel;
+import cgx.com.usecase.Interface_Common.PaginationData;
 import cgx.com.usecase.ManageUser.UserData;
-import cgx.com.usecase.ManageUser.SearchUsers.PaginationData;
 import cgx.com.usecase.ManageUser.SearchUsers.SearchUsersResponseData;
 
 public class SearchUsersPresenterTest {

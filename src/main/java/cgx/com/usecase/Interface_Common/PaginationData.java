@@ -1,4 +1,4 @@
-package cgx.com.usecase.ManageUser.SearchUsers;
+package cgx.com.usecase.Interface_Common;
 
 public class PaginationData {
 	public final long totalCount; // Tổng số mục (ví dụ: 100 users)

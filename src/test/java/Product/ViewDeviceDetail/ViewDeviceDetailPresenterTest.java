@@ -28,7 +28,7 @@ public class ViewDeviceDetailPresenterTest {
         laptop.id = "1";
         laptop.name = "MacBook";
         laptop.price = new BigDecimal("2000");
-        laptop.cpu = "M1"; // Laptop spec
+        laptop.cpu = "M1"; 
         laptop.screenSize = 13.3;
         
         ViewDeviceDetailResponseData response = new ViewDeviceDetailResponseData();

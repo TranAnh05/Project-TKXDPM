@@ -5,9 +5,9 @@ import org.junit.jupiter.api.Test;
 
 import cgx.com.adapters.ManageProduct.SearchDevices.SearchDevicesPresenter;
 import cgx.com.adapters.ManageProduct.SearchDevices.SearchDevicesViewModel;
+import cgx.com.usecase.Interface_Common.PaginationData;
 import cgx.com.usecase.ManageProduct.DeviceData;
 import cgx.com.usecase.ManageProduct.SearchDevices.SearchDevicesResponseData;
-import cgx.com.usecase.ManageUser.SearchUsers.PaginationData;
 
 import java.math.BigDecimal;
 import java.util.List;

@@ -2,6 +2,7 @@ package cgx.com.usecase.ManageUser.SearchUsers;
 
 import java.util.List;
 
+import cgx.com.usecase.Interface_Common.PaginationData;
 import cgx.com.usecase.ManageUser.UserData;
 
 public class SearchUsersResponseData {
