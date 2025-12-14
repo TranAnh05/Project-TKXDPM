@@ -30,7 +30,6 @@ class UpdateCategoryUseCaseTest {
 
     @Mock private ICategoryRepository categoryRepository;
     @Mock private IAuthTokenValidator tokenValidator;
-    @Mock private IUserRepository userRepository;
     @Mock private UpdateCategoryOutputBoundary outputBoundary;
 
     private UpdateCategoryUseCase updateCategoryUseCase;
@@ -38,7 +37,7 @@ class UpdateCategoryUseCaseTest {
     @BeforeEach
     void setUp() {
         updateCategoryUseCase = new UpdateCategoryUseCase(
-            categoryRepository, tokenValidator, userRepository, outputBoundary
+            categoryRepository, tokenValidator, outputBoundary
         );
     }
 

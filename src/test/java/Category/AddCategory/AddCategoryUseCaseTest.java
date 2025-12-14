@@ -41,7 +41,6 @@ class AddCategoryUseCaseTest {
 
     @Mock private ICategoryRepository categoryRepository;
     @Mock private IAuthTokenValidator tokenValidator;
-    @Mock private IUserRepository userRepository; 
     @Mock private ICategoryIdGenerator idGenerator;
     @Mock private AddCategoryOutputBoundary outputBoundary;
 
@@ -51,7 +50,7 @@ class AddCategoryUseCaseTest {
     void setUp() {
         // Khởi tạo UseCase với các mock dependency
         addCategoryUseCase = new AddCategoryUseCase(
-                categoryRepository, tokenValidator, userRepository, idGenerator, outputBoundary
+                categoryRepository, tokenValidator, idGenerator, outputBoundary
         );
     }
     

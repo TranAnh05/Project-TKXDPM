@@ -29,7 +29,6 @@ import static org.mockito.Mockito.*;
 class DeleteCategoryUseCaseTest {
 
     @Mock private ICategoryRepository categoryRepository;
-    @Mock private IUserRepository userRepository; 
     @Mock private IAuthTokenValidator tokenValidator;
     @Mock private DeleteCategoryOutputBoundary outputBoundary;
 
@@ -38,7 +37,7 @@ class DeleteCategoryUseCaseTest {
     @BeforeEach
     void setUp() {
         deleteCategoryUseCase = new DeleteCategoryUseCase(
-                categoryRepository, tokenValidator, userRepository, outputBoundary
+                categoryRepository, tokenValidator, outputBoundary
         );
     }
 

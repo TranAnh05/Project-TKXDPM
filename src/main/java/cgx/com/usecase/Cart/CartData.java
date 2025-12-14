@@ -12,7 +12,6 @@ public class CartData {
     public Instant updatedAt;
     
     public CartData() {
-        // Constructor rỗng cho các framework như Hibernate/Jackson
         this.totalEstimatedPrice = BigDecimal.ZERO;
     }
 }

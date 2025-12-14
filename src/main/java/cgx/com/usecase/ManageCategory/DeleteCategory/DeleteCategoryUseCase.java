@@ -11,16 +11,13 @@ import cgx.com.usecase.ManageUser.IUserRepository;
 
 public class DeleteCategoryUseCase implements DeleteCategoryInputBoundary{
 	private final ICategoryRepository categoryRepository;
-	private final IUserRepository userRepository;
     private final IAuthTokenValidator tokenValidator;
     private final DeleteCategoryOutputBoundary outputBoundary;
 
     public DeleteCategoryUseCase(ICategoryRepository categoryRepository,
                                  IAuthTokenValidator tokenValidator,
-                                 IUserRepository userRepository,
                                  DeleteCategoryOutputBoundary outputBoundary) {
         this.categoryRepository = categoryRepository;
-        this.userRepository = userRepository;
         this.tokenValidator = tokenValidator;
         this.outputBoundary = outputBoundary;
     }

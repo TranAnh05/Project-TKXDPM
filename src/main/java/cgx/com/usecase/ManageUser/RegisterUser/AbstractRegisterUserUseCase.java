@@ -24,10 +24,9 @@ public abstract class AbstractRegisterUserUseCase implements RegisterUserInputBo
     protected IUserIdGenerator userIdGenerator;
     protected RegisterUserOutputBoundary outputBoundary;
     
-    // [MỚI] Thêm dependency gửi mail và tạo token
     protected IEmailService emailService;
     protected ISecureTokenGenerator tokenGenerator;
-    protected IVerificationTokenRepository verificationTokenRepository; // Repository riêng
+    protected IVerificationTokenRepository verificationTokenRepository; 
 
     public AbstractRegisterUserUseCase(IUserRepository userRepository,
                                        IPasswordHasher passwordHasher,

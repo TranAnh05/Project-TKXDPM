@@ -13,18 +13,15 @@ import cgx.com.usecase.ManageUser.IUserRepository;
 public class AddCategoryUseCase implements AddCategoryInputBoundary{
 	private final ICategoryRepository categoryRepository;
     private final IAuthTokenValidator tokenValidator;
-    private final IUserRepository userRepository;
     private final ICategoryIdGenerator idGenerator;
     private final AddCategoryOutputBoundary outputBoundary;
 
     public AddCategoryUseCase(ICategoryRepository categoryRepository,
                               IAuthTokenValidator tokenValidator,
-                              IUserRepository userRepository,
                               ICategoryIdGenerator idGenerator,
                               AddCategoryOutputBoundary outputBoundary) {
         this.categoryRepository = categoryRepository;
         this.tokenValidator = tokenValidator;
-        this.userRepository = userRepository;
         this.idGenerator = idGenerator;
         this.outputBoundary = outputBoundary;
     }

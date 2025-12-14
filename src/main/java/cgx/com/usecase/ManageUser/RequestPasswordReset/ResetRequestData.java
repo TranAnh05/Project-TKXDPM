@@ -1,5 +1,5 @@
 package cgx.com.usecase.ManageUser.RequestPasswordReset;
 
-public interface ResetRequestData {
+public abstract class ResetRequestData {
 
 }

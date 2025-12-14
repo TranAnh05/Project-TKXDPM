@@ -14,7 +14,6 @@ public class CodPaymentStrategy implements IPaymentStrategy {
 
     @Override
     public PaymentResult process(Order order) {
-        // Tạo mã giao dịch giả lập
         return new PaymentResult(true, "Vui lòng chuẩn bị tiền mặt khi nhận hàng.", null, null);
     }
 }
